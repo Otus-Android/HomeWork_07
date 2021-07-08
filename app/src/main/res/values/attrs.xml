@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PayChartView">
+        <attr name="color_1" format="color"/>
+        <attr name="color_2" format="color"/>
+        <attr name="color_3" format="color"/>
+        <attr name="color_4" format="color"/>
+        <attr name="color_5" format="color"/>
+        <attr name="color_6" format="color"/>
+        <attr name="color_7" format="color"/>
+        <attr name="color_8" format="color"/>
+        <attr name="color_9" format="color"/>
+        <attr name="color_10" format="color"/>
+        <attr name="circle_width" format="dimension"/>
+    </declare-styleable>
+</resources>
