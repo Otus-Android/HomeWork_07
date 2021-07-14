@@ -57,7 +57,7 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
 
     fun setPayments(payments: List<Payment>) {
         val items = mutableListOf<Category>()
-        payments.map { it.category }.forEachIndexed { index, category ->
+        payments.map { it.category }.distinct().forEachIndexed { index, category ->
             val categoryPayments = payments.filter { it.category == category }
             items.add(Category(index, categoryPayments))
         }
