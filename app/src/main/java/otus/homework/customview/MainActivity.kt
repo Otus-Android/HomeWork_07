@@ -15,6 +15,11 @@ class MainActivity : AppCompatActivity() {
 
         val jsonString = assets.open("payload.json").bufferedReader().use { it.readText() }
         val payments = Json.decodeFromString<List<Payment>>(jsonString)
-        findViewById<PayChartView>(R.id.pay_charts).payments = payments
+        findViewById<PayChartView>(R.id.pay_charts).apply {
+            setPayments(payments)
+            onChartClick = {
+                Log.d(this::class.simpleName, "category = $it")
+            }
+        }
     }
 }

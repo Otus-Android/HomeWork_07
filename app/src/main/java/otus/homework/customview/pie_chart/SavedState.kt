@@ -5,12 +5,12 @@ import android.os.Parcelable
 import android.view.View
 
 internal class SavedState : View.BaseSavedState {
-    var items: List<Payment>? = null
+    var items: List<Category>? = null
 
     constructor(superState: Parcelable) : super(superState)
 
     constructor(source: Parcel) : super(source) {
-        items?.let { source.readList(it, Payment::class.java.classLoader) }
+        items?.let { source.readList(it, Category::class.java.classLoader) }
     }
 
     override fun writeToParcel(out: Parcel, flags: Int) {

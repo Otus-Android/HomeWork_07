@@ -1,13 +1,21 @@
 package otus.homework.customview.pie_chart
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.R
 import otus.homework.customview.ext.dPToPx
-import kotlin.properties.Delegates
+import kotlin.math.PI
+import kotlin.math.atan2
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class PayChartView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
@@ -18,19 +26,17 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
         get() = field.dPToPx()
     private var circleWidth: Float? = null
         get() = field?.dPToPx()
-    private var defaultCircleWidth: Float = 10f
+    private var defaultCircleWidth: Float = 20f
         get() = field.dPToPx()
-    private var segments: List<Pair<Path, Paint>>? = null
+    private var segments: Pair<RectF, List<Triple<Float, Float, Paint>>>? = null
+    private var paymentCategories: List<Category>? = null
 
-    var payments: List<Payment>? by Delegates.observable(null) { _, _, newValue ->
-        newValue?.let {
-            segments = fillSegments(it)
-            invalidate()
-        }
-    }
+    var onChartClick: ((Category) -> (Unit))? = null
 
     init {
         isSaveEnabled = true
+        isClickable = true
+        isFocusable = true
         val typedArray = context.obtainStyledAttributes(attributeSet, R.styleable.PayChartView)
         try {
             colors.add(typedArray.getColor(R.styleable.PayChartView_color_1, Color.BLUE))
@@ -47,6 +53,15 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
         } finally {
             typedArray.recycle()
         }
+    }
+
+    fun setPayments(payments: List<Payment>) {
+        val items = mutableListOf<Category>()
+        payments.map { it.category }.forEachIndexed { index, category ->
+            val categoryPayments = payments.filter { it.category == category }
+            items.add(Category(index, categoryPayments))
+        }
+        paymentCategories = items
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -73,9 +88,17 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
         }
     }
 
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        paymentCategories?.let {
+            fillSegments(it)
+            invalidate()
+        }
+        super.onSizeChanged(w, h, oldw, oldh)
+    }
+
     override fun onDraw(canvas: Canvas?) {
-        segments?.forEach {
-            canvas?.drawPath(it.first, it.second)
+        segments?.second?.forEach {
+            canvas?.drawArc(segments!!.first, it.first, it.second, false, it.third)
         }
     }
 
@@ -83,7 +106,7 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
         val superState: Parcelable? = super.onSaveInstanceState()
         superState?.let {
             val state = SavedState(superState)
-            state.items = payments
+            state.items = paymentCategories
             return state
         } ?: run {
             return superState
@@ -94,7 +117,7 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
         when (state) {
             is SavedState -> {
                 super.onRestoreInstanceState(state.superState)
-                payments = state.items
+                paymentCategories = state.items
 
                 requestLayout()
             }
@@ -104,25 +127,55 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
         }
     }
 
-    private fun fillSegments(items: List<Payment>): List<Pair<Path, Paint>> {
-        val oval = RectF(0f, 0f, width.toFloat(), height.toFloat())
-        val paymentsSum = items.map { it.amount }.sum()
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (event == null) return super.onTouchEvent(event)
+        return when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                checkPushPoint(event.x, event.y)
+                true
+            }
+            else -> super.onTouchEvent(event)
+        }
+    }
+
+    private fun fillSegments(items: List<Category>) {
+        val strokeWidth = circleWidth ?: defaultCircleWidth
+        val oval = RectF(strokeWidth / 2f, strokeWidth / 2f, width.toFloat() - strokeWidth / 2f, height.toFloat() - strokeWidth / 2f)
+        val paymentsSum = items.sumOf { it.sum }
         var angle = 0f
         var colorIndex = 0
-        return items.map { payment ->
-            val paint = Paint()
-            val path = Path()
+        val anglePaintItems = mutableListOf<Triple<Float, Float, Paint>>()
+        items.forEach { category ->
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = circleWidth ?: defaultCircleWidth
+            paint.strokeWidth = strokeWidth
             if (colorIndex == colors.size) colorIndex = 0
             paint.color = colors[colorIndex]
-            val deltaAngle = payment.amount / paymentsSum * 360
-            path.addArc(oval, angle, angle + deltaAngle)
-            path.close()
+            val deltaAngle = category.sum.toFloat() / paymentsSum.toFloat() * 360f
+            anglePaintItems.add(Triple(angle, deltaAngle, paint))
             angle += deltaAngle
             colorIndex++
-            Pair(path, paint)
         }
+        segments = Pair(oval, anglePaintItems)
+    }
+
+    private fun checkPushPoint(x: Float, y: Float) {
+        val strokeWidth = circleWidth ?: defaultCircleWidth
+        val smallRadius = (width.toFloat() - 2f * strokeWidth) / 2f
+        val bigRadius = width.toFloat() / 2f
+        val deltaX = x - bigRadius
+        val deltaY = y - bigRadius
+        val hypotenuse = sqrt(deltaX.pow(2) + deltaY.pow(2))
+        val isInRadius = hypotenuse in smallRadius..bigRadius
+        if (!isInRadius) return
+        val angle = atan2(deltaY, deltaX) * 180 / PI
+        val deltaAngle = if (deltaY < 0) 360 else 0
+        val paymentIndex = segments?.second?.indexOfFirst {
+            angle + deltaAngle >= it.first && angle + deltaAngle <= it.first + it.second
+        }
+        if (paymentIndex == null || paymentIndex == -1 || paymentCategories == null) return
+        onChartClick?.invoke(paymentCategories!![paymentIndex])
     }
 
 }
