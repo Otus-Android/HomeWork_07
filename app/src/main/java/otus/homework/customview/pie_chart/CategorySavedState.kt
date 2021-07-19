@@ -4,7 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.view.View
 
-internal class SavedState : View.BaseSavedState {
+internal class CategorySavedState : View.BaseSavedState {
     var items: List<Category>? = null
 
     constructor(superState: Parcelable) : super(superState)
@@ -20,12 +20,12 @@ internal class SavedState : View.BaseSavedState {
 
     companion object {
         @JvmField
-        val CREATOR: Parcelable.Creator<SavedState> = object : Parcelable.Creator<SavedState> {
-            override fun createFromParcel(source: Parcel): SavedState {
-                return SavedState(source)
+        val CREATOR: Parcelable.Creator<CategorySavedState> = object : Parcelable.Creator<CategorySavedState> {
+            override fun createFromParcel(source: Parcel): CategorySavedState {
+                return CategorySavedState(source)
             }
 
-            override fun newArray(size: Int): Array<SavedState> {
+            override fun newArray(size: Int): Array<CategorySavedState> {
                 return newArray(size)
             }
         }

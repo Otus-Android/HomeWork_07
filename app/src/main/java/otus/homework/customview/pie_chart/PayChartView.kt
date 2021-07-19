@@ -84,6 +84,9 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
                 if (widthSize >= heightMode) setMeasuredDimension(heightSize, heightSize)
                 else setMeasuredDimension(widthSize, widthSize)
             }
+            (widthMode == MeasureSpec.EXACTLY || widthMode == MeasureSpec.AT_MOST) && heightMode == MeasureSpec.UNSPECIFIED -> {
+                setMeasuredDimension(widthSize, widthSize)
+            }
             else -> super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         }
     }
@@ -105,7 +108,7 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
     override fun onSaveInstanceState(): Parcelable? {
         val superState: Parcelable? = super.onSaveInstanceState()
         superState?.let {
-            val state = SavedState(superState)
+            val state = CategorySavedState(superState)
             state.items = paymentCategories
             return state
         } ?: run {
@@ -115,7 +118,7 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         when (state) {
-            is SavedState -> {
+            is CategorySavedState -> {
                 super.onRestoreInstanceState(state.superState)
                 paymentCategories = state.items
 
