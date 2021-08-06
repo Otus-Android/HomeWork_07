@@ -7,4 +7,32 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="slice0">#FFFF99B1</color>
+    <color name="slice1">#FF5355DD</color>
+    <color name="slice2">#FFCB87FF</color>
+    <color name="slice3">#FFFF51B1</color>
+    <color name="slice4">#FFFFAD4A</color>
+    <color name="slice5">#FF53FFDD</color>
+    <color name="slice6">#FFCB5555</color>
+    <color name="slice7">#FFD2F06E</color>
+    <color name="slice8">#FF8851B1</color>
+    <color name="slice9">#FF53FF55</color>
+    <color name="slice10">#FF997777</color>
+    <color name="slice11">#FF667799</color>
+
+    <integer-array name="sliceColors">
+        <item>@color/slice0</item>
+        <item>@color/slice1</item>
+        <item>@color/slice2</item>
+        <item>@color/slice3</item>
+        <item>@color/slice4</item>
+        <item>@color/slice5</item>
+        <item>@color/slice6</item>
+        <item>@color/slice7</item>
+        <item>@color/slice8</item>
+        <item>@color/slice9</item>
+        <item>@color/slice10</item>
+        <item>@color/slice11</item>
+    </integer-array>
 </resources>
