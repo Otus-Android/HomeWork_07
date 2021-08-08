@@ -7,4 +7,16 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <color name="SkyBlue">#87CEEB</color>
+    <color name="Moccasin">#FFE4B5</color>
+    <color name="Coral">#FF7F50</color>
+    <color name="LightPink">#FFB6C1</color>
+    <color name="LightGreen">#90EE90</color>
+    <color name="Violet">#EE82EE</color>
+    <color name="Peru">#CD853F</color>
+    <color name="SlateGray">#708090</color>
+    <color name="MediumSlateBlue">#7B68EE</color>
+    <color name="Olive">#808000</color>
+
 </resources>
