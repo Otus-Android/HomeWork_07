@@ -9,7 +9,7 @@
     tools:context=".MainActivity">
 
     <otus.homework.customview.view.diagram.DiagramViewImpl
-        android:id="@+id/custom_view"
+        android:id="@+id/diagram_custom_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -24,6 +24,10 @@
 
         />
 
+    <otus.homework.customview.view.graph.GraphViewImpl
+        android:id="@+id/graph_custom_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
     <otus.homework.customview.view.list.ExpenseListViewImpl
         android:id="@+id/expense_rw"
         android:layout_width="match_parent"

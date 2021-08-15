@@ -11,6 +11,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 import otus.homework.customview.presenter.ExpensePresenter
+import otus.homework.customview.view.CategoryToPaint
 import kotlin.math.atan2
 
 
@@ -22,14 +23,11 @@ interface DiagramView {
 
 const val STROKE_WIDTH = 100f
 
-class DiagramViewImpl : DiagramView, View {
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context,
-        attrs,
-        defStyleAttr
-    )
+class DiagramViewImpl @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr), DiagramView{
 
     private lateinit var _expensePresenter: ExpensePresenter
     override fun setExpensePresenter(expensePresenter: ExpensePresenter) {
@@ -62,14 +60,14 @@ class DiagramViewImpl : DiagramView, View {
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
         centerX = widthSize / 2f
-        centerY = heightSize / 4f
+        centerY = heightSize / 5f
         left = centerX - 250f
         top = centerY - 250f
         right = centerX + 250f
         bottom = centerY + 250f
         radius = centerX - left + 130
 
-        setMeasuredDimension(widthSize, heightSize / 2)
+        setMeasuredDimension(widthSize, (heightSize / 2.3).toInt())
     }
 
     @SuppressLint("ResourceAsColor", "DrawAllocation")
@@ -103,9 +101,11 @@ class DiagramViewImpl : DiagramView, View {
                     item.category
                 )
             )
+            CategoryToPaint.setCategoryToPaint(item.category, paint)
             listAngle.add(Pair(startAngle..(startAngle + period), item.category))//Список категорий и углов, которые они занимают
             startAngle += period
         }
+        invalidate()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -143,7 +143,7 @@ class DiagramViewImpl : DiagramView, View {
     }
 
     private fun showLegend(parametersDraw: ParametersDraw): Pair<Float, Float> {
-        val angleX = cos((parametersDraw.startAngle + parametersDraw.sweepAngle / 2) * PI / 180)//Середина сегтора по оси Х
+        val angleX = cos((parametersDraw.startAngle + parametersDraw.sweepAngle / 2) * PI / 180)//Середина сектора по оси Х
         val angleY = sin((parametersDraw.startAngle + parametersDraw.sweepAngle / 2) * PI / 180)//Середина сектора по оси Y
 
         val offsetX: Float = offsetCoord(angleX)
@@ -154,11 +154,10 @@ class DiagramViewImpl : DiagramView, View {
     }
 
     private fun offsetCoord(angleX: Double) =
-        if (angleX < 0) {//Чтобы подписи казались на одном радиусе
+        if (angleX < 0) {//Чтобы подписи казались на одном удалении от центра
             radius + 80
         } else {
             radius
         }
-
 
 }

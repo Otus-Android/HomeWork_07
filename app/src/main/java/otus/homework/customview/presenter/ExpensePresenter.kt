@@ -8,4 +8,5 @@ interface ExpensePresenter {
     fun onBind(position:Int, view:ItemView)
     fun onClickCategory(category: String)
     fun onClickAll()
+    fun onClear()
 }

@@ -12,11 +12,13 @@ import otus.homework.customview.presenter.ExpensePresenterImpl
 import otus.homework.customview.repository.ExpenseRepository
 import otus.homework.customview.repository.ExpenseRepositoryImpl
 import otus.homework.customview.view.diagram.DiagramView
+import otus.homework.customview.view.graph.GraphView
 import otus.homework.customview.view.list.ExpenseListAdapter
 import otus.homework.customview.view.list.ExpenseListViewImpl
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var expensePresenter: ExpensePresenter
 
     @SuppressLint("UseCompatLoadingForDrawables")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,11 +27,12 @@ class MainActivity : AppCompatActivity() {
 
         val expenseListView: ExpenseListViewImpl = findViewById(R.id.expense_rw)
         val repository: ExpenseRepository = ExpenseRepositoryImpl(applicationContext)
-        val diagramView: DiagramView = findViewById(R.id.custom_view)
+        val diagramView: DiagramView = findViewById(R.id.diagram_custom_view)
         val totalTextView: TextView = findViewById(R.id.total_text_View)
+        val graphView:GraphView = findViewById(R.id.graph_custom_view)
 
-        val expensePresenter: ExpensePresenter =
-            ExpensePresenterImpl(repository, diagramView, totalTextView, expenseListView)
+        expensePresenter =
+            ExpensePresenterImpl(repository, diagramView, totalTextView, expenseListView, graphView)
 
         expenseListView.layoutManager = LinearLayoutManager(this)
         expenseListView.adapter = ExpenseListAdapter(expensePresenter)
@@ -38,5 +41,11 @@ class MainActivity : AppCompatActivity() {
         val dividerItemDecoration = DividerItemDecoration(this, RecyclerView.VERTICAL)
         dividerItemDecoration.setDrawable(resources.getDrawable(R.drawable.divider_drawable))
         expenseListView.addItemDecoration(dividerItemDecoration)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        expensePresenter.onClear()
+
     }
 }

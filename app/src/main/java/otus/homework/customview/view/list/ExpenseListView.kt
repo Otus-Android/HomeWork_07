@@ -22,4 +22,5 @@ interface ExpenseListView {
 
     fun notifyAllDataChange()
 
+
 }
