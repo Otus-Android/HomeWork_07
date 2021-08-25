@@ -122,16 +122,6 @@ class CategoryLineChart(context: Context, attributeSet: AttributeSet? = null) :
     fun setValues(items: List<DataItem>) {
         this.items = items.map { Data(it.name, it.amount, it.time) }
             .sortedBy { it.time }
-//        this.items = listOf(
-//            Data("1", 50, 361080),
-//            Data("2", 80, 542087),
-//            Data("3", 180, 613077),
-//            Data("4", 40, 915067),
-//            Data("5", 110, 1115756),
-//            Data("6", 140, 1290475),
-//            Data("7", 70, 1000000)
-//        )
-//            .sortedBy { it.time }
         requestLayout()
         invalidate()
     }
