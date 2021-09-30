@@ -1,8 +1,7 @@
-package otus.homework.customview.piechartview
+package otus.homework.customview
 
 import android.graphics.Color
 import androidx.annotation.ColorRes
-import otus.homework.customview.R
 
 /**
  *

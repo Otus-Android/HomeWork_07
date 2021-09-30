@@ -1,13 +1,14 @@
-package otus.homework.customview.piechartview
+package otus.homework.customview
 
 import android.content.Context
 import org.json.JSONArray
-import otus.homework.customview.R
+import otus.homework.customview.graphicview.GraphicBoundsModel
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.Reader
 import java.io.StringWriter
 import java.io.Writer
+import java.util.Calendar
 
 /**
  *
@@ -49,6 +50,59 @@ class DemoDataSource {
             )
         }
         return result
+    }
+
+    fun getDataForOneCategory(context: Context, category: Category): GraphicBoundsModel {
+        val jsonArray = JSONArray(readDemoFile(context))
+
+        var minTime = Long.MAX_VALUE
+        var maxTime = Long.MIN_VALUE
+        var minAmount = Double.MAX_VALUE
+        var maxAmount = Double.MIN_VALUE
+
+        val spendings = ArrayList<Spending>()
+        for (i in 0 until jsonArray.length()) {
+            val item = jsonArray.getJSONObject(i)
+            val rawCategory = item.getString("category")
+            if (category.title == rawCategory) {
+                val amount = item.getDouble("amount")
+                if (amount < minAmount) {
+                    minAmount = amount
+                }
+                if (amount > maxAmount) {
+                    maxAmount = amount
+                }
+
+                val name = item.getString("name")
+
+                val time = item.getLong("time")
+                if (time < minTime) {
+                    minTime = time
+                }
+                if (time > maxTime) {
+                    maxTime = time
+                }
+
+                val calendar = Calendar.getInstance().apply {
+                    this.timeInMillis = time
+                }
+                spendings.add(
+                    Spending(
+                        amount = amount,
+                        category = category,
+                        name = name,
+                        time = calendar
+                    )
+                )
+            }
+        }
+        val minDate = Calendar.getInstance().apply {
+            timeInMillis = minTime
+        }
+        val maxDate = Calendar.getInstance().apply {
+            timeInMillis = maxTime
+        }
+        return GraphicBoundsModel(minDate, maxDate, minAmount, maxAmount, spendings)
     }
 
     private fun readDemoFile(context: Context): String {

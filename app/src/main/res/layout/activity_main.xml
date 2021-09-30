@@ -13,4 +13,9 @@
         android:layout_gravity="center"
         custom:piePadding="@dimen/pie_chart_padding" />
 
+    <otus.homework.customview.graphicview.GraphicView
+        android:id="@+id/graphicView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
 </FrameLayout>

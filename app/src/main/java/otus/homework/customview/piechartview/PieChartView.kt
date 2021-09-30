@@ -9,10 +9,15 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.util.Range
+import android.view.MotionEvent
 import android.view.View
 import androidx.core.view.GestureDetectorCompat
 import kotlinx.parcelize.Parcelize
+import otus.homework.customview.Category
 import otus.homework.customview.R
+import otus.homework.customview.Spending
+import kotlin.math.PI
+import kotlin.math.atan2
 
 /**
  *
@@ -23,6 +28,8 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
 
     private var padding = 0f
     private val oval = RectF()
+    private var centerX = width / 2
+    private var centerY = height / 2
 
     private var data: List<Spending> = emptyList()
     private val angleRanges = ArrayList<Range<Float>>()
@@ -111,21 +118,8 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
 
     fun setOnTouchListener(gestureDetector: GestureDetectorCompat, gestureListener: ClickGestureListener<Category>) {
         setOnTouchListener { _, event ->
-
-            val clickAngle = 0f
-            // todo как посчитать угол между точкой касания, центром вью и линией между I и IV секторами
-            // пробовал через atan(event.y / event.x) * 180 с доп примочками - не получилось
-            // нашел способ определять категорию по цвету точки в которую кликнул:
-            // https://www.generacodice.com/en/articolo/1690520/click-event-on-pie-chart-in-android-%5Bclosed%5D
-            // этот способ все равно не поможет в отрисовке значений процентов рядом с секторами
-
-            Log.d(TAG, "x = ${event.x}, y = ${event.y}, angle = $clickAngle")
-            for (i in angleRanges.indices) {
-                if (angleRanges[i].contains(clickAngle)) {
-                    gestureListener.data = data[i].category
-                    break
-                }
-            }
+            gestureListener.data = selectCategory(event)
+            Log.d(TAG, "Selected category is ${gestureListener.data}")
             gestureDetector.onTouchEvent(event)
         }
     }
@@ -151,6 +145,26 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
 
             startAngle += sweepAngle
         }
+    }
+
+    // еще есть способ определять категорию по цвету точки в которую кликнул:
+    // https://www.generacodice.com/en/articolo/1690520/click-event-on-pie-chart-in-android-%5Bclosed%5D
+    private fun selectCategory(event: MotionEvent): Category {
+        // todo взял этот способ из пр существующего пр на эту домашку, неправильно у меня работает(
+
+        val coordX = event.x - centerX
+        val coordY = event.y - centerY
+        var angle: Float = (180 / PI * atan2(coordY, coordX)).toFloat() //Нахождение угла
+        if (angle < 0) { //уход от отрицательного угла
+            angle += 360
+        }
+        Log.d(TAG, "Selected angle is ${angle}")
+        for (i in 0 until angleRanges.size) {
+            if (angleRanges[i].contains(angle)) {
+                return data[i].category
+            }
+        }
+        return Category.OTHER
     }
 
     @Parcelize
