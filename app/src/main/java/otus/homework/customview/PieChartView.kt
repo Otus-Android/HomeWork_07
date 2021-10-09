@@ -1,17 +1,21 @@
 package otus.homework.customview
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
+import kotlin.math.atan2
+import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
-class PieChartView(context: Context, attributeSet: AttributeSet)
-    : View(context, attributeSet)
-{
+class PieChartView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
     private enum class Colors(val rgb: Int) {
         GRAY(R.color.grey),
         CYAN(R.color.cyan),
@@ -30,6 +34,13 @@ class PieChartView(context: Context, attributeSet: AttributeSet)
     private val stroke = 50f
     private val pieChartPaints = arrayListOf<Paint>()
 
+    private val strokeRect = 20f
+    private val paintRect = Paint().apply {
+        color = resources.getColor(Colors.values()[0].rgb, null)
+        strokeWidth = strokeRect
+        style = Paint.Style.STROKE
+    }
+
     private var stores: ArrayList<Store> = arrayListOf()
 
     private val unspecifiedW = 256
@@ -43,6 +54,11 @@ class PieChartView(context: Context, attributeSet: AttributeSet)
     private var startAngel = 0f
     private var sweepAngle = 0
     private val maxAngle = 360f
+    private var outRadius = 0f
+    private var inRadius = 0f
+
+    private var lastXTouch: Float = 0.0f
+    private var lastYTouch: Float = 0.0f
 
     private val paintText = Paint().apply {
         color = resources.getColor(R.color.black, null)
@@ -78,16 +94,22 @@ class PieChartView(context: Context, attributeSet: AttributeSet)
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
-        when(widthMode) {
-            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> super.setMeasuredDimension(widthSize, heightSize)
+        when (widthMode) {
+            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> super.setMeasuredDimension(
+                widthSize,
+                heightSize
+            )
             MeasureSpec.UNSPECIFIED -> super.setMeasuredDimension(
                 defaultWidth - defaultMargin.toInt(),
                 defaultHeight - defaultMargin.toInt()
             )
         }
 
-        when(heightMode) {
-            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> super.setMeasuredDimension(widthSize, heightSize)
+        when (heightMode) {
+            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> super.setMeasuredDimension(
+                widthSize,
+                heightSize
+            )
             MeasureSpec.UNSPECIFIED -> super.setMeasuredDimension(
                 defaultWidth - defaultMargin.toInt(),
                 defaultHeight - defaultMargin.toInt()
@@ -96,40 +118,29 @@ class PieChartView(context: Context, attributeSet: AttributeSet)
     }
 
     override fun onDraw(canvas: Canvas?) {
-        if (canvas == null) return
+        canvas ?: return
 
         midWidth = width / 2f
         midHeight = height / 2f
+        val radius = minOf(midWidth, midHeight) - defaultMargin
+        outRadius = radius + stroke / 2
+        inRadius = radius - stroke / 2
 
-//        canvas.drawArc(
-//            midWidth - minOf(midWidth, midHeight) + defaultMargin,
-//            midHeight - minOf(midWidth, midHeight) + defaultMargin,
-//            midWidth + minOf(midWidth, midHeight) - defaultMargin,
-//            midHeight + minOf(midWidth, midHeight) - defaultMargin,
-//           0f,
-//            90f,
-//            false,
-//            paint
-//        )
-//
-//        canvas.drawArc(
-//            midWidth - minOf(midWidth, midHeight) + defaultMargin,
-//            midHeight - minOf(midWidth, midHeight) + defaultMargin,
-//            midWidth + minOf(midWidth, midHeight) - defaultMargin,
-//            midHeight + minOf(midWidth, midHeight) - defaultMargin,
-//            91f,
-//            90f,
-//            false,
-//            paint
-//        )
+        if (stores.isNotEmpty()) {
+            val left = midWidth - radius
+            val top = midHeight - radius
+            val right = midWidth + radius
+            val bottom = midHeight + radius
 
-        if (stores.isNotEmpty()){
-            val left = midWidth - minOf(midWidth, midHeight) + defaultMargin
-            val top = midHeight - minOf(midWidth, midHeight) + defaultMargin
-            val right = midWidth + minOf(midWidth, midHeight) - defaultMargin
-            val bottom = midHeight + minOf(midWidth, midHeight) - defaultMargin
+//            canvas.drawRect(
+//                left,
+//                top,
+//                right,
+//                bottom,
+//                paintRect
+//            )
 
-            for (i in stores.indices){
+            for (i in stores.indices) {
                 canvas.drawArc(
                     left,
                     top,
@@ -138,27 +149,58 @@ class PieChartView(context: Context, attributeSet: AttributeSet)
                     stores[i].startAngle,
                     stores[i].sweepAngle,
                     false,
-                    pieChartPaints[i])
+                    pieChartPaints[i]
+                )
             }
 
-            val textWidth = paintText.measureText("$TEXT_STORES ${stores.size}")
-
-            val maxTextWidth = if (width < height) {
-                (right - left - defaultMargin).toInt()
-            } else {
-                (bottom - top - defaultMargin).toInt()
-            }
+            val textWidth = paintText.measureText("$STORES_ALL_AMOUNT ${stores.size}")
+            val maxTextWidth = if (width < height) (right - left - defaultMargin).toInt() else (bottom - top - defaultMargin).toInt()
 
             if (textWidth > maxTextWidth) {
                 canvas.drawText(
-                    "$TEXT_STORES ${stores.size}",
+                    "$STORES_ALL_AMOUNT ${stores.size}",
                     midWidth,
                     midHeight + minOf(midWidth, midHeight) - defaultMargin + stroke,
-                    paintText)
+                    paintText
+                )
             } else {
-                canvas.drawText("$TEXT_STORES ${stores.size}", midWidth, midHeight, paintText)
+                canvas.drawText("$STORES_ALL_AMOUNT ${stores.size}", midWidth, midHeight, paintText)
             }
         }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                lastXTouch = event.x
+                lastYTouch = event.y
+            }
+            MotionEvent.ACTION_UP -> {
+                val distanceBetweenPoints = sqrt((lastXTouch - midWidth).pow(2) +
+                    (lastYTouch - midHeight).pow(2))
+
+                if (distanceBetweenPoints in inRadius..outRadius) {
+                    val angle = Math.toDegrees( atan2(lastYTouch.toDouble() - midHeight, lastXTouch.toDouble() - midWidth) )
+                    val angleAbs = if (angle >= 0.0) angle else angle + maxAngle
+
+                    val store = stores.filter {
+                        angleAbs in it.startAngle..it.startAngle + it.sweepAngle
+                    }
+
+                    Toast.makeText(
+                        this.context,
+                        """$SECTOR
+                    | $NAME ${store[0].name} 
+                    | $CATEGORY ${store[0].category}
+                    | $AMOUNT: ${store[0].amount}""".trimMargin(),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
+        return true
     }
 
     fun setStores(newStores: List<Store>) {
@@ -177,7 +219,7 @@ class PieChartView(context: Context, attributeSet: AttributeSet)
         stores.clear()
         stores.addAll(newStores)
 
-        for (i in stores.indices){
+        for (i in stores.indices) {
             Paint().apply {
                 color = resources.getColor(Colors.values()[i].rgb, null)
                 strokeWidth = stroke
@@ -191,6 +233,10 @@ class PieChartView(context: Context, attributeSet: AttributeSet)
     }
 
     companion object {
-        const val TEXT_STORES= "Всего компаний: "
+        const val STORES_ALL_AMOUNT = "Всего компаний: "
+        const val SECTOR = "Нажали на сектор"
+        const val NAME = "Наименование:"
+        const val CATEGORY = "Категория:"
+        const val AMOUNT = "Кол-во:"
     }
 }
