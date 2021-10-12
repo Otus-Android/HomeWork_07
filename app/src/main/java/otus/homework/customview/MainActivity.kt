@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
 
             viewModel.sharedFlow.collect{
                 binding.pieChart.setStores(it)
+                binding.graph.setStores(it)
             }
         }
 

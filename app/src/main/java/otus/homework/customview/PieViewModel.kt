@@ -33,6 +33,7 @@ class PieViewModel(
 
 }
 
+@Suppress("UNCHECKED_CAST")
 class PieViewModelFactory(private val adapter: JsonAdapter<List<Store>>):
     ViewModelProvider.NewInstanceFactory() {
 

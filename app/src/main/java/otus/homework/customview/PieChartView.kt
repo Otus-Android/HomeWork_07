@@ -120,13 +120,13 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
     override fun onDraw(canvas: Canvas?) {
         canvas ?: return
 
-        midWidth = width / 2f
-        midHeight = height / 2f
-        val radius = minOf(midWidth, midHeight) - defaultMargin
-        outRadius = radius + stroke / 2
-        inRadius = radius - stroke / 2
-
         if (stores.isNotEmpty()) {
+            midWidth = width / 2f
+            midHeight = height / 2f
+            val radius = minOf(midWidth, midHeight) - defaultMargin
+            outRadius = radius + stroke / 2
+            inRadius = radius - stroke / 2
+
             val left = midWidth - radius
             val top = midHeight - radius
             val right = midWidth + radius
@@ -139,33 +139,52 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
 //                bottom,
 //                paintRect
 //            )
+            drawStores(left, top, right, bottom, canvas)
+            drawAllAmounts(right, left, bottom, top, canvas)
+        }
+    }
 
-            for (i in stores.indices) {
-                canvas.drawArc(
-                    left,
-                    top,
-                    right,
-                    bottom,
-                    stores[i].startAngle,
-                    stores[i].sweepAngle,
-                    false,
-                    pieChartPaints[i]
-                )
-            }
+    private fun drawStores(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        canvas: Canvas,
+    ) {
+        for (i in stores.indices) {
+            canvas.drawArc(
+                left,
+                top,
+                right,
+                bottom,
+                stores[i].startAngle,
+                stores[i].sweepAngle,
+                false,
+                pieChartPaints[i]
+            )
+        }
+    }
 
-            val textWidth = paintText.measureText("$STORES_ALL_AMOUNT ${stores.size}")
-            val maxTextWidth = if (width < height) (right - left - defaultMargin).toInt() else (bottom - top - defaultMargin).toInt()
+    private fun drawAllAmounts(
+        right: Float,
+        left: Float,
+        bottom: Float,
+        top: Float,
+        canvas: Canvas
+    ) {
+        val textWidth = paintText.measureText("$STORES_ALL_AMOUNT ${stores.size}")
+        val maxTextWidth =
+            if (width < height) (right - left - defaultMargin).toInt() else (bottom - top - defaultMargin).toInt()
 
-            if (textWidth > maxTextWidth) {
-                canvas.drawText(
-                    "$STORES_ALL_AMOUNT ${stores.size}",
-                    midWidth,
-                    midHeight + minOf(midWidth, midHeight) - defaultMargin + stroke,
-                    paintText
-                )
-            } else {
-                canvas.drawText("$STORES_ALL_AMOUNT ${stores.size}", midWidth, midHeight, paintText)
-            }
+        if (textWidth > maxTextWidth) {
+            canvas.drawText(
+                "$STORES_ALL_AMOUNT ${stores.size}",
+                midWidth,
+                midHeight + minOf(midWidth, midHeight) - defaultMargin + stroke,
+                paintText
+            )
+        } else {
+            canvas.drawText("$STORES_ALL_AMOUNT ${stores.size}", midWidth, midHeight, paintText)
         }
     }
 
@@ -233,10 +252,10 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
     }
 
     companion object {
-        const val STORES_ALL_AMOUNT = "Всего компаний: "
-        const val SECTOR = "Нажали на сектор"
-        const val NAME = "Наименование:"
-        const val CATEGORY = "Категория:"
-        const val AMOUNT = "Кол-во:"
+        private const val STORES_ALL_AMOUNT = "Всего компаний: "
+        private const val SECTOR = "Нажали на сектор"
+        private const val NAME = "Наименование:"
+        private const val CATEGORY = "Категория:"
+        private const val AMOUNT = "Кол-во:"
     }
 }
