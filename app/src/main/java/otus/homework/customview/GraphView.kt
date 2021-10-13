@@ -2,8 +2,11 @@ package otus.homework.customview
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.CornerPathEffect
+import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Shader.TileMode
 import android.graphics.Typeface
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -25,8 +28,25 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
         YELLOW(R.color.yellow)
     }
 
+//    private enum class Colors(val rgb: Int) {
+//        GRAY(R.color.grey),
+//        CYAN(R.color.cyan),
+//        BLACK(R.color.black),
+//        RED(R.color.red),
+//        GREEN(R.color.green),
+//        MAGENTA(R.color.magenta),
+//        BLUE(R.color.blue),
+//        ORANGE(R.color.orange),
+//        TURQUOISE(R.color.turquoise),
+//        CUSTOM1(R.color.custom1),
+//        CUSTOM2(R.color.custom2),
+//        YELLOW(R.color.yellow)
+//    }
+
     private val stroke = 1f
-    private val pieChartPaints = arrayListOf<Paint>()
+    private val strokeGraph = 5f
+    private val graphPaints = arrayListOf<Paint>()
+    private val cornerPathEffect = CornerPathEffect(50f)
 
     private val paintAxes = Paint().apply {
         color = resources.getColor(Colors.BLACK.rgb, null)
@@ -47,6 +67,7 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
     private var maxAmount = 0
     private var minAmount = 0
     private var yStepAmount = 0
+    private val vOffset = -10f
     private val path = Path()
 
     private val paintText = Paint().apply {
@@ -104,7 +125,8 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
 
         if (stores.isNotEmpty()) {
             drawAxes(width, height, canvas)
-            drawNet(width, height, canvas)
+            drawHorizontalNet(width, height, canvas)
+            drawVerticalNet(width, height, canvas)
             drawCategories(width, height, canvas)
         }
     }
@@ -119,9 +141,28 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
         canvas.drawPath(path, paintAxes)
     }
 
-    private fun drawNet(width: Int, height: Int, canvas: Canvas) {
+    private fun drawHorizontalNet(width: Int, height: Int, canvas: Canvas) {
+        val countLines = maxAmount / yStepAmount + 1
+        val yStep = (height - 2 * marginAxes) / countLines
+
+        for (i in 1..countLines) {
+            path.reset()
+            path.moveTo(marginAxes, marginAxes + yStep * i)
+            path.lineTo(width - marginAxes, marginAxes + yStep * i)
+            canvas.drawPath(path, paintAxes)
+            val widthText = paintText.measureText("${(yStepAmount * (countLines - i))} Р")
+            canvas.drawTextOnPath(
+                "${(yStepAmount * (countLines - i))} $RUBLE",
+                path,
+                (width - 2 * marginAxes) / 2 - widthText / DELTA_TEXT,
+                vOffset,
+                paintText
+            )
+        }
+    }
+
+    private fun drawVerticalNet(width: Int, height: Int, canvas: Canvas) {
         val xStep = (width - 2 * marginAxes) / (countDays + 1)
-        val yStep = (height - 2 * marginAxes) / (maxAmount/yStepAmount)
 
         canvas.drawText(
             "$ZERO $DAY",
@@ -142,24 +183,29 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
                 paintText
             )
         }
-
-        for (i in 1..maxAmount/yStepAmount) {
-            path.reset()
-            path.moveTo(marginAxes, marginAxes + yStep * i)
-            path.lineTo(width - marginAxes, marginAxes + yStep * i)
-            canvas.drawPath(path, paintAxes)
-            canvas.drawTextOnPath("""${(yStepAmount * (maxAmount/yStepAmount + 1 - i))} Р""", path, 570f , -10f, paintText)
-        }
     }
 
     private fun drawCategories(width: Int, height: Int, canvas: Canvas) {
-        //TODO draw categories grath
+        val xStep = (width - 2 * marginAxes) / (countDays + 1)
+        val yStep = (height - 2 * marginAxes) / (maxAmount / yStepAmount)
+
+        stores.sortBy { it.category }
+
+        var j = 0
+        stores.groupBy { it.category }.forEach{ (_, categoryStores) ->
+            path.reset()
+            path.moveTo(marginAxes, height - marginAxes)
+            categoryStores.forEachIndexed { index, store ->
+                path.lineTo(marginAxes + xStep * (index + 1), height - marginAxes - store.amount.toFloat() / yStepAmount.toFloat() * yStep)
+            }
+            canvas.drawPath(path, graphPaints[j])
+            j++
+        }
     }
 
-
     fun setStores(newStores: List<Store>) {
-        require(newStores.maxOf { it.amount } <= MAX_AMOUNT ){ MAX_AMOUNT_EXCEPTION }
-        require(newStores.minOf { it.amount } > ZERO ){ MAX_AMOUNT_EXCEPTION }
+        require(newStores.maxOf { it.amount } <= MAX_AMOUNT) { MAX_AMOUNT_EXCEPTION }
+        require(newStores.minOf { it.amount } > ZERO) { MAX_AMOUNT_EXCEPTION }
 
         stores.clear()
         stores.addAll(newStores)
@@ -169,22 +215,32 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
         maxAmount = stores.maxOf { it.amount }
         minAmount = stores.minOf { it.amount }
         val delta = maxAmount - minAmount
-        yStepAmount =
-            when {
-                delta / 10f < 1 -> 1
-                delta / 100f < 1 -> 10
-                delta / 1000f < 1 -> 100
-                delta / 10_000f < 1 -> 1000
-                delta / 100_000f < 1 -> 10_000
-                else -> 100_000
-            }
+        yStepAmount = when {
+            delta / TEN < ONE -> ONE
+            delta / HUNDRED < ONE -> TEN
+            delta / THOUSAND < ONE -> HUNDRED
+            delta / TEN_THOUSAND < ONE -> THOUSAND
+            delta / ONE_HUNDRED_THOUSAND < ONE -> TEN_THOUSAND
+            else -> ONE_HUNDRED_THOUSAND
+        }
 
         for (i in 0 until countCategory) {
             Paint().apply {
                 color = resources.getColor(Colors.values()[i].rgb, null)
-                strokeWidth = stroke
+                strokeWidth = strokeGraph
                 style = Paint.Style.STROKE
-                pieChartPaints.add(this)
+//                style = Paint.Style.FILL
+                pathEffect = cornerPathEffect
+//                shader = LinearGradient(
+//                    0f,
+//                    0f,
+//                    0f,
+//                    0f,
+//                    resources.getColor(Colors.RED.rgb, null),
+//                    resources.getColor(Colors.ORANGE.rgb, null),
+//                    TileMode.CLAMP
+//                )
+                graphPaints.add(this)
             }
         }
 
@@ -193,9 +249,18 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
     }
 
     companion object {
+        private const val ONE = 1
+        private const val TEN = 10
+        private const val HUNDRED = 100
+        private const val THOUSAND = 1000
+        private const val TEN_THOUSAND = 10_000
+        private const val ONE_HUNDRED_THOUSAND = 100_000
         private const val MAX_AMOUNT = 1_000_000
-        private const val MAX_AMOUNT_EXCEPTION = "Кол-во трат в день по одной из категорий превышает допустимый $MAX_AMOUNT"
+        private const val MAX_AMOUNT_EXCEPTION =
+            "Кол-во трат в день по одной из категорий превышает допустимый $MAX_AMOUNT"
         private const val ZERO = 0
         private const val DAY = "день"
+        private const val RUBLE = "Р"
+        private const val DELTA_TEXT = 1.5f
     }
 }

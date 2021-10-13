@@ -34,13 +34,6 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
     private val stroke = 50f
     private val pieChartPaints = arrayListOf<Paint>()
 
-    private val strokeRect = 20f
-    private val paintRect = Paint().apply {
-        color = resources.getColor(Colors.values()[0].rgb, null)
-        strokeWidth = strokeRect
-        style = Paint.Style.STROKE
-    }
-
     private var stores: ArrayList<Store> = arrayListOf()
 
     private val unspecifiedW = 256
@@ -68,13 +61,6 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
         textSkewX = -0.2f
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
-
-    //    private var defaultRadius: Float
-//    init {
-//        val typedArray = context.obtainStyledAttributes(attributeSet, R.styleable.PieChartView)
-//        defaultRadius = typedArray.getDimension(R.styleable.PieChartView_default_radius, 0f)
-//        typedArray.recycle()
-//    }
 
     override fun onSaveInstanceState(): Parcelable {
         val superState = super.onSaveInstanceState()
@@ -127,20 +113,8 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
             outRadius = radius + stroke / 2
             inRadius = radius - stroke / 2
 
-            val left = midWidth - radius
-            val top = midHeight - radius
-            val right = midWidth + radius
-            val bottom = midHeight + radius
-
-//            canvas.drawRect(
-//                left,
-//                top,
-//                right,
-//                bottom,
-//                paintRect
-//            )
-            drawStores(left, top, right, bottom, canvas)
-            drawAllAmounts(right, left, bottom, top, canvas)
+            drawStores(midWidth - radius, midHeight - radius, midWidth + radius, midHeight + radius, canvas)
+            drawAllAmounts(midWidth - radius, midHeight - radius, midWidth + radius, midHeight + radius, canvas)
         }
     }
 
@@ -166,10 +140,10 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
     }
 
     private fun drawAllAmounts(
-        right: Float,
         left: Float,
-        bottom: Float,
         top: Float,
+        right: Float,
+        bottom: Float,
         canvas: Canvas
     ) {
         val textWidth = paintText.measureText("$STORES_ALL_AMOUNT ${stores.size}")

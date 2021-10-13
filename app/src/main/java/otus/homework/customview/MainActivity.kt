@@ -14,6 +14,7 @@ class MainActivity : AppCompatActivity() {
     private val viewModel by viewModels<PieViewModel>{ PieViewModelFactory(diContainer.adapter) }
 
     private lateinit var storeJson: String
+    private lateinit var storeGraphJson: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,12 +26,21 @@ class MainActivity : AppCompatActivity() {
                 .bufferedReader()
                 .use { it.readText() }
 
-            viewModel.sharedFlow.collect{
+            viewModel.storesSharedFlow.collect{
                 binding.pieChart.setStores(it)
+            }
+        }
+
+        lifecycleScope.launch {
+            storeGraphJson = resources.openRawResource(R.raw.payload_graph)
+                .bufferedReader()
+                .use { it.readText() }
+
+            viewModel.storesGraphSharedFlow.collect{
                 binding.graph.setStores(it)
             }
         }
 
-        viewModel.getStoresFromJson(storeJson)
+        viewModel.getStoresFromJson(storeJson, storeGraphJson)
     }
 }

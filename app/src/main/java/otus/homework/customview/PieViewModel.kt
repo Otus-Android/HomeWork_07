@@ -12,29 +12,37 @@ import kotlinx.coroutines.withContext
 
 class PieViewModel(
     private val adapter: JsonAdapter<List<Store>>
-): ViewModel() {
-    private val mutableSharedFlow: MutableSharedFlow<List<Store>> = MutableSharedFlow()
-    val sharedFlow: SharedFlow<List<Store>> = mutableSharedFlow
+) : ViewModel() {
 
+    private val _mutableStoresSharedFlow: MutableSharedFlow<List<Store>> = MutableSharedFlow()
+    val storesSharedFlow: SharedFlow<List<Store>> = _mutableStoresSharedFlow
     private var stores: List<Store>? = null
 
-    fun getStoresFromJson(json: String) {
+    private val _mutableStoreGraphSharedFlow: MutableSharedFlow<List<Store>> = MutableSharedFlow()
+    val storesGraphSharedFlow: SharedFlow<List<Store>> = _mutableStoreGraphSharedFlow
+    private var storesGraph: List<Store>? = null
+
+    fun getStoresFromJson(json: String, jsonGraph: String) {
         viewModelScope.launch {
 
             withContext(Dispatchers.IO) {
                 stores = adapter.fromJson(json)
+                storesGraph = adapter.fromJson(jsonGraph)
             }
 
             stores?.let {
-                mutableSharedFlow.emit(it)
+                _mutableStoresSharedFlow.emit(it)
+            }
+
+            storesGraph?.let {
+                _mutableStoreGraphSharedFlow.emit(it)
             }
         }
     }
-
 }
 
 @Suppress("UNCHECKED_CAST")
-class PieViewModelFactory(private val adapter: JsonAdapter<List<Store>>):
+class PieViewModelFactory(private val adapter: JsonAdapter<List<Store>>) :
     ViewModelProvider.NewInstanceFactory() {
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
