@@ -3,10 +3,8 @@ package otus.homework.customview
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.CornerPathEffect
-import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.Shader.TileMode
 import android.graphics.Typeface
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -28,21 +26,6 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
         YELLOW(R.color.yellow)
     }
 
-//    private enum class Colors(val rgb: Int) {
-//        GRAY(R.color.grey),
-//        CYAN(R.color.cyan),
-//        BLACK(R.color.black),
-//        RED(R.color.red),
-//        GREEN(R.color.green),
-//        MAGENTA(R.color.magenta),
-//        BLUE(R.color.blue),
-//        ORANGE(R.color.orange),
-//        TURQUOISE(R.color.turquoise),
-//        CUSTOM1(R.color.custom1),
-//        CUSTOM2(R.color.custom2),
-//        YELLOW(R.color.yellow)
-//    }
-
     private val stroke = 1f
     private val strokeGraph = 5f
     private val graphPaints = arrayListOf<Paint>()
@@ -57,7 +40,6 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
     private var stores: ArrayList<Store> = arrayListOf()
 
     private val unspecifiedW = 256
-    private val unspecifiedH = 256
 
     private val marginAxes = (context.resources.displayMetrics.density * 20f)
     private var defaultWidth = (context.resources.displayMetrics.density * unspecifiedW).toInt()
@@ -104,7 +86,7 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
             )
             MeasureSpec.UNSPECIFIED -> super.setMeasuredDimension(
                 defaultWidth * countCategory,
-                height
+                heightSize
             )
         }
 
@@ -115,7 +97,7 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
             )
             MeasureSpec.UNSPECIFIED -> super.setMeasuredDimension(
                 defaultWidth * countCategory,
-                height
+                heightSize
             )
         }
     }
@@ -229,17 +211,8 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
                 color = resources.getColor(Colors.values()[i].rgb, null)
                 strokeWidth = strokeGraph
                 style = Paint.Style.STROKE
-//                style = Paint.Style.FILL
                 pathEffect = cornerPathEffect
-//                shader = LinearGradient(
-//                    0f,
-//                    0f,
-//                    0f,
-//                    0f,
-//                    resources.getColor(Colors.RED.rgb, null),
-//                    resources.getColor(Colors.ORANGE.rgb, null),
-//                    TileMode.CLAMP
-//                )
+
                 graphPaints.add(this)
             }
         }
