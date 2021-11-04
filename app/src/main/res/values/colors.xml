@@ -7,4 +7,16 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+<!--Pie colors-->
+    <color name="pie_1">#7F152E</color>
+    <color name="pie_2">#D61800</color>
+    <color name="pie_3">#EDAE01</color>
+    <color name="pie_4">#E94F08</color>
+    <color name="pie_5">#FEF2E4</color>
+    <color name="pie_6">#FD974F</color>
+    <color name="pie_7">#702626</color>
+    <color name="pie_8">#805A3B</color>
+    <color name="pie_9">#B6452C</color>
+    <color name="pie_10">#301B28</color>
+
 </resources>
