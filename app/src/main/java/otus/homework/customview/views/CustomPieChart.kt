@@ -22,6 +22,10 @@ class CustomPieChart(context: Context, attributeSet: AttributeSet? = null) :
     private var onDrawCompleted = false
     private var pieSliceData = listOf<PieSlice>()
 
+    private var lastXTouch: Float = 0.0f
+    private var lastYTouch: Float = 0.0f
+    private var size: Int = 0
+
     private val colorsList = listOf(
         resources.getColor(R.color.pie_1, null),
         resources.getColor(R.color.pie_2, null),
@@ -53,28 +57,24 @@ class CustomPieChart(context: Context, attributeSet: AttributeSet? = null) :
         val width = MeasureSpec.getSize(widthMeasureSpec)
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         val height = MeasureSpec.getSize(heightMeasureSpec)
-        val size: Int
 
         when {
-            //когда в лэйауте match_parent или точное значение (100dp)
+            (widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY) -> {
+                size = if (height <= width) height else width
+                setMeasuredDimension(size, size)
+            }
             widthMode == MeasureSpec.EXACTLY -> {
                 size = width
                 setMeasuredDimension(size, size)
             }
-
             heightMode == MeasureSpec.EXACTLY -> {
                 size = height
                 setMeasuredDimension(size, size)
             }
-
-            (widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY) -> {
-                super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-                size = if (height <= width) height else width
-            }
             //AT_MOST - когда wrap_content, UNSPECIFIED - когда не определено
             (widthMode == MeasureSpec.AT_MOST || widthMode == MeasureSpec.UNSPECIFIED)
                     && (heightMode == MeasureSpec.AT_MOST || heightMode == MeasureSpec.UNSPECIFIED) -> {
-                size = (300 * Resources.getSystem().displayMetrics.density).toInt()
+                size = (160 * Resources.getSystem().displayMetrics.density).toInt()
                 setMeasuredDimension(size, size)
             }
 
@@ -83,8 +83,10 @@ class CustomPieChart(context: Context, attributeSet: AttributeSet? = null) :
                 size = if (height <= width) height else width
             }
         }
+    }
 
-        val radius = size.toFloat() / 2
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        val radius = ((right - left) / 2).toFloat()
 
         val innerRadius = if (pieWidth >= 0) {
             radius - if (radius <= pieWidth.toFloat()) radius else pieWidth.toFloat()
@@ -92,8 +94,8 @@ class CustomPieChart(context: Context, attributeSet: AttributeSet? = null) :
             radius / 2
         }
 
-        val midWidth = size / 2
-        val midHeight = size / 2
+        val midWidth = (right - left) / 2
+        val midHeight = (bottom - top) / 2
 
         rect.set(midWidth - radius, midHeight - radius, midWidth + radius, midHeight + radius)
         innerRect.set(
@@ -103,6 +105,7 @@ class CustomPieChart(context: Context, attributeSet: AttributeSet? = null) :
             midHeight + innerRadius
         )
         region = rect.toRegion()
+        super.onLayout(changed, left, top, right, bottom)
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -129,10 +132,16 @@ class CustomPieChart(context: Context, attributeSet: AttributeSet? = null) :
             pieSliceData.forEach {
                 r.setPath(it.path, region)
                 when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        lastXTouch = event.x
+                        lastYTouch = event.y
+                    }
                     MotionEvent.ACTION_UP -> {
-                        if (r.contains(event.x.toInt(), event.y.toInt())) listener?.onClick(
-                            it.name
-                        )
+                        if (r.contains(event.x.toInt(), event.y.toInt())
+                            && r.contains(lastXTouch.toInt(), lastYTouch.toInt())) {
+                            listener?.onClick(it.name)
+                        }
+
                     }
                 }
             }

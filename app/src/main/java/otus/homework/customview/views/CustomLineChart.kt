@@ -20,11 +20,11 @@ class CustomLineChart(context: Context, attributeSet: AttributeSet? = null) :
 
     private var items = listOf<LineData>()
     private val dayWithMonth = SimpleDateFormat("dd.MM", Locale.getDefault())
-    private val defaultSize = (200 * Resources.getSystem().displayMetrics.density).toInt()
+    private val defaultSize = (160 * Resources.getSystem().displayMetrics.density).toInt()
 
     private val path = Path()
 
-    private val padding = 100f
+    private val padding = (40 * Resources.getSystem().displayMetrics.density)
 
     private val markersX = mutableListOf<Pair<Float, String>>()
     private val markersY = mutableListOf<Pair<Float, String>>()
@@ -40,17 +40,20 @@ class CustomLineChart(context: Context, attributeSet: AttributeSet? = null) :
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         var width = MeasureSpec.getSize(widthMeasureSpec)
         var height = MeasureSpec.getSize(heightMeasureSpec)
 
-        if (widthMode == MeasureSpec.AT_MOST || widthMode == MeasureSpec.UNSPECIFIED)
+        if (widthMode == MeasureSpec.UNSPECIFIED)
             width = defaultSize
-        if (heightMode == MeasureSpec.AT_MOST || heightMode == MeasureSpec.UNSPECIFIED)
+        if (heightMode == MeasureSpec.UNSPECIFIED)
             height = defaultSize
-        setMeasuredDimension(width, height)
+        setMeasuredDimension(width/2, height/4)
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
 
         maxX = nextDaySeconds(items.maxOfOrNull { it.time } ?: 0)
         minX = prevDaySeconds(items.minOfOrNull { it.time } ?: 0)
@@ -60,8 +63,8 @@ class CustomLineChart(context: Context, attributeSet: AttributeSet? = null) :
         minY = (items.minOfOrNull { it.amount } ?: 0).toFloat() * pointsLocation
 
         val dy = (maxY - minY).let { if (it == 0f) 1f else it }
-        val chartWidth = width.toFloat() - padding * 2
-        val chartHeight = height.toFloat() - padding * 2
+        val chartWidth = (right-left).toFloat() - padding * 2
+        val chartHeight = (bottom-top).toFloat() - padding * 2
 
         items.forEachIndexed { i, it ->
             it.x = padding + chartWidth * (it.time - minX) / dx
@@ -83,7 +86,6 @@ class CustomLineChart(context: Context, attributeSet: AttributeSet? = null) :
     }
 
     override fun onDraw(canvas: Canvas?) {
-
         if (items.isEmpty() || canvas == null) return
 
         canvas.drawLine(padding, height.toFloat() - padding, padding, 0f, axisPaint)
@@ -99,22 +101,22 @@ class CustomLineChart(context: Context, attributeSet: AttributeSet? = null) :
             if (it.first > padding) {
                 canvas.drawLine(
                     it.first,
-                    height.toFloat() - padding + 15f,
+                    height.toFloat() - padding + getDp(15),
                     it.first,
-                    height.toFloat() - padding - 15f,
+                    height.toFloat() - padding - getDp(15),
                     axisPaint
                 )
             }
-            canvas.drawText(it.second, it.first, height.toFloat() - padding + 45f, textXPaint)
+            canvas.drawText(it.second, it.first, height.toFloat() - padding + getDp(20), textXPaint)
         }
 
         markersY.forEachIndexed { i, it ->
             if (i > 0) canvas.drawLine(
-                padding - 15f, it.first,
-                padding + 15f, it.first,
+                padding - getDp(15), it.first,
+                padding + getDp(15), it.first,
                 axisPaint
             )
-            canvas.drawText(it.second, padding - 5f, it.first + 10f, textYPaint)
+            canvas.drawText(it.second, padding - getDp(5), it.first + getDp(10), textYPaint)
         }
 
         path.reset()
@@ -162,6 +164,10 @@ class CustomLineChart(context: Context, attributeSet: AttributeSet? = null) :
             requestLayout()
             invalidate()
         } else super.onRestoreInstanceState(state)
+    }
+
+    private fun getDp(pixel: Int) : Float {
+        return pixel * Resources.getSystem().displayMetrics.density
     }
 
     companion object {
