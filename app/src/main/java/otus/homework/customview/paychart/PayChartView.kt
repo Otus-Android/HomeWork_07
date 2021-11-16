@@ -14,9 +14,7 @@ import kotlin.math.sqrt
 
 class PayChartView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
 
-    private val defaultSize = 200
-    private var rectF = RectF(0f, 0f, defaultSize.toFloat(), defaultSize.toFloat())
-
+    private var rectF = RectF(0f, 0f, 0f, 0f)
     private val sectorList = mutableListOf<Sector>()
 
     var onSectorClickListener: ((id: Int) -> Unit)? = null
@@ -58,35 +56,6 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
 
         val min = minOf(widthSize, heightSize)
         setMeasuredDimension(min, min)
-//        when {
-//            widthMode == MeasureSpec.UNSPECIFIED && heightMode == MeasureSpec.UNSPECIFIED -> {
-//                setMeasuredDimension(min, min)
-//            }
-//            widthMode == MeasureSpec.UNSPECIFIED && heightMode == MeasureSpec.AT_MOST -> {
-//                setMeasuredDimension(heightSize, heightSize)
-//            }
-//            widthMode == MeasureSpec.UNSPECIFIED && heightMode == MeasureSpec.EXACTLY ->
-//                setMeasuredDimension(heightSize, heightSize)
-//            widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.UNSPECIFIED -> {
-//                setMeasuredDimension(widthSize, widthSize)
-//            }
-//            widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.AT_MOST -> {
-//                    setMeasuredDimension(min, min)
-//            }
-//            widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.EXACTLY -> {
-//                    setMeasuredDimension(min, min)
-//            }
-//            widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.UNSPECIFIED -> {
-//                setMeasuredDimension(min, min)
-//            }
-//            widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.AT_MOST -> {
-//                setMeasuredDimension(min, min)
-//            }
-//            widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY -> {
-//                setMeasuredDimension(min, min)
-//            }
-//        }
-
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
