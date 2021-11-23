@@ -4,7 +4,7 @@ import android.graphics.Paint
 
 
 class Sector(
-    val id: Int,
+    val id: String,
     val startAngle: Float,
     val sweepAngle: Float,
     val paint: Paint

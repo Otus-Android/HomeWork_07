@@ -7,7 +7,7 @@ import android.view.View
 import kotlinx.parcelize.Parcelize
 
 
-class SavedState : View.BaseSavedState {
+class PayChartSavedState : View.BaseSavedState {
 
     private var list: List<SavedSector>? = null
 
@@ -29,12 +29,12 @@ class SavedState : View.BaseSavedState {
 
     companion object {
         @JvmField
-        val CREATOR: Parcelable.Creator<SavedState> = object : Parcelable.Creator<SavedState> {
-            override fun createFromParcel(source: Parcel): SavedState {
-                return SavedState(source)
+        val CREATOR: Parcelable.Creator<PayChartSavedState> = object : Parcelable.Creator<PayChartSavedState> {
+            override fun createFromParcel(source: Parcel): PayChartSavedState {
+                return PayChartSavedState(source)
             }
 
-            override fun newArray(size: Int): Array<SavedState> {
+            override fun newArray(size: Int): Array<PayChartSavedState> {
                 return newArray(size)
             }
         }
@@ -42,7 +42,7 @@ class SavedState : View.BaseSavedState {
 
     @Parcelize
     class SavedSector(
-        val id: Int,
+        val id: String,
         val startAngle: Float,
         val sweepAngle: Float,
         val color: Int

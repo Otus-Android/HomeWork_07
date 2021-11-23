@@ -5,9 +5,9 @@ import android.graphics.Canvas
 import android.graphics.RectF
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import java.util.SortedMap
 import kotlin.math.PI
 import kotlin.math.acos
 import kotlin.math.sqrt
@@ -17,19 +17,19 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
     private var rectF = RectF(0f, 0f, 0f, 0f)
     private val sectorList = mutableListOf<Sector>()
 
-    var onSectorClickListener: ((id: Int) -> Unit)? = null
-    private var clickedSectorId: Int? = null
+    var onSectorClickListener: ((key: String) -> Unit)? = null
+    private var clickedSectorKey: String? = null
 
-    fun setPieces(set: Set<Piece>) {
-        val sum = set.map { it.value }.sum()
+    fun setPieces(map: SortedMap<String, Float>) {
+        val sum = map.map { it.value }.sum()
         var startAngle = 0f
         sectorList.clear()
         PaintStore.reset()
-        set.forEach { piece ->
+        map.forEach { piece ->
             val percent = piece.value / sum
             val sweepAngle = 360 * percent
             val p = PaintStore.getPaint()
-            sectorList.add(Sector(piece.id, startAngle, sweepAngle, p))
+            sectorList.add(Sector(piece.key, startAngle, sweepAngle, p))
             startAngle += sweepAngle
         }
         requestLayout()
@@ -38,11 +38,11 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
 
     override fun onSaveInstanceState(): Parcelable {
         val parcelable = super.onSaveInstanceState()
-        return SavedState(sectorList, parcelable)
+        return PayChartSavedState(sectorList, parcelable)
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
-        val ss = state as SavedState
+        val ss = state as PayChartSavedState
         super.onRestoreInstanceState(ss.superState)
         sectorList.clear()
         ss.getSectorList()?.let { sectorList.addAll(it) }
@@ -80,7 +80,7 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         return if (event != null && event.action == MotionEvent.ACTION_DOWN &&
             findTouchedSector(event.x, event.y)?.apply {
-                clickedSectorId = this.id
+                clickedSectorKey = this.id
                 performClick()
             } != null) {
             true
@@ -90,13 +90,13 @@ class PayChartView(context: Context, attributeSet: AttributeSet) : View(context,
     }
 
     override fun performClick(): Boolean {
-        onSectorClickListener?.invoke(clickedSectorId!!)
+        onSectorClickListener?.invoke(clickedSectorKey!!)
         return super.performClick()
     }
 
     private fun findTouchedSector(touchX: Float, touchY: Float): Sector? {
         if (rectF.centerY() - rectF.top != rectF.right - rectF.centerX()) {
-            throw UnsupportedOperationException("Graf must be circle!")
+            throw UnsupportedOperationException("Chart must be circle!")
         }
 
         val centerX = rectF.centerX()
