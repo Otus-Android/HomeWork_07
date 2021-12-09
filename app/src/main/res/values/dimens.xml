@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="pie_chart_stroke_width">32dp</dimen>
+    <dimen name="pie_chart_center_subtext_size">12sp</dimen>
+    <dimen name="pie_chart_center_text_size">32sp</dimen>
+    <dimen name="pie_chart_center_text_padding">8dp</dimen>
+</resources>
