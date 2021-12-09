@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="pie_chart_separator_width">1dp</dimen>
+    <dimen name="pie_chart_line_width">1dp</dimen>
+    <dimen name="pie_chart_horizontal_margin">16dp</dimen>
+    <dimen name="pie_chart_vertical_margin">16dp</dimen>
+    <dimen name="pie_chart_default_size">300dp</dimen>
+    <dimen name="pie_chart_category_name_circle_radius">4dp</dimen>
+    <dimen name="pie_chart_slice_width">16dp</dimen>
+
+    <dimen name="pie_chart_category_text_size">10sp</dimen>
+    <dimen name="pie_chart_total_amount_text_size">24sp</dimen>
+
+</resources>
