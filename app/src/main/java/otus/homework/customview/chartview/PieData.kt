@@ -2,11 +2,39 @@ package otus.homework.customview.chartview
 
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Parcel
+import android.os.Parcelable
 import kotlin.collections.HashMap
 
-class PieData {
+class PieData : Parcelable {
 
-    val pieModels: HashMap<String, PieModel> = hashMapOf()
+    companion object CREATOR: Parcelable.Creator<PieData> {
+        override fun newArray(size: Int): Array<PieData?> {
+            return arrayOfNulls(size)
+        }
+
+        override fun createFromParcel(source: Parcel): PieData {
+            return PieData(source)
+        }
+    }
+
+    constructor(parcel: Parcel?) {
+        currencyLabel = parcel?.readString().orEmpty()
+        parcel?.let {
+          pieModels = it.readHashMap(null) as HashMap<String, PieModel>
+        }
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeString(currencyLabel)
+        dest.writeMap(pieModels)
+    }
+
+    var pieModels: HashMap<String, PieModel> = hashMapOf()
     var currencyLabel: String = "$"
         private set
 

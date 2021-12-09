@@ -564,6 +564,7 @@ class PieChart @JvmOverloads constructor(
     override fun onSaveInstanceState(): Parcelable? {
         return SavedState(super.onSaveInstanceState()).also {
             it.pieState = pieState
+            it.pieData = pieData
         }
     }
 
@@ -581,10 +582,14 @@ class PieChart @JvmOverloads constructor(
 
     private fun updateChart(state: SavedState) {
         pieState = state.pieState
+        pieData = state.pieData
+        requestLayout()
+        invalidate()
     }
 
     private class SavedState : BaseSavedState {
 
+        var pieData: PieData? = null
         var pieState: PieChartState = PieChartState.MINIMIZED
 
         constructor(superState: Parcelable?) : super(superState)
@@ -594,12 +599,14 @@ class PieChart @JvmOverloads constructor(
                 source.readString()?.let {
                     pieState = PieChartState.valueOf(it)
                 }
+                pieData = source.readParcelable<PieData>(null)
             }
         }
 
         override fun writeToParcel(out: Parcel?, flags: Int) {
             super.writeToParcel(out, flags)
             out?.writeString(pieState.name)
+            out?.writeParcelable(pieData, 0)
         }
 
         companion object {
