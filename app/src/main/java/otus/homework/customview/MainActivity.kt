@@ -3,74 +3,79 @@ package otus.homework.customview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import java.io.InputStream
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 
 private const val TAG = "debug"
-
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
-        val inputStream: InputStream = this.assets.open("payload.json")
-        val bytesArray = ByteArray(inputStream.available())
-        inputStream.read(bytesArray)
-        val jsonFile = String(bytesArray)
+        val raw = resources.openRawResource(R.raw.payload).bufferedReader().use { it.readText() }
 
         val moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
-        val listType = Types.newParameterizedType(List::class.java, Pay::class.java)
-        val jsonAdapter: JsonAdapter<List<Pay>> = moshi.adapter(listType)
-        val pays: List<Pay>? = jsonAdapter.fromJson(jsonFile)
+        val listType = Types.newParameterizedType(List::class.java, Payment::class.java)
+        val jsonAdapter: JsonAdapter<List<Payment>> = moshi.adapter(listType)
+        val payments: List<Payment>? = jsonAdapter.fromJson(raw)
 
+        val customViewPieChart = findViewById<CustomViewPieChart>(R.id.customViewPieChart)
 
-
-        if (pays != null) {
-            val amountFromCategory = getAmountFromCategory(pays)
-            //Log.d(TAG, "${amountFromCategory.values.sum()}")
-            val allAmount = amountFromCategory.values.sum()
-            val amountFromCategoryArc = mutableMapOf<String, Float>()
-
-            amountFromCategory.forEach{
-                amountFromCategoryArc[it.key] = it.value.toFloat()/(allAmount/360)
+        if (payments != null) {
+            val paymentPieChart = getPaymentPieChart(payments) as List<PaymentPieChart>
+            customViewPieChart.apply {
+                this.setValue(paymentPieChart)
             }
-            Log.d(TAG, "${amountFromCategoryArc.values}")
-            findViewById<CustomViewPieChart>(R.id.customViewPieChart).setValue(amountFromCategoryArc)
+        }
+
+        lifecycleScope.launchWhenStarted {
+            customViewPieChart.pieChartFlow
+                .onEach {
+                    if (it.isNotEmpty())
+                        Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT)
+                        .show()
+                }
+                .collect()
         }
     }
 }
 
-private fun getAmountFromCategory(pays: List<Pay>): Map<String, Int> {
+private fun getPaymentPieChart(payments: List<Payment>): MutableList<PaymentPieChart> {
+    var amountSum = 0
+    payments.forEach {
+        amountSum += it.amount
+    }
 
     val category = mutableSetOf<String>()
+    val listPaymentPieChart = mutableListOf<PaymentPieChart>()
 
-    val resultMap = mutableMapOf<String, Int>()
-
-    pays.forEach {
+    payments.forEach {
         category.add(it.category)
     }
 
-    val size = category.size
-    var n = 0
+    var position = 0
+    while (position < category.size) {
+        var sumAcc = 0
+        val itemCategory = category.elementAt(position)
 
-    while (n < size) {
-        var sum = 0
-        val itemCategory = category.elementAt(n)
-        pays.forEach {
+        payments.forEach {
             if (it.category == itemCategory) {
-                sum += it.amount
+                sumAcc += it.amount
             }
-            resultMap.put(itemCategory, sum)
         }
-        n++
+        val arc = sumAcc.toFloat() / (amountSum / 360)
+        listPaymentPieChart.add(PaymentPieChart(sumAcc, itemCategory, arc))
+
+        position++
     }
-    return resultMap
+    return listPaymentPieChart
 }
