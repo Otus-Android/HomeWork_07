@@ -11,4 +11,19 @@
     <dimen name="pie_chart_category_text_size">10sp</dimen>
     <dimen name="pie_chart_total_amount_text_size">24sp</dimen>
 
+    <dimen name="line_chart_line_width">2dp</dimen>
+    <dimen name="line_chart_dash_line_width">1dp</dimen>
+    <dimen name="line_chart_horizontal_margin">4dp</dimen>
+    <dimen name="line_chart_dash_circle_radius">2dp</dimen>
+    <dimen name="line_chart_dash_length">8dp</dimen>
+    <dimen name="line_chart_vertical_margin">10dp</dimen>
+    <dimen name="line_chart_default_height">400dp</dimen>
+    <dimen name="line_chart_default_width">600dp</dimen>
+    <dimen name="line_chart_y_legend_width">24dp</dimen>
+
+    <dimen name="line_chart_category_text_size">12sp</dimen>
+    <dimen name="line_chart_date_text_size">10sp</dimen>
+    <dimen name="line_chart_y_legend_text_size">6sp</dimen>
+    <dimen name="line_chart_x_legend_text_size">8sp</dimen>
+
 </resources>

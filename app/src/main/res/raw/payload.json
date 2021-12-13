@@ -82,5 +82,26 @@
     "amount": 389,
     "category": "Транспорт",
     "time": 1623419934
+  },
+  {
+    "id": 13,
+    "name": "Uber",
+    "amount": 2000,
+    "category": "Транспорт",
+    "time": 1649429934
+  },
+  {
+    "id": 14,
+    "name": "Uber",
+    "amount": 3000,
+    "category": "Транспорт",
+    "time": 1799429934
+  },
+  {
+    "id": 15,
+    "name": "Uber",
+    "amount": 2500,
+    "category": "Транспорт",
+    "time": 1899429934
   }
 ]

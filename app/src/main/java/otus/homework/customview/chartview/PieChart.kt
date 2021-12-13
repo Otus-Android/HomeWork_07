@@ -351,48 +351,51 @@ class PieChart @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (pieData != null) {
+            // draw arcs with slices
+            pieData?.pieModels?.let { data ->
+                data.forEach { entry ->
+                    canvas.drawArc(
+                        pieRect,
+                        entry.value.startAngle,
+                        entry.value.sweepAngle,
+                        true,
+                        entry.value.paint
+                    )
 
+                    canvas.drawArc(
+                        pieRect,
+                        entry.value.startAngle,
+                        entry.value.sweepAngle,
+                        true,
+                        separatorsPaint
+                    )
+                }
+            }
+            // draw inner circle
+            canvas.drawCircle(
+                pieRect.centerX(),
+                pieRect.centerY(),
+                innerRadius,
+                innerPiePaint
+            )
 
-        pieData?.pieModels?.let { data ->
-            data.forEach { entry ->
-                canvas.drawArc(
-                    pieRect,
-                    entry.value.startAngle,
-                    entry.value.sweepAngle,
-                    true,
-                    entry.value.paint
-                )
-
-                canvas.drawArc(
-                    pieRect,
-                    entry.value.startAngle,
-                    entry.value.sweepAngle,
-                    true,
-                    separatorsPaint
+            // draw total amount
+            pieData?.let { d ->
+                val amountStr = "${d.totalAmount} ${d.currencyLabel}"
+                val charCount = amountStr.length
+                canvas.drawText(
+                    amountStr,
+                    pieRect.centerX(),
+                    pieRect.centerY() + charCount * density,
+                    totalAmountPaint
                 )
             }
-        }
-
-        canvas.drawCircle(
-            pieRect.centerX(),
-            pieRect.centerY(),
-            innerRadius,
-            innerPiePaint
-        )
-
-        pieData?.let { d ->
-            val amountStr = "${d.totalAmount} ${d.currencyLabel}"
-            val charCount = amountStr.length
-            canvas.drawText(
-                amountStr,
-                pieRect.centerX(),
-                pieRect.centerY() + charCount * density,
-                totalAmountPaint
-            )
-        }
-        pieData?.pieModels?.let { data ->
-            data.forEach { entry ->
-                drawCategories(canvas, entry.value)
+            // draw category names and lines
+            pieData?.pieModels?.let { data ->
+                data.forEach { entry ->
+                    drawCategories(canvas, entry.value)
+                }
             }
         }
     }
@@ -563,7 +566,6 @@ class PieChart @JvmOverloads constructor(
 
     override fun onSaveInstanceState(): Parcelable? {
         return SavedState(super.onSaveInstanceState()).also {
-            it.pieState = pieState
             it.pieData = pieData
         }
     }
@@ -581,7 +583,6 @@ class PieChart @JvmOverloads constructor(
     }
 
     private fun updateChart(state: SavedState) {
-        pieState = state.pieState
         pieData = state.pieData
         requestLayout()
         invalidate()
@@ -590,22 +591,17 @@ class PieChart @JvmOverloads constructor(
     private class SavedState : BaseSavedState {
 
         var pieData: PieData? = null
-        var pieState: PieChartState = PieChartState.MINIMIZED
 
         constructor(superState: Parcelable?) : super(superState)
 
         constructor(source: Parcel?) : super(source) {
             source?.apply {
-                source.readString()?.let {
-                    pieState = PieChartState.valueOf(it)
-                }
-                pieData = source.readParcelable<PieData>(null)
+                pieData = source.readParcelable<PieData>(PieData::class.java.classLoader)
             }
         }
 
         override fun writeToParcel(out: Parcel?, flags: Int) {
             super.writeToParcel(out, flags)
-            out?.writeString(pieState.name)
             out?.writeParcelable(pieData, 0)
         }
 
