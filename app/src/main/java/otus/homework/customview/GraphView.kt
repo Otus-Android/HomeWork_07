@@ -26,10 +26,10 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
         YELLOW(R.color.yellow)
     }
 
-    private val stroke = 1f
-    private val strokeGraph = 5f
+    private val stroke = convertDpToPixels(STROKE)
+    private val strokeGraph = convertDpToPixels(STROKE_GRAPH)
     private val graphPaints = arrayListOf<Paint>()
-    private val cornerPathEffect = CornerPathEffect(50f)
+    private val cornerPathEffect = CornerPathEffect(convertDpToPixels(CORNER_PATH_EFFECT))
 
     private val paintAxes = Paint().apply {
         color = resources.getColor(Colors.BLACK.rgb, null)
@@ -39,25 +39,23 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
 
     private var stores: ArrayList<Store> = arrayListOf()
 
-    private val unspecifiedW = 256
-
-    private val marginAxes = (context.resources.displayMetrics.density * 20f)
-    private var defaultWidth = (context.resources.displayMetrics.density * unspecifiedW).toInt()
+    private val marginAxes = convertDpToPixels(MARGIN_AXES)
+    private var defaultWidth = convertDpToPixels(UNSPECIFIED_W).toInt()
 
     private var countCategory = 0
     private var countDays = 0
     private var maxAmount = 0
     private var minAmount = 0
     private var yStepAmount = 0
-    private val vOffset = -10f
+    private val vOffset = convertDpToPixels(V_OFFSET)
     private val path = Path()
 
     private val paintText = Paint().apply {
         color = resources.getColor(R.color.black, null)
         style = Paint.Style.FILL
-        textSize = 28f
+        textSize = convertSpToPixels(TEXT_SIZE)
         textAlign = Paint.Align.CENTER
-        textSkewX = -0.2f
+        textSkewX = TEXT_SKEW_X
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
 
@@ -235,5 +233,14 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
         private const val DAY = "день"
         private const val RUBLE = "Р"
         private const val DELTA_TEXT = 1.5f
+
+        private const val STROKE = 1f
+        private const val STROKE_GRAPH = 5f
+        private const val CORNER_PATH_EFFECT = 50f
+        private const val MARGIN_AXES = 20f
+        private const val UNSPECIFIED_W = 256f
+        private const val V_OFFSET = -10f
+        private const val TEXT_SIZE = 12f
+        private const val TEXT_SKEW_X = -0.2f
     }
 }

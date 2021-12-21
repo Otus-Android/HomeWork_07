@@ -31,16 +31,14 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
         YELLOW(R.color.yellow)
     }
 
-    private val stroke = 50f
+    private val stroke = convertDpToPixels(STROKE)
     private val pieChartPaints = arrayListOf<Paint>()
 
     private var stores: ArrayList<Store> = arrayListOf()
 
-    private val unspecifiedW = 256
-    private val unspecifiedH = 256
-    private val defaultMargin = (context.resources.displayMetrics.density * stroke)
-    private var defaultWidth = (context.resources.displayMetrics.density * unspecifiedW).toInt()
-    private var defaultHeight = (context.resources.displayMetrics.density * unspecifiedH).toInt()
+    private val defaultMargin = stroke
+    private var defaultWidth = convertDpToPixels(UNSPECIFIED_W).toInt()
+    private var defaultHeight = convertDpToPixels(UNSPECIFIED_H).toInt()
 
     private var midWidth = 0f
     private var midHeight = 0f
@@ -56,9 +54,9 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
     private val paintText = Paint().apply {
         color = resources.getColor(R.color.black, null)
         style = Paint.Style.FILL
-        textSize = 36f
+        textSize = convertSpToPixels(TEXT_SIZE)
         textAlign = Paint.Align.CENTER
-        textSkewX = -0.2f
+        textSkewX = TEXT_SKEW_X
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
 
@@ -231,5 +229,11 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
         private const val NAME = "Наименование:"
         private const val CATEGORY = "Категория:"
         private const val AMOUNT = "Кол-во:"
+
+        private const val STROKE = 10f
+        private const val UNSPECIFIED_W = 256f
+        private const val UNSPECIFIED_H = 256f
+        private const val TEXT_SIZE = 16f
+        private const val TEXT_SKEW_X = -0.2f
     }
 }
