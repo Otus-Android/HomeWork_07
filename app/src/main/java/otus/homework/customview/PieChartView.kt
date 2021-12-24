@@ -10,27 +10,14 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
+import otus.homework.customview.model.Colors
+import otus.homework.customview.model.Store
 import kotlin.math.atan2
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 class PieChartView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
-    private enum class Colors(val rgb: Int) {
-        GRAY(R.color.grey),
-        CYAN(R.color.cyan),
-        BLACK(R.color.black),
-        RED(R.color.red),
-        GREEN(R.color.green),
-        MAGENTA(R.color.magenta),
-        BLUE(R.color.blue),
-        ORANGE(R.color.orange),
-        TURQUOISE(R.color.turquoise),
-        CUSTOM1(R.color.custom1),
-        CUSTOM2(R.color.custom2),
-        YELLOW(R.color.yellow)
-    }
-
     private val stroke = convertDpToPixels(STROKE)
     private val pieChartPaints = arrayListOf<Paint>()
 

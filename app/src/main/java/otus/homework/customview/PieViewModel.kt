@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import otus.homework.customview.model.Store
 
 class PieViewModel(
     private val adapter: JsonAdapter<List<Store>>

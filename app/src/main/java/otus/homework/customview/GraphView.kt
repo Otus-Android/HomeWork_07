@@ -9,23 +9,10 @@ import android.graphics.Typeface
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
+import otus.homework.customview.model.Colors
+import otus.homework.customview.model.Store
 
 class GraphView(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
-    private enum class Colors(val rgb: Int) {
-        GRAY(R.color.grey),
-        CYAN(R.color.cyan),
-        BLACK(R.color.black),
-        RED(R.color.red),
-        GREEN(R.color.green),
-        MAGENTA(R.color.magenta),
-        BLUE(R.color.blue),
-        ORANGE(R.color.orange),
-        TURQUOISE(R.color.turquoise),
-        CUSTOM1(R.color.custom1),
-        CUSTOM2(R.color.custom2),
-        YELLOW(R.color.yellow)
-    }
-
     private val stroke = convertDpToPixels(STROKE)
     private val strokeGraph = convertDpToPixels(STROKE_GRAPH)
     private val graphPaints = arrayListOf<Paint>()
@@ -41,6 +28,7 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
 
     private val marginAxes = convertDpToPixels(MARGIN_AXES)
     private var defaultWidth = convertDpToPixels(UNSPECIFIED_W).toInt()
+    private var defaultHeight = convertDpToPixels(UNSPECIFIED_H).toInt()
 
     private var countCategory = 0
     private var countDays = 0
@@ -84,7 +72,7 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
             )
             MeasureSpec.UNSPECIFIED -> super.setMeasuredDimension(
                 defaultWidth * countCategory,
-                heightSize
+                defaultHeight
             )
         }
 
@@ -95,7 +83,7 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
             )
             MeasureSpec.UNSPECIFIED -> super.setMeasuredDimension(
                 defaultWidth * countCategory,
-                heightSize
+                defaultHeight
             )
         }
     }
@@ -239,6 +227,7 @@ class GraphView(context: Context, attributeSet: AttributeSet) : View(context, at
         private const val CORNER_PATH_EFFECT = 50f
         private const val MARGIN_AXES = 20f
         private const val UNSPECIFIED_W = 256f
+        private const val UNSPECIFIED_H = 256f
         private const val V_OFFSET = -10f
         private const val TEXT_SIZE = 12f
         private const val TEXT_SKEW_X = -0.2f
