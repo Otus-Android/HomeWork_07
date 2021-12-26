@@ -8,6 +8,7 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -21,23 +22,34 @@ class CustomViewLineGraph(context: Context, attributeSet: AttributeSet) :
         isSaveEnabled = true
     }
 
-    var mPath = Path()
+    private var mPath = Path()
     private var userPaint = UserPaint()
     private val defaultWidth = resources.getDimension(R.dimen.pie_chart).toInt()
-    private val defaultHeight = resources.getDimension(R.dimen.pie_chart).toInt()
-    private var stateView = ListPaymentLineGraph(mutableListOf(), null)
+    private val defaultHeight = defaultWidth
+    var stateView = ListPaymentLineGraph(mutableListOf(), null)
+    private var pHeight = 0F
+    private var pWidth = 0F
+    private var mOriginY = 0F
+    private var mOriginX = 0F
+    private var originXY = Pair(0F, 0F)
+    private var dayInMonth = 0
+    private var month = " "
+    private var maxY = 0
+    private var maxYText = " "
 
+    @SuppressLint("DrawAllocation")
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
-        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+        var widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
-        val heightSize = MeasureSpec.getSize(heightMeasureSpec)
+        var heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
         when {
             widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.AT_MOST -> {
-                setMeasuredDimension(defaultWidth, defaultHeight)
+                widthSize = defaultWidth
+                heightSize = defaultHeight
+                setMeasuredDimension(widthSize, heightSize)
             }
-
             widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.AT_MOST -> {
                 setMeasuredDimension(widthSize, widthSize)
             }
@@ -50,29 +62,27 @@ class CustomViewLineGraph(context: Context, attributeSet: AttributeSet) :
                 if (widthSize >= heightSize) setMeasuredDimension(heightSize, heightSize)
                 else setMeasuredDimension(widthSize, widthSize)
             }
-            (widthMode == MeasureSpec.EXACTLY || widthMode == MeasureSpec.AT_MOST) && heightMode
-                    == MeasureSpec.UNSPECIFIED -> {
+            else -> {
+                widthSize = defaultWidth
+                heightSize = defaultHeight
                 setMeasuredDimension(widthSize, widthSize)
             }
-            else ->
-                if (widthSize >= heightMode) {
-                    setMeasuredDimension(heightSize, heightSize)
-                } else {
-                    setMeasuredDimension(widthSize, widthSize)
-                }
         }
+
+        pHeight = heightSize / 12F
+        pWidth = widthSize / 12F
+        mOriginY = heightSize - pHeight
+        mOriginX = pWidth
+        originXY = Pair(mOriginX, mOriginY)
+
     }
 
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
-        val pHeight = height / 12F
-        val pWidth = width / 12F
-        val mOriginY = height - pHeight
-        val mOriginX = pWidth
-        val originXY = Pair(mOriginX, mOriginY)
         val listLine = mutableMapOf<Int, Int>()
-        val dayInMonth = stateView.listLineGraph.firstOrNull()?.dayInMonth ?: 31
-        val month = stateView.listLineGraph.firstOrNull()?.month ?: " "
+
+        dayInMonth = stateView.listLineGraph.firstOrNull()?.dayInMonth ?: 31
+        month = stateView.listLineGraph.firstOrNull()?.month ?: " "
         val listDay = stateView.listLineGraph.map { it.day }.distinct()
 
         listDay.forEachIndexed { _, day ->
@@ -85,8 +95,8 @@ class CustomViewLineGraph(context: Context, attributeSet: AttributeSet) :
             listLine[day] = acc
         }
 
-        val maxY = listLine.values.maxOfOrNull { it * 2 } ?: 1
-        val maxYText = (Math.round(maxY.toDouble() / 100) * 100).toString()
+        maxY = listLine.values.maxOfOrNull { it * 2 } ?: 1
+        maxYText = (Math.round(maxY.toDouble() / 100) * 100).toString()
 
         //y-axis
         canvas.drawLine(
@@ -144,7 +154,6 @@ class CustomViewLineGraph(context: Context, attributeSet: AttributeSet) :
                     textSize = 20f
                 }
             )
-
         }
         invalidate()
     }

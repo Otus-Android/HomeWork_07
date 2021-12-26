@@ -35,13 +35,15 @@ class CustomViewPieChart(context: Context, attributeSet: AttributeSet) :
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
-        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+        var widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
-        val heightSize = MeasureSpec.getSize(heightMeasureSpec)
+        var heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
         when {
             widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.AT_MOST -> {
-                setMeasuredDimension(defaultWidth, defaultHeight)
+                widthSize = defaultWidth
+                heightSize = defaultHeight
+                setMeasuredDimension(widthSize, heightSize)
             }
 
             widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.AT_MOST -> {
