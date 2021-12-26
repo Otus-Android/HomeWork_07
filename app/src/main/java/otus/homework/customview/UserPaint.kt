@@ -2,6 +2,7 @@ package otus.homework.customview
 
 import android.graphics.Color
 import android.graphics.Paint
+import androidx.core.graphics.rotationMatrix
 
 class UserPaint {
 
@@ -11,41 +12,50 @@ class UserPaint {
             strokeWidth = 3f
             flags = Paint.ANTI_ALIAS_FLAG
             style = Paint.Style.FILL
-            textSize = 60f
+            textSize = 50f
             textAlign = Paint.Align.CENTER
 
         }
 
-    val redStrokePaint: Paint = Paint().apply {
+    val blackPaintStroke: Paint =
+        Paint().apply {
+            color = Color.BLACK
+            strokeWidth = 3f
+            flags = Paint.ANTI_ALIAS_FLAG
+            style = Paint.Style.STROKE
+        }
+
+
+    val redPaint: Paint = Paint().apply {
         color = Color.RED
     }
-    val blueStrokePaint: Paint = Paint().apply {
+    val bluePaint: Paint = Paint().apply {
         color = Color.BLUE
     }
-    val grayStrokePaint: Paint = Paint().apply {
+    val grayPaint: Paint = Paint().apply {
         color = Color.GRAY
     }
-    val magentaStrokePaint: Paint = Paint().apply {
+    val magentaPaint: Paint = Paint().apply {
         color = Color.MAGENTA
     }
-    val greenStrokePaint: Paint = Paint().apply {
+    val greenPaint: Paint = Paint().apply {
         color = Color.GREEN
     }
-    val cyanStrokePaint: Paint = Paint().apply {
+    val cyanPaint: Paint = Paint().apply {
         color = Color.CYAN
     }
-    val yellowStrokePaint: Paint = Paint().apply {
+    val yellowPaint: Paint = Paint().apply {
         color = Color.YELLOW
     }
-    val dkgrayStrokePaint: Paint = Paint().apply {
+    val dkgrayPaint: Paint = Paint().apply {
         color = Color.DKGRAY
     }
 
 
     var color = mutableListOf(
-        redStrokePaint, blueStrokePaint,
-        grayStrokePaint, magentaStrokePaint, greenStrokePaint, cyanStrokePaint, yellowStrokePaint,
-        dkgrayStrokePaint)
+        redPaint, bluePaint,
+        grayPaint, magentaPaint, greenPaint, cyanPaint, yellowPaint,
+        dkgrayPaint)
 }
 
 

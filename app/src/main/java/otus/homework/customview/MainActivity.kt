@@ -3,7 +3,6 @@ package otus.homework.customview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.JsonAdapter
@@ -29,6 +28,8 @@ class MainActivity : AppCompatActivity() {
         val payments: List<Payment>? = jsonAdapter.fromJson(raw)
 
         val customViewPieChart = findViewById<CustomViewPieChart>(R.id.customViewPieChart)
+        val customViewLineGraph = findViewById<CustomViewLineGraph>(R.id.lineGraph)
+        val paymentLineGraph = mutableListOf<PaymentLineGraph>()
 
         if (payments != null) {
             val paymentPieChart = getPaymentPieChart(payments) as List<PaymentPieChart>
@@ -39,10 +40,21 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launchWhenStarted {
             customViewPieChart.pieChartFlow
-                .onEach {
-                    if (it.isNotEmpty())
-                        Toast.makeText(this@MainActivity, it, Toast.LENGTH_SHORT)
-                        .show()
+                .onEach { category ->
+                    if (category.isNotEmpty())
+                        customViewLineGraph.apply {
+                            if (payments != null) {
+                                paymentLineGraph.clear()
+                                payments.forEach {
+                                paymentLineGraph.add(PaymentLineGraph(it.amount, it.category, it.time))
+                                }
+                                setValue(
+                                    paymentLineGraph
+                                    .filter{ it.category == category}
+                                    .sortedBy{it.date}
+                                )
+                            }
+                        }
                 }
                 .collect()
         }
@@ -50,32 +62,22 @@ class MainActivity : AppCompatActivity() {
 }
 
 private fun getPaymentPieChart(payments: List<Payment>): MutableList<PaymentPieChart> {
-    var amountSum = 0
-    payments.forEach {
-        amountSum += it.amount
-    }
 
-    val category = mutableSetOf<String>()
+    val amountSum = payments.sumOf { it.amount }
+    val category = payments.map{ it.category  }.distinct()
     val listPaymentPieChart = mutableListOf<PaymentPieChart>()
 
-    payments.forEach {
-        category.add(it.category)
-    }
-
-    var position = 0
-    while (position < category.size) {
-        var sumAcc = 0
-        val itemCategory = category.elementAt(position)
-
+    category.forEachIndexed { _, item ->
+        var acc = 0
         payments.forEach {
-            if (it.category == itemCategory) {
-                sumAcc += it.amount
+            if (it.category == item) {
+               acc += it.amount
             }
         }
-        val arc = sumAcc.toFloat() / (amountSum / 360)
-        listPaymentPieChart.add(PaymentPieChart(sumAcc, itemCategory, arc))
-
-        position++
+        listPaymentPieChart.add(PaymentPieChart
+            (acc, item, acc.toFloat() / (amountSum / 360)
+            )
+        )
     }
     return listPaymentPieChart
 }

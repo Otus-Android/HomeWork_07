@@ -28,8 +28,6 @@ class CustomViewPieChart(context: Context, attributeSet: AttributeSet) :
     private var stateView = ListPayment(mutableListOf(), null)
     private var userText = String()
     val pieChartFlow = MutableStateFlow("")
-
-
     private val userPaint = UserPaint()
     private var rectF = RectF()
     private var innerRectF = RectF()
@@ -44,40 +42,31 @@ class CustomViewPieChart(context: Context, attributeSet: AttributeSet) :
         when {
             widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.AT_MOST -> {
                 setMeasuredDimension(defaultWidth, defaultHeight)
-                Log.d(TAG, "AT_MOST,AT_MOST")
             }
 
             widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.AT_MOST -> {
                 setMeasuredDimension(widthSize, widthSize)
-                Log.d(TAG, "EXACTLY,AT_MOST")
             }
             widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.EXACTLY -> {
                 setMeasuredDimension(heightSize, heightSize)
-                Log.d(TAG, "AT_MOST,EXACTLY")
             }
 
             widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY && widthSize
                     != heightSize -> {
-                Log.d(TAG, "EXACTLY,EXACTLY , $widthSize, $heightSize")
                 if (widthSize >= heightSize) setMeasuredDimension(heightSize, heightSize)
                 else setMeasuredDimension(widthSize, widthSize)
             }
             (widthMode == MeasureSpec.EXACTLY || widthMode == MeasureSpec.AT_MOST) && heightMode
                     == MeasureSpec.UNSPECIFIED -> {
-                Log.d(TAG, "EXACTLY,AT_MOST ,UNSPECIFIED")
                 setMeasuredDimension(widthSize, widthSize)
             }
             else ->
                 if (widthSize >= heightMode) {
                     setMeasuredDimension(heightSize, heightSize)
-                    Log.d(TAG, "else")
-                }
-                else {
+                } else {
                     setMeasuredDimension(widthSize, widthSize)
-                    Log.d(TAG, "else")
                 }
         }
-
 
         rectF.set(
             width.toFloat() * 0.1f, height.toFloat() * 0.1f,
@@ -87,34 +76,27 @@ class CustomViewPieChart(context: Context, attributeSet: AttributeSet) :
             width.toFloat() * 0.15f, height.toFloat() * 0.15f,
             width.toFloat() * 0.85f, height.toFloat() * 0.85f
         )
-
         region = rectF.toRegion()
-    }
-
-
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
     }
 
     override fun onDraw(canvas: Canvas) {
         if (stateView.listPayment.isEmpty()) return
         var arc = 0f
-            stateView.listPayment.forEachIndexed { i, item ->
-                val path = item.path
-                path.reset()
-                path.arcTo(rectF, arc, item.arc)
-                path.arcTo(innerRectF, arc + item.arc, -item.arc)
-                path.close()
-                canvas.drawPath(path, userPaint.color[i].apply {
-                    isAntiAlias = true
-                })
-                arc += item.arc
-                //Log.d(TAG, "${item.path}")
-            }
-        requestLayout()
-        invalidate()
+        stateView.listPayment.forEachIndexed { i, item ->
+            val path = item.path
+            path.reset()
+            path.arcTo(rectF, arc, item.arc)
+            path.arcTo(innerRectF, arc + item.arc, -item.arc)
+            path.close()
+            canvas.drawPath(path, userPaint.color[i].apply {
+                isAntiAlias = true
+            })
+            arc += item.arc
+        }
 
+        // text amount sum
         if (userText.isEmpty()) {
-            userText = "Total: ${stateView.listPayment.sumAmount()}"
+            userText = "Total: ${stateView.listPayment.sumOf { it.amountSum }}"
         }
         canvas.drawText(
             userText,
@@ -122,8 +104,9 @@ class CustomViewPieChart(context: Context, attributeSet: AttributeSet) :
             (height / 2).toFloat(),
             userPaint.blackPaint
         )
+        requestLayout()
+        invalidate()
     }
-
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -131,13 +114,11 @@ class CustomViewPieChart(context: Context, attributeSet: AttributeSet) :
         if (event.action == MotionEvent.ACTION_DOWN) {
             stateView.listPayment.forEach {
                 regionEvent.setPath(it.path, region)
-               // r.set(it.path)
                 if (regionEvent.contains(event.x.toInt(), event.y.toInt())) {
                     userText = "${it.category}: ${it.amountSum}"
                     pieChartFlow.value = it.category
                 }
             }
-
         }
         invalidate()
         return true
@@ -150,7 +131,7 @@ class CustomViewPieChart(context: Context, attributeSet: AttributeSet) :
 
     override fun onSaveInstanceState(): Parcelable {
         val superState = super.onSaveInstanceState()
-        return ListPayment(stateView.listPayment ,superState)
+        return ListPayment(stateView.listPayment, superState)
     }
 
     override fun onRestoreInstanceState(state: Parcelable) {
@@ -158,9 +139,7 @@ class CustomViewPieChart(context: Context, attributeSet: AttributeSet) :
         if (listPaymentRestore != null) {
             super.onRestoreInstanceState(listPaymentRestore.superSaveState)
             stateView.listPayment = listPaymentRestore.listPayment
-            }
-           Log.d(TAG, "onRestoreInstanceState: ${listPaymentRestore}")
-
+        }
     }
 }
 

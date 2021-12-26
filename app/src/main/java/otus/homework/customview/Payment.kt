@@ -9,7 +9,7 @@ data class Payment(
     @Json(name = "name") val name: String,
     @Json(name = "amount") val amount: Int,
     @Json(name = "category") val category: String,
-    @Json(name = "time") val time: Long,
+    @Json(name = "time") var time: Long,
 )
 
 

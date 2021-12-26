@@ -8,6 +8,17 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
         <otus.homework.customview.CustomViewPieChart
             android:id="@+id/customViewPieChart"
@@ -15,12 +26,20 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:foregroundGravity="center"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             android:layout_gravity="center">
 
         </otus.homework.customview.CustomViewPieChart>
 
+        <otus.homework.customview.CustomViewLineGraph
+            android:id="@+id/lineGraph"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:foregroundGravity="center">
 
+        </otus.homework.customview.CustomViewLineGraph>
+
+                </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
