@@ -7,4 +7,26 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <string-array name="chart_colors">
+        <item>#ef5350</item>
+        <item>#5c6bc0</item>
+        <item>#26a69a</item>
+        <item>#ffee58</item>
+        <item>#8d6e63</item>
+        <item>#ec407a</item>
+        <item>#42a5f5</item>
+        <item>#66bb6a</item>
+        <item>#ffca28</item>
+        <item>#bdbdbd</item>
+        <item>#ab47bc</item>
+        <item>#29b6f6</item>
+        <item>#9ccc65</item>
+        <item>#ffa726</item>
+        <item>#78909c</item>
+        <item>#7e57c2</item>
+        <item>#26c6da</item>
+        <item>#d4e157</item>
+        <item>#ff7043</item>
+    </string-array>
 </resources>
