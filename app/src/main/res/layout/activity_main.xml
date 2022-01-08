@@ -6,13 +6,33 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <otus.homework.customview.CustomPieChart
+    <otus.homework.customview.pie_chart.CustomPieChart
         android:id="@+id/pie_chart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/line_chart_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/line_chart_title"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/line_chart"
+        app:layout_constraintStart_toStartOf="@id/line_chart"
+        app:layout_constraintTop_toTopOf="@id/line_chart" />
+
+    <otus.homework.customview.line_chart.CustomLineChart
+        android:id="@+id/line_chart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pie_chart" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

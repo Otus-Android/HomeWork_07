@@ -1,8 +1,7 @@
-package otus.homework.customview
+package otus.homework.customview.pie_chart
 
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.PointF
 import kotlin.collections.HashMap
 
 

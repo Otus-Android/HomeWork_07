@@ -1,11 +1,14 @@
 package otus.homework.customview
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.view.View
 import androidx.annotation.RawRes
+import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
-import kotlin.concurrent.thread
+import otus.homework.customview.line_chart.CustomLineChart
+import otus.homework.customview.line_chart.LineData
+import otus.homework.customview.pie_chart.CustomPieChart
+import otus.homework.customview.pie_chart.PieData
 
 
 class MainActivity : AppCompatActivity() {
@@ -14,19 +17,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val pieChart = findViewById<CustomPieChart>(R.id.pie_chart)
+        val lineChart = findViewById<CustomLineChart>(R.id.line_chart)
+        val title = findViewById<View>(R.id.line_chart_title)
 
         val payloadData = getPayloadData()
 
-        initPieChart(pieChart, payloadData)
-    }
-
-    private fun initPieChart(pieChart: CustomPieChart, payload: Array<PayloadData>?) {
         val pieData = PieData(resources.getStringArray(R.array.chart_colors))
-        payload?.map { pieData.add(it.name, it.amount) }
+        payloadData?.map { pieData.add(it.category, it.amount) }
         pieChart.setData(pieData)
         pieChart.setOnSliceClickListener(object : CustomPieChart.OnSliceClickListener {
             override fun onClick(category: String) {
-                Log.d("ddd", "name $category")
+                val lineData = LineData(category)
+                payloadData?.filter { it.category == category }?.map { lineData.add(it.name, it.amount, it.time) }
+                lineChart.setData(lineData)
+                title.visibility = View.VISIBLE
             }
         })
     }

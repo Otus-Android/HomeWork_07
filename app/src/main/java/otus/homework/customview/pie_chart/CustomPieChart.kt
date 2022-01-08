@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.pie_chart
 
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
@@ -7,7 +7,10 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.os.Bundle
+import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -56,7 +59,25 @@ class CustomPieChart @JvmOverloads constructor(context: Context, attrs: Attribut
 
     private var animator: ValueAnimator? = null
     private var currentSliceIdx = -1
-    private var currentSelectedSlice: PieSlice? = null
+    private var currentSelectedSlice: String? = null
+
+    override fun onSaveInstanceState(): Parcelable {
+        return Bundle().apply {
+            putParcelable(SUPER_STATE_KEY, super.onSaveInstanceState())
+            putString(SELECTED_SLICE_KEY, currentSelectedSlice)
+        }
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        var newState = state
+        if (newState is Bundle) {
+            newState.getString(SELECTED_SLICE_KEY)?.let {
+                selectSlice(it)
+            }
+            newState = newState.getParcelable(SUPER_STATE_KEY)
+        }
+        super.onRestoreInstanceState(newState)
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
@@ -102,10 +123,9 @@ class CustomPieChart @JvmOverloads constructor(context: Context, attrs: Attribut
         super.onDraw(canvas)
         data?.pieSlices?.let { slices ->
             slices.toList().forEachIndexed { index, (_, slice) ->
-                if (currentSelectedSlice?.name == slice.name) {
+                if (currentSelectedSlice == slice.name) {
                     enlargedPaint.color = slice.paint.color
                     canvas.drawArc(enlargedRect, slice.startAngle, slice.sweepAngle, true, enlargedPaint)
-                    currentSelectedSlice = null
                 } else if (currentSliceIdx >= index) {
                     canvas.drawArc(mainRect, slice.startAngle, slice.sweepAngle, true, slice.paint)
                     canvas.drawArc(mainRect, slice.startAngle, slice.sweepAngle, true, borderPaint)
@@ -124,21 +144,28 @@ class CustomPieChart @JvmOverloads constructor(context: Context, attrs: Attribut
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                checkPointInPie(event.x, event.y)
+            }
+            MotionEvent.ACTION_UP -> {
                 if (checkPointInPie(event.x, event.y)) {
                     val angle = getPointAngle(event.x, event.y)
                     val slice = data?.pieSlices?.values?.find {
                         angle > it.startAngle && angle < it.startAngle + it.sweepAngle
                     }
                     slice?.let {
-                        onSliceClickListener?.onClick(it.name)
-                        currentSelectedSlice = it
-                        invalidate()
+                        selectSlice(it.name)
                     }
                     true
                 } else super.onTouchEvent(event)
             }
             else -> super.onTouchEvent(event)
         }
+    }
+
+    private fun selectSlice(name: String) {
+        onSliceClickListener?.onClick(name)
+        currentSelectedSlice = name
+        invalidate()
     }
 
     fun setData(data: PieData) {
@@ -285,8 +312,11 @@ class CustomPieChart @JvmOverloads constructor(context: Context, attrs: Attribut
     }
 
     companion object {
+        private const val SELECTED_SLICE_KEY = "SELECTED_SLICE_KEY"
+        private const val SUPER_STATE_KEY = "SUPER_STATE_KEY"
+
         private const val MIN_CHART_WIDTH = 800
-        private const val ASPECT_RATIO_COEFFICIENT = 0.6
+        private const val ASPECT_RATIO_COEFFICIENT = 0.7
         private const val MIN_CHART_HEIGHT = (ASPECT_RATIO_COEFFICIENT * MIN_CHART_WIDTH).toInt()
 
         fun calculateHeight(width: Int = MIN_CHART_WIDTH) = (ASPECT_RATIO_COEFFICIENT * width).toInt()
