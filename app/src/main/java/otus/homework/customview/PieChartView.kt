@@ -28,10 +28,9 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
         Color.YELLOW
     )
 
-    var list: List<Payload> = emptyList()
     var listCat: MutableList<PieCategory> = mutableListOf()
     private var box = RectF()
-    val offset = 200F
+    val offset = 0F
     var region = Region()
 
     init {
@@ -80,30 +79,27 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
 
     override fun onDraw(canvas: Canvas) {
         var start = 0F
-        val sum = list.sumOf { it.amount }
-
-        listCat.clear()
-        list.forEachIndexed { index, element ->
-            if (index > -1) {
-                val angle = (360.0f / sum) * element.amount
-                val path = Path()
-                listCat.add(PieCategory(element.category, angle).also { it.path = path })
-                path.addArc(box, start, angle)
-                path.lineTo(box.centerX(), box.centerY())
-                canvas.drawPath(path, paints[index % paints.size])
-                Log.d(
-                    "iszx",
-                    "start=$start angle=$angle color=" + paints[index % paints.size]
-                )
-                start += angle
-            }
+        listCat.forEachIndexed { index, element ->
+            element.path = Path()
+            element.path.addArc(box, start, element.angle)
+            element.path.lineTo(box.centerX(), box.centerY())
+            canvas.drawPath(element.path, paints[index % paints.size])
+            Log.d(
+                "iszx",
+                "start=$start angle=" + element.angle + " color=" + paints[index % paints.size]
+            )
+            start += element.angle
         }
     }
 
     fun onInit() {
         pieChartViewModel.onInit()
         pieChartViewModel.payloads.observe(context as AppCompatActivity, { payloads ->
-            list = payloads
+            listCat.clear()
+            val sum = payloads.sumOf { it.amount }
+            payloads.forEach {
+                listCat.add(PieCategory(it.category, (360.0f / sum) * it.amount))
+            }
         })
     }
 

@@ -7,6 +7,7 @@ import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
 import otus.homework.customview.JsonDataRepository
+import otus.homework.customview.LineChartViewModelFactory
 import otus.homework.customview.MainActivity
 import otus.homework.customview.PieChartViewModelFactory
 
@@ -30,6 +31,7 @@ interface ActivityComponent {
 @Module
 abstract class ActivityModule {
     @Binds
-    abstract fun bindViewModelFactory(factory: PieChartViewModelFactory): ViewModelProvider.Factory
-
+    abstract fun bindPieChartViewModelFactory(factory: PieChartViewModelFactory): ViewModelProvider.Factory
+    @Binds
+    abstract fun bindLineChartViewModelFactory(factory: LineChartViewModelFactory): ViewModelProvider.Factory
 }

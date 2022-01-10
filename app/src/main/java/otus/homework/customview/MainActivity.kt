@@ -12,7 +12,9 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var viewModelFactory: PieChartViewModelFactory
+    lateinit var pieChartViewModelFactory: PieChartViewModelFactory
+    @Inject
+    lateinit var lineChartViewModelFactory: LineChartViewModelFactory
     lateinit var mainActivityComponent: ActivityComponent
 
     private val lastTouchDownXY = FloatArray(2)
@@ -22,8 +24,17 @@ class MainActivity : AppCompatActivity() {
         mainActivityComponent = DaggerActivityComponent.factory().create(this)
         mainActivityComponent.inject(this)
         setContentView(R.layout.activity_main)
+        initPieChartView()
+        initLineChartView()
+    }
+
+    private fun onPieceOfPieClick(category: String) {
+        Log.d("iszx", category)
+    }
+
+    private fun initPieChartView() {
         val view = findViewById<PieChartView>(R.id.pie_chart_view)
-        view.pieChartViewModel = ViewModelProvider(this, viewModelFactory).get(PieChartViewModel::class.java)
+        view.pieChartViewModel = ViewModelProvider(this, pieChartViewModelFactory).get(PieChartViewModel::class.java)
         view.setOnTouchListener { view, event ->
             if (event.actionMasked == MotionEvent.ACTION_DOWN) {
                 lastTouchDownXY[0] = event.x
@@ -39,7 +50,9 @@ class MainActivity : AppCompatActivity() {
         view.onInit()
     }
 
-    private fun onPieceOfPieClick(category: String) {
-        Log.d("iszx", category)
+    private fun initLineChartView() {
+        val view = findViewById<LineChartView>(R.id.line_chart_view)
+        view.lineChartViewModel = ViewModelProvider(this, lineChartViewModelFactory).get(LineChartViewModel::class.java)
+        view.onInit()
     }
 }
