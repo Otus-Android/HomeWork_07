@@ -7,179 +7,23 @@
     android:clipChildren="false"
     tools:context=".ui.MainActivity">
 
-    <alektas.views.pie_chart.PieChart
-        android:id="@+id/pieChart"
+    <FrameLayout
+        android:id="@+id/flContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/white"
-        android:layout_margin="16dp"
-        android:padding="16dp"
-        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/sliderSegmentWidth"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
-    <TextView
-        android:id="@+id/tvSegmentWidthLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_horiz_content"
-        android:text="Segment width"
-        app:layout_constraintBottom_toTopOf="@id/sliderStartAngle"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <com.google.android.material.slider.RangeSlider
-        android:id="@+id/sliderSegmentWidth"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:valueFrom="12"
-        android:valueTo="80"
-        app:layout_constraintBottom_toBottomOf="@id/tvSegmentWidthLabel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/barSliders"
-        app:layout_constraintTop_toTopOf="@id/tvSegmentWidthLabel" />
-
-    <TextView
-        android:id="@+id/tvStartAngleLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_horiz_content"
-        android:text="Start angle"
-        app:layout_constraintBottom_toTopOf="@id/cbShowLabels"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <com.google.android.material.slider.RangeSlider
-        android:id="@+id/sliderStartAngle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:valueFrom="0"
-        android:valueTo="360"
-        app:layout_constraintBottom_toBottomOf="@id/tvStartAngleLabel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/barSliders"
-        app:layout_constraintTop_toTopOf="@id/tvStartAngleLabel" />
-
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barSliders"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="end"
-        app:constraint_referenced_ids="tvStartAngleLabel, tvSegmentWidthLabel" />
-
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/cbShowLabels"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:text="Show labels"
-        app:layout_constraintBottom_toTopOf="@id/cbShowDetailsPercent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/cbPreserveCircleSize"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Preserve circle size"
-        app:layout_constraintBottom_toTopOf="@id/cbShowDetailsPercent"
-        app:layout_constraintStart_toStartOf="@id/cbShowDetailsAmount" />
-
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/cbShowDetailsPercent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginBottom="8dp"
-        android:text="Show details percent"
-        app:layout_constraintBottom_toTopOf="@id/tvSortLabel"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/cbShowDetailsAmount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="Show details amount"
-        app:layout_constraintBottom_toTopOf="@id/tvSortLabel"
-        app:layout_constraintStart_toEndOf="@id/cbShowDetailsPercent" />
-
-    <TextView
-        android:id="@+id/tvSortLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_horiz_content"
-        android:layout_marginBottom="16dp"
-        android:text="Sort"
-        app:layout_constraintBottom_toTopOf="@id/cgOrderType"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/cgSortType"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@id/tvSortLabel"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:menu="@menu/menu_bottom_navigation"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tvSortLabel"
-        app:selectionRequired="true"
-        app:singleSelection="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipSortById"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="By ID" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipSortByLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="By label" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipSortByAmount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="By amount" />
-
-    </com.google.android.material.chip.ChipGroup>
-
-    <TextView
-        android:id="@+id/tvOrderLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_horiz_content"
-        android:layout_marginBottom="@dimen/margin_vert_content"
-        android:text="Order"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/cgOrderType"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@id/tvOrderLabel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tvOrderLabel"
-        app:selectionRequired="true"
-        app:singleSelection="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipOrderAscending"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ascending" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipOrderDescending"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Descending" />
-
-    </com.google.android.material.chip.ChipGroup>
+        app:layout_constraintTop_toBottomOf="@+id/flContent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
