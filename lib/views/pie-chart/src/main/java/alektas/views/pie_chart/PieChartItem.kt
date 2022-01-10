@@ -1,4 +1,4 @@
-package otus.homework.customview.ui.pie_chart
+package alektas.views.pie_chart
 
 import android.os.Parcelable
 import androidx.annotation.ColorInt

@@ -7,7 +7,7 @@
     android:clipChildren="false"
     tools:context=".ui.MainActivity">
 
-    <otus.homework.customview.ui.pie_chart.PieChart
+    <alektas.views.pie_chart.PieChart
         android:id="@+id/pieChart"
         android:layout_width="0dp"
         android:layout_height="0dp"

@@ -9,10 +9,10 @@ import com.google.android.material.chip.ChipGroup
 import com.google.android.material.slider.RangeSlider
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import otus.homework.customview.ui.pie_chart.PieChart
+import alektas.views.pie_chart.PieChart
+import alektas.views.pie_chart.PieChartItem
 import otus.homework.customview.R
 import otus.homework.customview.data.models.Purchase
-import otus.homework.customview.ui.pie_chart.PieChartItem
 import otus.homework.customview.ui.utils.ColorUtils
 import java.io.InputStreamReader
 
@@ -131,7 +131,14 @@ class MainActivity : AppCompatActivity() {
                 val purchaseChartItems = mutableListOf<PieChartItem>()
                 val categoryAmount = purchases.fold(0) { acc, purchase ->
                     with(purchase) {
-                        purchaseChartItems.add(PieChartItem(id, name, amount, ColorUtils.randomColor()))
+                        purchaseChartItems.add(
+                            PieChartItem(
+                                id,
+                                name,
+                                amount,
+                                ColorUtils.randomColor()
+                            )
+                        )
                         acc + amount
                     }
                 }
