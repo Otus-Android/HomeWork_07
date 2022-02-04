@@ -1,13 +1,13 @@
 package otus.homework.customview
 
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.TypedValue
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONArray
 import org.json.JSONException
-import java.io.BufferedReader
-import java.io.ByteArrayInputStream
-import java.io.InputStreamReader
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         }
         val jsonArray = try {
             JSONArray(jsonString)
-        } catch (e : JSONException){
+        } catch (e: JSONException) {
             Toast.makeText(this, "Couldn't read resources json", Toast.LENGTH_SHORT).show()
             null
         }
@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
                         )
                     )
                 }
-            } catch (e : JSONException) {
+            } catch (e: JSONException) {
                 Toast.makeText(this, "Error when parsing", Toast.LENGTH_SHORT).show()
             }
             list
