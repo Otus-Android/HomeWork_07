@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Custom View</string>
+
+    <string-array name="interpolators">
+        <item>LinearInterpolator</item>
+        <item>AccelerateDecelerateInterpolator</item>
+    </string-array>
 </resources>

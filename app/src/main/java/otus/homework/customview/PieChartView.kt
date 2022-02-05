@@ -1,5 +1,7 @@
 package otus.homework.customview
 
+import android.animation.FloatEvaluator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.os.Build
@@ -8,8 +10,11 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
-import androidx.core.graphics.withClip
-import kotlin.math.*;
+import android.view.animation.BounceInterpolator
+import android.view.animation.Interpolator
+import android.view.animation.LinearInterpolator
+import androidx.core.animation.doOnEnd
+import kotlin.math.*
 import kotlin.random.Random
 
 data class ChartData(
@@ -24,8 +29,8 @@ class PieChartView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
     val path = Path()
 
-    private var startingAngle: Float = 0f
     private var tempF = RectF()
+    val tempRect = Rect()
     private var torWidthCoef = 0.33f
     private var gaps = (8 * resources.displayMetrics.density)
     private var data: List<ChartData> = listOf(
@@ -36,7 +41,16 @@ class PieChartView @JvmOverloads constructor(
         )
     private var displayHeight = context.resources.displayMetrics.run { heightPixels }
     private var displayWidth = context.resources.displayMetrics.run { widthPixels }
+    private var offsetAngle = 0f
+
+    private val cacheDataAmounts: MutableList<Int> = mutableListOf()
     private var cacheDataAmountSum: Int = 1
+    private var cacheGraphWidth = 0
+    private var cacheGraphHeight = 0
+    private val cacheGraphDrawArea = RectF()
+    private var cachedRadius: Float = 1f
+    private var cachedGapAngleBetweenArcs: Float = 1f
+
     private fun String.toColor(): Int = Color.parseColor(this)
     private val colors = listOf(
         /* teal 800 */
@@ -84,7 +98,16 @@ class PieChartView @JvmOverloads constructor(
 
     fun setData(data: List<ChartData>) {
         this.data = data
-        cacheDataAmountSum = data.sumBy { it.amount }
+        cacheDataAmountSum = data.sumBy {
+            it.amount
+        }
+        cacheDataAmounts.clear()
+        cacheDataAmounts.addAll(
+            data.runningFold(0) { left, right ->
+                left + right.amount
+            }
+        )
+        Log.d("FOCK", "data is set: $cacheDataAmounts")
     }
 
     private fun convertDecartToRadial(out: RectF, x: Float, y: Float) {
@@ -136,35 +159,60 @@ class PieChartView @JvmOverloads constructor(
         setMeasuredDimension(resultWidthSize, resultHeightSize)
     }
 
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        val width = this.width
+        val height = this.height
+        cacheGraphWidth = this.width - (paddingStart) - paddingEnd
+        cacheGraphHeight = height - paddingTop - paddingBottom
+        val min = cacheGraphWidth.coerceAtMost(cacheGraphHeight)
+        val radius = min / 2f
+        val left = (this.width / 2f) - radius
+        val right = left + 2 * radius
+        val top = (height / 2f) - radius
+        val bottom = top + 2 * radius
+        cacheGraphDrawArea.set(left, top, right, bottom)
+        cachedRadius = radius
+        cachedGapAngleBetweenArcs = gaps / radius * 180f / 3.14f
+        Log.d("FOCK", "cachedRadius: ${cachedRadius}, cachedGapAngle : $cachedGapAngleBetweenArcs")
+    }
+
     private fun getTotalDataAmount(): Int {
         return cacheDataAmountSum
     }
 
-    val tempRect = Rect()
+    private fun Canvas.drawArc(
+        dataIndex: Int,
+        scalingFactor: Float,
+        circleRect: RectF,
+        gapSize: Float,
+        paint: Paint,
+    ) {
+        if (cacheDataAmounts.isEmpty()) return
+        if (cacheDataAmounts.size <= dataIndex || dataIndex < 0) return
+
+        val startingAngle =
+            cacheDataAmounts[dataIndex] * scalingFactor + dataIndex * gapSize + offsetAngle
+        val sweepAngle =
+            (cacheDataAmounts[dataIndex + 1] - cacheDataAmounts[dataIndex].toFloat()) * scalingFactor
+
+        drawArc(circleRect, startingAngle, sweepAngle, true, paint)
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
         path.reset()
         colorStack.reset()
-        val graphWidth = this.width - (paddingStart) - paddingEnd
-        val graphHeight = height - paddingTop - paddingBottom
-        val min = graphWidth.coerceAtMost(graphHeight)
-        val radius = min / 2f
-        var i = 0
-        val left = (this.width / 2f) - radius
-        val right = left + 2 * radius
-        val top = (height / 2f) - radius
-        val bottom = top + 2 * radius
-
+        val radius = cachedRadius
         val totalAmountToDisplay = getTotalDataAmount()
 //        val gapAngle = atan((gaps / 2f) / (sqrt(radius.pow(2) - (gaps / 2f).pow(2))) ) / 3.14f * 360
-        val gapAngle = gaps / radius / 3.14f * 180f
-        Log.d("FOCK",
-            "gapAngle: $gapAngle, gap distanc: ${gapAngle * 3.14 / 180 * radius} radius: $radius, 16dp ${16 * context.resources.displayMetrics.density}")
+        val gapAngle = cachedGapAngleBetweenArcs
+//        Log.d("FOCK",
+//            "gapAngle: $gapAngle, gap distanc: ${gapAngle * 3.14 / 180 * radius} radius: $radius, 16dp ${16 * context.resources.displayMetrics.density}")
         val scalingFactor = (360 - data.size * gapAngle) / totalAmountToDisplay
-
-        var currentAngle = startingAngle
         val innerRadius = (1 - torWidthCoef) * radius
+
         canvas.save()
         if (Build.VERSION.SDK_INT >= P) {
             canvas.clipOutPath(path.apply {
@@ -181,16 +229,17 @@ class PieChartView @JvmOverloads constructor(
                     Path.Direction.CCW)
             }, Region.Op.DIFFERENCE)
         }
-
+        var i = 0
         while (i < data.size) {
-            val deltaAngle = data[i].amount * scalingFactor
-            canvas.drawArc(left, top, right, bottom, currentAngle, deltaAngle, true, paint.apply {
-                color = colorStack.takeColor()
-            })
-            currentAngle += deltaAngle + gapAngle
+            canvas.drawArc(i,
+                scalingFactor,
+                cacheGraphDrawArea,
+                cachedGapAngleBetweenArcs,
+                paint.apply {
+                    color = colorStack.takeColor()
+                })
             i++
         }
-
         canvas.restore()
         val text = "CLIPPING"
         paint.getTextBounds(text, 0, text.length, tempRect)
@@ -212,5 +261,39 @@ class PieChartView @JvmOverloads constructor(
 
     override fun onSaveInstanceState(): Parcelable? {
         return super.onSaveInstanceState()
+    }
+
+    // ANIMATION
+    private var currentAnimator: ValueAnimator? = null
+    var interpolator: Interpolator = LinearInterpolator()
+    private val floatEvaluator = FloatEvaluator()
+    private var nextValue: Float? = null
+
+    fun setOffset(offset: Float) {
+        nextValue = offset
+        restartAnimationWithRecentValue()
+
+    }
+
+    private fun restartAnimationWithRecentValue() {
+        val nextValue = nextValue
+        if (nextValue != null && currentAnimator == null) {
+            currentAnimator = ValueAnimator.ofFloat(this.offsetAngle, nextValue)
+                .apply {
+                    interpolator = this@PieChartView.interpolator
+                    setEvaluator(floatEvaluator)
+                    this.duration = 100
+                    addUpdateListener {
+                        this@PieChartView.offsetAngle = it.animatedValue as Float
+                        invalidate()
+                    }
+                    start()
+                    doOnEnd {
+                        currentAnimator = null
+                        restartAnimationWithRecentValue()
+                    }
+                }
+
+        }
     }
 }

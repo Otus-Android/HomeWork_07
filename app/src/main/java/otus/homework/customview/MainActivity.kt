@@ -1,20 +1,29 @@
 package otus.homework.customview
 
-import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.util.TypedValue
+import android.view.Menu
+import android.view.MenuItem
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.LinearInterpolator
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.interpolator.view.animation.FastOutLinearInInterpolator
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import org.json.JSONArray
 import org.json.JSONException
 
 
 class MainActivity : AppCompatActivity() {
+    lateinit var pieChartView: PieChartView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val pieChartView = findViewById<PieChartView>(R.id.pie_chart)
+        pieChartView = findViewById(R.id.pie_chart)
 
         val jsonString = resources.openRawResource(R.raw.payload).bufferedReader().use {
             it.readText()
@@ -47,5 +56,51 @@ class MainActivity : AppCompatActivity() {
         chartData?.let {
             pieChartView.setData(it)
         }
+
+        val seekBar = findViewById<SeekBar>(R.id.seek)
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                pieChartView.setOffset(progress * 3.6f)
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+    }
+
+    fun onSelectInterpolator(type: InterpolatorEnum) {
+        pieChartView.interpolator = when (type) {
+            InterpolatorEnum.LINEAR -> LinearInterpolator()
+            InterpolatorEnum.ACCELERATE_DEC -> AccelerateDecelerateInterpolator()
+            InterpolatorEnum.ACCELERATE -> AccelerateInterpolator()
+            InterpolatorEnum.LINEAR_OUT_SLOW_IN -> LinearOutSlowInInterpolator()
+            InterpolatorEnum.FAST_OUT_LINEAR_IN -> FastOutLinearInInterpolator()
+            InterpolatorEnum.FAST_OUT_SLOW_IN -> FastOutSlowInInterpolator()
+        }
+    }
+
+
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return if (item.itemId == R.id.settings) {
+            val bottomSheetFragmentDialog = BottomSheetFragment()
+            bottomSheetFragmentDialog.show(supportFragmentManager, "OPTIONS")
+            return true
+        } else {
+            super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.menu, menu)
+        return true;
     }
 }
+
+data class InterpolatorDelegateCell(
+    val type: InterpolatorEnum,
+    val name: String,
+)
+data class SomeOtherCell(val index: Int)
+enum class InterpolatorEnum { LINEAR, ACCELERATE_DEC, ACCELERATE, LINEAR_OUT_SLOW_IN, FAST_OUT_LINEAR_IN, FAST_OUT_SLOW_IN}
