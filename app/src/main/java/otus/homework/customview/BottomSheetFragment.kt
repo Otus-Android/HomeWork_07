@@ -4,12 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import otus.homework.customview.databinding.FragmentBottomsheetBinding
-import otus.homework.customview.databinding.ItemOptionBinding
-import otus.homework.customview.databinding.ItemSomeOtherBinding
+import otus.homework.customview.databinding.*
 
 class BottomSheetFragment : BottomSheetDialogFragment() {
     lateinit var binding: FragmentBottomsheetBinding
@@ -25,6 +24,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val buildor = DelegateAdaptorBuildor()
+        val groupingIsOn =
+            arguments?.getBoolean(MainActivity.Items.GROUP_BY_CATEGORIES.name, false) ?: false
 
         val cells: List<Any> = listOf(
             Header1("Interpolators"),
@@ -34,8 +35,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             InterpolatorDelegateCell(InterpolatorEnum.ACCELERATE, InterpolatorEnum.ACCELERATE.name),
             InterpolatorDelegateCell(InterpolatorEnum.ACCELERATE_DEC,
                 InterpolatorEnum.ACCELERATE_DEC.name),
-            Header2("Grouping by categories"),
-
+            Header1("Grouping by categories"),
+            Switch("Group by categories", groupingIsOn)
         )
 
         buildor.setNewCells(cells) {
@@ -59,7 +60,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             }
             registerTypeAndHoldar(Header1::class) { cellProvider ->
                 HoldarCreator { viewGroup ->
-                    val binding: ItemSomeOtherBinding = ItemSomeOtherBinding.inflate(layoutInflater,
+                    val binding: ItemHeader1Binding = ItemHeader1Binding.inflate(layoutInflater,
                         viewGroup,
                         false)
                     fastHolderBuilder(binding.root) { position ->
@@ -70,12 +71,34 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             }
             registerTypeAndHoldar(Header2::class) { cellProvider ->
                 HoldarCreator { viewGroup ->
-                    val binding: ItemSomeOtherBinding = ItemSomeOtherBinding.inflate(layoutInflater,
+                    val binding: ItemHeader2Binding = ItemHeader2Binding.inflate(layoutInflater,
                         viewGroup,
                         false)
                     fastHolderBuilder(binding.root) { position ->
                         val someOtherCell = cellProvider.getItem(position)
                         binding.text.text = someOtherCell.text
+                    }
+                }
+            }
+            registerTypeAndHoldar(Switch::class) { cellProvider ->
+                HoldarCreator {
+                    val binding: ItemFlagBinding =
+                        ItemFlagBinding.inflate(layoutInflater, it, false)
+                    fastHolderBuilder(binding.root) { position ->
+                        val cell = cellProvider.getItem(position)
+                        binding.text.text = cell.text
+                        binding.switchButton.setOnCheckedChangeListener(null)
+                        binding.switchButton.isChecked = cell.on
+                        val callback =
+                            CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+                                (requireActivity() as? MainActivity)?.onGroupByCategories(isChecked)
+                            }
+                        binding.switchButton.setOnCheckedChangeListener(callback)
+                        binding.root.setOnClickListener {
+                            binding.switchButton.setOnCheckedChangeListener(null)
+                            binding.switchButton.isChecked = !binding.switchButton.isChecked
+                            binding.switchButton.setOnCheckedChangeListener(callback)
+                        }
                     }
                 }
             }
@@ -88,3 +111,4 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
 data class Header1(val text: String)
 data class Header2(val text: String)
+data class Switch(val text: String, val on: Boolean)

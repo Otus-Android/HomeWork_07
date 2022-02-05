@@ -10,11 +10,13 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
-import android.view.animation.BounceInterpolator
 import android.view.animation.Interpolator
 import android.view.animation.LinearInterpolator
 import androidx.core.animation.doOnEnd
-import kotlin.math.*
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 data class ChartData(
@@ -37,20 +39,22 @@ class PieChartView @JvmOverloads constructor(
         ChartData(300, "1", 1, ""),
         ChartData(500, "2", 2, ""),
         ChartData(200, "3", 3, ""),
-
-        )
+    )
     private var displayHeight = context.resources.displayMetrics.run { heightPixels }
     private var displayWidth = context.resources.displayMetrics.run { widthPixels }
     private var offsetAngle = 0f
+    private var groupByCategories: Boolean = true
 
+    private val cacheCategories: MutableList<String> = mutableListOf()
     private val cacheDataAmounts: MutableList<Int> = mutableListOf()
     private var cacheDataAmountSum: Int = 1
+    private val cacheCategoriesAmounts: MutableList<Int> = mutableListOf()
+    private var cacheCategoriesAmountsSum: Int = 1
     private var cacheGraphWidth = 0
     private var cacheGraphHeight = 0
     private val cacheGraphDrawArea = RectF()
     private var cachedRadius: Float = 1f
     private var cachedGapAngleBetweenArcs: Float = 1f
-
     private fun String.toColor(): Int = Color.parseColor(this)
     private val colors = listOf(
         /* teal 800 */
@@ -101,13 +105,34 @@ class PieChartView @JvmOverloads constructor(
         cacheDataAmountSum = data.sumBy {
             it.amount
         }
+        cacheCategoriesAmounts.clear()
+        val categoriesSortedDesc = data.groupBy {
+            it.category
+        }.map { (string, list) -> Pair(string, list.sumBy { it.amount }) }
+            .sortedByDescending { item -> item.second }
+        cacheCategories.clear()
+        cacheCategories.addAll(categoriesSortedDesc.map { it.first })
+        cacheCategoriesAmounts.addAll(
+            categoriesSortedDesc.runningFold(0) { left, right ->
+                left + right.second
+            }
+        )
+        cacheCategoriesAmountsSum = categoriesSortedDesc.sumBy { it.second }
         cacheDataAmounts.clear()
         cacheDataAmounts.addAll(
             data.runningFold(0) { left, right ->
                 left + right.amount
             }
         )
-        Log.d("FOCK", "data is set: $cacheDataAmounts")
+    }
+
+    fun setGroupByCategories(boolean: Boolean) {
+        this.groupByCategories = boolean
+        invalidate()
+    }
+
+    fun getGroupByCategories() : Boolean {
+        return this.groupByCategories
     }
 
     private fun convertDecartToRadial(out: RectF, x: Float, y: Float) {
@@ -139,7 +164,7 @@ class PieChartView @JvmOverloads constructor(
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
-        val widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        val widthMode = View.MeasureSpec.getMode(widthMeasureSpec);
         val heightMode = MeasureSpec.getMode(heightMeasureSpec);
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
@@ -178,7 +203,42 @@ class PieChartView @JvmOverloads constructor(
     }
 
     private fun getTotalDataAmount(): Int {
-        return cacheDataAmountSum
+        return if (groupByCategories) cacheCategoriesAmountsSum else cacheDataAmountSum
+    }
+
+    private fun getElementsAmount(): Int {
+        return if (groupByCategories) cacheCategories.size else data.size
+    }
+
+    private fun getAngleGap(): Float {
+        return cachedGapAngleBetweenArcs
+    }
+
+    private fun getStartingAngleForIElement(
+        index: Int,
+        scalingFactor: Float,
+        gapAngleSize: Float,
+    ): Float {
+        val amount = if (groupByCategories) {
+            cacheCategoriesAmounts[index]
+        } else {
+            cacheDataAmounts[index]
+        }
+        return amount * scalingFactor + index * gapAngleSize + offsetAngle
+    }
+
+    private fun getSweepAngle(index: Int, scalingFactor: Float): Float {
+        val amount = if (groupByCategories) {
+            cacheCategoriesAmounts[index]
+        } else {
+            cacheDataAmounts[index]
+        }
+        val next = if (groupByCategories) {
+            cacheCategoriesAmounts[index + 1]
+        } else {
+            cacheDataAmounts[index + 1]
+        }
+        return (next - amount.toFloat()) * scalingFactor
     }
 
     private fun Canvas.drawArc(
@@ -188,13 +248,11 @@ class PieChartView @JvmOverloads constructor(
         gapSize: Float,
         paint: Paint,
     ) {
-        if (cacheDataAmounts.isEmpty()) return
-        if (cacheDataAmounts.size <= dataIndex || dataIndex < 0) return
+//        if (cacheDataAmounts.isEmpty()) return
+//        if (cacheDataAmounts.size <= dataIndex || dataIndex < 0) return
 
-        val startingAngle =
-            cacheDataAmounts[dataIndex] * scalingFactor + dataIndex * gapSize + offsetAngle
-        val sweepAngle =
-            (cacheDataAmounts[dataIndex + 1] - cacheDataAmounts[dataIndex].toFloat()) * scalingFactor
+        val startingAngle = getStartingAngleForIElement(dataIndex, scalingFactor, gapSize)
+        val sweepAngle = getSweepAngle(dataIndex, scalingFactor)
 
         drawArc(circleRect, startingAngle, sweepAngle, true, paint)
     }
@@ -207,10 +265,10 @@ class PieChartView @JvmOverloads constructor(
         val radius = cachedRadius
         val totalAmountToDisplay = getTotalDataAmount()
 //        val gapAngle = atan((gaps / 2f) / (sqrt(radius.pow(2) - (gaps / 2f).pow(2))) ) / 3.14f * 360
-        val gapAngle = cachedGapAngleBetweenArcs
+        val gapAngle = getAngleGap()
 //        Log.d("FOCK",
 //            "gapAngle: $gapAngle, gap distanc: ${gapAngle * 3.14 / 180 * radius} radius: $radius, 16dp ${16 * context.resources.displayMetrics.density}")
-        val scalingFactor = (360 - data.size * gapAngle) / totalAmountToDisplay
+        val scalingFactor = (360 - getElementsAmount() * gapAngle) / totalAmountToDisplay
         val innerRadius = (1 - torWidthCoef) * radius
 
         canvas.save()
@@ -230,11 +288,11 @@ class PieChartView @JvmOverloads constructor(
             }, Region.Op.DIFFERENCE)
         }
         var i = 0
-        while (i < data.size) {
+        while (i < getElementsAmount()) {
             canvas.drawArc(i,
                 scalingFactor,
                 cacheGraphDrawArea,
-                cachedGapAngleBetweenArcs,
+                gapAngle,
                 paint.apply {
                     color = colorStack.takeColor()
                 })

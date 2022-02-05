@@ -79,11 +79,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun onGroupByCategories(boolean: Boolean) {
+        pieChartView.setGroupByCategories(boolean)
+    }
 
+    public enum class Items { GROUP_BY_CATEGORIES }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return if (item.itemId == R.id.settings) {
-            val bottomSheetFragmentDialog = BottomSheetFragment()
+            val bottomSheetFragmentDialog = BottomSheetFragment().apply {
+                arguments = Bundle().apply {
+                    putBoolean(Items.GROUP_BY_CATEGORIES.name, pieChartView.getGroupByCategories())
+                }
+            }
             bottomSheetFragmentDialog.show(supportFragmentManager, "OPTIONS")
             return true
         } else {
