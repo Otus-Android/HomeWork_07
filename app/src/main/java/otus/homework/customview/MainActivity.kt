@@ -66,6 +66,11 @@ class MainActivity : AppCompatActivity() {
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
+
+        pieChartView.sectorClickListener = object  : PieChartView.SectorClickListener {
+            override fun onSectorClick(sectorName: String) {
+            }
+        }
     }
 
     fun onSelectInterpolator(type: InterpolatorEnum) {

@@ -28,22 +28,22 @@ class ExampleUnitTest {
     @Test
     fun creatingAdaptorInfrastructure() {
         val cells: List<Any> = listOf(
-            MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.LINEAR,
-                MainActivity.InterpolatorEnum.LINEAR.name),
-            MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.LINEAR_OUT_SLOW_IN,
-                MainActivity.InterpolatorEnum.LINEAR_OUT_SLOW_IN.name),
-            MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.ACCELERATE,
-                MainActivity.InterpolatorEnum.ACCELERATE.name),
-            MainActivity.SomeOtherCell(1),
-            MainActivity.SomeOtherCell(2),
-            MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.ACCELERATE_DEC,
-                MainActivity.InterpolatorEnum.ACCELERATE_DEC.name),
+            InterpolatorDelegateCell(InterpolatorEnum.LINEAR,
+                InterpolatorEnum.LINEAR.name),
+            InterpolatorDelegateCell(InterpolatorEnum.LINEAR_OUT_SLOW_IN,
+                InterpolatorEnum.LINEAR_OUT_SLOW_IN.name),
+            InterpolatorDelegateCell(InterpolatorEnum.ACCELERATE,
+                InterpolatorEnum.ACCELERATE.name),
+            SomeOtherCell(1),
+            SomeOtherCell(2),
+            InterpolatorDelegateCell(InterpolatorEnum.ACCELERATE_DEC,
+                InterpolatorEnum.ACCELERATE_DEC.name),
         )
         val maps: MutableMap<KClass<*>, MutableMap<Int, out Any>> = mutableMapOf()
 
         val interpolatorCells =
-            MainActivity.InterpolatorDelegateCell::class.createIntToTypeMap().putInto(maps)
-        val someOtherCells = MainActivity.SomeOtherCell::class.createIntToTypeMap().putInto(maps)
+            InterpolatorDelegateCell::class.createIntToTypeMap().putInto(maps)
+        val someOtherCells = SomeOtherCell::class.createIntToTypeMap().putInto(maps)
 
         // automatic code begin ------------------------
 
@@ -57,8 +57,8 @@ class ExampleUnitTest {
         // manual code
         val cellsViewTypes = cells.map {
             when (it) {
-                is MainActivity.InterpolatorDelegateCell -> 0
-                is MainActivity.SomeOtherCell -> 1
+                is InterpolatorDelegateCell -> 0
+                is SomeOtherCell -> 1
                 else -> Int.MAX_VALUE
             }
         }

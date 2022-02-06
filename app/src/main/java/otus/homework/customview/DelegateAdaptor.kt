@@ -1,12 +1,9 @@
 package otus.homework.customview
 
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import otus.homework.customview.databinding.ItemOptionBinding
 import kotlin.reflect.KClass
-import kotlin.reflect.cast
 
 interface IDataDelegator {
     fun getItemCount(): Int
@@ -73,7 +70,7 @@ inline fun <reified T : Any> T.castAndPutInto(
     any: Any,
     maps: MutableMap<Int, T>,
 ) {
-    val t: T = T::class.cast(any)
+    val t: T = any as T
     maps[position] = t
 }
 
@@ -119,7 +116,9 @@ class DelegateAdaptorBuildor {
                 val positionToCellsMap = currentCellsMapping[value::class] ?: continue
 
                 @Suppress("UNCHECKED_CAST")
-                value::class.castAndPutInto(index, value, positionToCellsMap.getMapping() as MutableMap<Int, Any>)
+                value::class.castAndPutInto(index,
+                    value,
+                    positionToCellsMap.getMapping() as MutableMap<Int, Any>)
             }
         }
     }
@@ -202,105 +201,20 @@ class DelegateAdaptorBuildor {
             val provider = registerTypeAndObtainProvider(kClass)
             registerAndObtainHolder(kClass, provider, holdarCreator)
         }
+
+        inline fun <reified T : Any> registerTypeAndHoldarCreator(
+            kClass: KClass<T>,
+            crossinline holdarCreatorLambda: (viewGroup: ViewGroup, CellProvider<T>) -> DelegateAdaptor.Holdar,
+        ) {
+
+            val provider = registerTypeAndObtainProvider(kClass)
+            val holdarCreationLambda = { cellProvider : CellProvider<T> ->
+                HoldarCreator { parent ->
+                    holdarCreatorLambda(parent, provider)
+                }
+            }
+            registerAndObtainHolder(kClass, provider, holdarCreationLambda)
+        }
+
     }
 }
-
-//fun moreFunnyShit(layoutInflater: LayoutInflater) {
-//    val preparor = DelegateAdaptorBuildor()
-//    val cells: List<Any> = listOf(
-//        MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.LINEAR,
-//            MainActivity.InterpolatorEnum.LINEAR.name),
-//        MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.LINEAR_OUT_SLOW_IN,
-//            MainActivity.InterpolatorEnum.LINEAR_OUT_SLOW_IN.name),
-//        MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.ACCELERATE,
-//            MainActivity.InterpolatorEnum.ACCELERATE.name),
-//        MainActivity.SomeOtherCell(1),
-//        MainActivity.SomeOtherCell(2),
-//        MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.ACCELERATE_DEC,
-//            MainActivity.InterpolatorEnum.ACCELERATE_DEC.name),
-//    )
-//    preparor.setNewCells(cells) {
-//        registerTypeAndHoldar(MainActivity.InterpolatorDelegateCell::class) { cellProvider ->
-//            HoldarCreator { viewGroup ->
-//                val binding: ItemOptionBinding = ItemOptionBinding.inflate(layoutInflater,
-//                    viewGroup,
-//                    false)
-//                fastHolderBuilder(binding.root) { position ->
-//                    val interpolatorCell = cellProvider.getItem(position)
-//                    binding.textTitle.text = interpolatorCell.name
-//                }
-//            }
-//        }
-//
-//        registerAndObtainHolder(MainActivity.SomeOtherCell::class) { cellProvider ->
-//            HoldarCreator { parent: ViewGroup ->
-//                val binding: ItemOptionBinding = ItemOptionBinding.inflate(layoutInflater,
-//                    parent,
-//                    false)
-//                fastHolderBuilder(binding.root) {
-//                    cellProvider.getItem(it)
-//                }
-//            }
-//        }
-//    }
-//}
-
-//fun funnyShit(layoutInflater: LayoutInflater) {
-//    val cells: List<Any> = listOf(
-//        MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.LINEAR,
-//            MainActivity.InterpolatorEnum.LINEAR.name),
-//        MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.LINEAR_OUT_SLOW_IN,
-//            MainActivity.InterpolatorEnum.LINEAR_OUT_SLOW_IN.name),
-//        MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.ACCELERATE,
-//            MainActivity.InterpolatorEnum.ACCELERATE.name),
-//        MainActivity.SomeOtherCell(1),
-//        MainActivity.SomeOtherCell(2),
-//        MainActivity.InterpolatorDelegateCell(MainActivity.InterpolatorEnum.ACCELERATE_DEC,
-//            MainActivity.InterpolatorEnum.ACCELERATE_DEC.name),
-//    )
-//    val maps: MutableMap<KClass<*>, MutableMap<Int, out Any>> = mutableMapOf()
-//
-//    val interpolatorCells =
-//        MainActivity.InterpolatorDelegateCell::class.createIntToTypeMap().putInto(maps)
-//    val someOtherCells = MainActivity.SomeOtherCell::class.createIntToTypeMap().putInto(maps)
-//
-//    // automatic code begin ------------------------
-//    for ((index, value) in cells.withIndex()) {
-//        val positionToCellsMap = maps[value::class] ?: continue
-//        @Suppress("UNCHECKED_CAST")
-//        value::class.castAndPutInto(index, value, positionToCellsMap as MutableMap<Int, Any>)
-//    }
-//    val typesByMapOrder = mutableMapOf<KClass<*>, Int>()
-//    var index = 0
-//    for ((type, _) in maps) {
-//        typesByMapOrder[type] = index++
-//    }
-//    val cellsViewTypes = cells.map {
-//        typesByMapOrder[it::class] ?: Int.MAX_VALUE
-//    }
-//    // automatic code end ------------------------
-//
-//    // manual code
-//
-//    val typeToHolder = mapOf<Int, IDataDelegator.IHoldarCreator>(
-//        0 to HoldarCreator { viewGroup ->
-//            val binding: ItemOptionBinding = ItemOptionBinding.inflate(layoutInflater,
-//                viewGroup,
-//                false)
-//            fastHolderBuilder(binding.root) { interpolatorCells[it]!! }
-//        },
-//        1 to HoldarCreator { viewGroup ->
-//            val binding: ItemOptionBinding = ItemOptionBinding.inflate(layoutInflater,
-//                viewGroup,
-//                false)
-//            fastHolderBuilder(binding.root) { someOtherCells[it]!! }
-//        }
-//    )
-//
-//    val altDataDelegator = DataDelegator(
-//        cells.size,
-//        listViewTypes = cellsViewTypes,
-//        typeToHolderCreatorI = typeToHolder
-//    )
-//    val adaptor = DelegateAdaptor(altDataDelegator)
-//}

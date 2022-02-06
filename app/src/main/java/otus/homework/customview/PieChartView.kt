@@ -6,17 +6,18 @@ import android.content.Context
 import android.graphics.*
 import android.os.Build
 import android.os.Build.VERSION_CODES.P
+import android.os.Parcel
 import android.os.Parcelable
+import android.os.Parcelable.Creator
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
+import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.animation.Interpolator
 import android.view.animation.LinearInterpolator
 import androidx.core.animation.doOnEnd
-import kotlin.math.cos
-import kotlin.math.pow
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 import kotlin.random.Random
 
 data class ChartData(
@@ -29,21 +30,56 @@ data class ChartData(
 class PieChartView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0,
 ) : View(context, attrs, defStyleAttr) {
-    val path = Path()
 
-    private var tempF = RectF()
-    val tempRect = Rect()
-    private var torWidthCoef = 0.33f
-    private var gaps = (8 * resources.displayMetrics.density)
-    private var data: List<ChartData> = listOf(
-        ChartData(300, "1", 1, ""),
-        ChartData(500, "2", 2, ""),
-        ChartData(200, "3", 3, ""),
-    )
-    private var displayHeight = context.resources.displayMetrics.run { heightPixels }
-    private var displayWidth = context.resources.displayMetrics.run { widthPixels }
+    // temp variables
+    private val tempPath = Path()
+    private val tempRectF = RectF()
+    private val tempRect = Rect()
+    private val colorValuesArr = FloatArray(3)
+
+    // ui related constans
+    private var constTorWidthCoef = 0.33f
+    private var constGapWidth = (8 * resources.displayMetrics.density)
+    private val colors = listOf(
+        /* teal 800 */
+        "#ff00695c",
+        /* purple 400 */
+        "#ffab47bc",
+        /* blue 500 */
+        "#ff2196f3",
+        /* cyan 600 */
+        "#ff00acc1",
+        /* red 400 */
+        "#ffef5350",
+        /* indigo 500 */
+        "#ff3f51b5",
+        /* green 400 */
+        "#ff66bb6a",
+        /* yello 500 */
+        "#ffffeb3b",
+        /* orange 400 */
+        "#ffffa726",
+        /* blue grey 400 */
+        "#ff455a64",
+    ).map { it.toColor() }
+
+    // displayed data
+    private var data: List<ChartData> = listOf()
+
+    // ui settable variables
     private var offsetAngle = 0f
     private var groupByCategories: Boolean = true
+    private var seed = System.currentTimeMillis()
+    private var colorStack = updateColorStack()
+
+    // listeners
+    var sectorClickListener: SectorClickListener? = null
+
+    // cache drawing related variables
+    private var cacheDisplayHeight = context.resources.displayMetrics.run { heightPixels }
+    private var cacheDisplayWidth = context.resources.displayMetrics.run { widthPixels }
+    private var cacheGraphCenterY: Int = 0
+    private var cacheGraphCenterX: Int = 0
 
     private val cacheCategories: MutableList<String> = mutableListOf()
     private val cacheDataAmounts: MutableList<Int> = mutableListOf()
@@ -54,50 +90,22 @@ class PieChartView @JvmOverloads constructor(
     private var cacheGraphHeight = 0
     private val cacheGraphDrawArea = RectF()
     private var cachedRadius: Float = 1f
-    private var cachedGapAngleBetweenArcs: Float = 1f
-    private fun String.toColor(): Int = Color.parseColor(this)
-    private val colors = listOf(
-        /* teal 800 */
-        "#ff00695c".toColor(),
-        /* purple 400 */
-        "#ffab47bc".toColor(),
-        /* blue 500 */
-        "#ff2196f3".toColor(),
-        /* cyan 600 */
-        "#ff00acc1".toColor(),
-        /* red 400 */
-        "#ffef5350".toColor(),
-        /* indigo 500 */
-        "#ff3f51b5".toColor(),
-        /* green 400 */
-        "#ff66bb6a".toColor(),
-        /* yello 500 */
-        "#ffffeb3b".toColor(),
-        /* orange 400 */
-        "#ffffa726".toColor(),
-        /* blue grey 400 */
-        "#ff455a64".toColor(),
-    )
-    private var seed = System.currentTimeMillis()
-    private var colorStack = ColorStack(colors.shuffled(Random(seed)))
-
-    private class ColorStack(val shuffledColors: List<Int>) {
-        private var currentIndex = 0
-        fun takeColor(): Int {
-            if (currentIndex >= shuffledColors.size) {
-                reset()
-            }
-            return shuffledColors[currentIndex++]
-        }
-
-        fun reset() {
-            currentIndex = 0
-        }
-    }
+    private var cacheGapAngleBetweenArcs: Float = 1f
+    private var currentlyDisplayedText: String? = null
+    private var textColor: Int = 0x7FFFFFFF
+    private var hasAnimatedForTheFirstTime = false
 
     init {
+        isClickable = true
         setData(data)
-        Log.d("FOCK", "gaps = $gaps")
+        val typedArray = context.theme.obtainStyledAttributes(intArrayOf(R.attr.colorOnSurface))
+        textColor = typedArray.getInteger(0, 0x7fffffff)
+    }
+
+    private fun updateColorStack(): ColorStack {
+        colorStack =
+            ColorStack(colors.mapIndexed { index, i -> Pair(index, i) }.shuffled(Random(seed)))
+        return colorStack
     }
 
     fun setData(data: List<ChartData>) {
@@ -124,6 +132,8 @@ class PieChartView @JvmOverloads constructor(
                 left + right.amount
             }
         )
+        Log.d("FOCK",
+            "categories: $cacheCategories, \n categories amounts: $cacheCategoriesAmounts")
     }
 
     fun setGroupByCategories(boolean: Boolean) {
@@ -131,12 +141,20 @@ class PieChartView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun getGroupByCategories() : Boolean {
+    fun getGroupByCategories(): Boolean {
         return this.groupByCategories
     }
 
     private fun convertDecartToRadial(out: RectF, x: Float, y: Float) {
-        val angle = kotlin.math.atan(x / y) / 3.14f * 360f
+        val angle = when {
+            x > 0f && y >= 0f -> atan(y / x) * 180 / 3.14f
+            x > 0f && y < 0f -> atan(y / x) * 180 / 3.14f + 360f
+            x < 0f -> atan(y / x) * 180 / 3.14f + 180f
+            x == 0f && y > 0f -> 90f
+            x == 0f && y < 0f -> 270f
+            else -> 0f
+        }
+        Log.d("FOCK", "angle is $angle")
         val distance = sqrt(x.pow(2) + y.pow(2))
         out.setXY(distance, angle)
     }
@@ -168,7 +186,7 @@ class PieChartView @JvmOverloads constructor(
         val heightMode = MeasureSpec.getMode(heightMeasureSpec);
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
-        val minDisplaySize = displayWidth.coerceAtMost(displayHeight)
+        val minDisplaySize = cacheDisplayWidth.coerceAtMost(cacheDisplayHeight)
         val resultWidthSize = when (widthMode) {
             MeasureSpec.AT_MOST, MeasureSpec.EXACTLY -> {
                 widthSize
@@ -190,16 +208,18 @@ class PieChartView @JvmOverloads constructor(
         val height = this.height
         cacheGraphWidth = this.width - (paddingStart) - paddingEnd
         cacheGraphHeight = height - paddingTop - paddingBottom
+        cacheGraphCenterX = paddingStart + (this.width / 2)
+        cacheGraphCenterY = paddingTop + (this.height / 2)
         val min = cacheGraphWidth.coerceAtMost(cacheGraphHeight)
         val radius = min / 2f
-        val left = (this.width / 2f) - radius
-        val right = left + 2 * radius
-        val top = (height / 2f) - radius
-        val bottom = top + 2 * radius
-        cacheGraphDrawArea.set(left, top, right, bottom)
+        val graphLeft = (this.width / 2f) - radius
+        val graphRight = graphLeft + 2 * radius
+        val graphTop = (height / 2f) - radius
+        val graphBottom = graphTop + 2 * radius
+        cacheGraphDrawArea.set(graphLeft, graphTop, graphRight, graphBottom)
         cachedRadius = radius
-        cachedGapAngleBetweenArcs = gaps / radius * 180f / 3.14f
-        Log.d("FOCK", "cachedRadius: ${cachedRadius}, cachedGapAngle : $cachedGapAngleBetweenArcs")
+        cacheGapAngleBetweenArcs = constGapWidth / radius * 180f / 3.14f
+        Log.d("FOCK", "cachedRadius: ${cachedRadius}, cachedGapAngle : $cacheGapAngleBetweenArcs")
     }
 
     private fun getTotalDataAmount(): Int {
@@ -211,7 +231,7 @@ class PieChartView @JvmOverloads constructor(
     }
 
     private fun getAngleGap(): Float {
-        return cachedGapAngleBetweenArcs
+        return cacheGapAngleBetweenArcs
     }
 
     private fun getStartingAngleForIElement(
@@ -259,8 +279,13 @@ class PieChartView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-
-        path.reset()
+        if (!hasAnimatedForTheFirstTime) {
+            duration = 1000L
+            hasAnimatedForTheFirstTime = true
+            setOffset(270f)
+            duration = 100L
+        }
+        tempPath.reset()
         colorStack.reset()
         val radius = cachedRadius
         val totalAmountToDisplay = getTotalDataAmount()
@@ -269,18 +294,18 @@ class PieChartView @JvmOverloads constructor(
 //        Log.d("FOCK",
 //            "gapAngle: $gapAngle, gap distanc: ${gapAngle * 3.14 / 180 * radius} radius: $radius, 16dp ${16 * context.resources.displayMetrics.density}")
         val scalingFactor = (360 - getElementsAmount() * gapAngle) / totalAmountToDisplay
-        val innerRadius = (1 - torWidthCoef) * radius
+        val innerRadius = (1 - constTorWidthCoef) * radius
 
         canvas.save()
         if (Build.VERSION.SDK_INT >= P) {
-            canvas.clipOutPath(path.apply {
+            canvas.clipOutPath(tempPath.apply {
                 addCircle(this@PieChartView.width / 2f,
                     height / 2f,
                     innerRadius,
                     Path.Direction.CCW)
             })
         } else {
-            canvas.clipPath(path.apply {
+            canvas.clipPath(tempPath.apply {
                 addCircle(this@PieChartView.width / 2f,
                     height / 2f,
                     innerRadius,
@@ -294,31 +319,133 @@ class PieChartView @JvmOverloads constructor(
                 cacheGraphDrawArea,
                 gapAngle,
                 paint.apply {
-                    color = colorStack.takeColor()
+                    color = colorStack.nextColor()
                 })
             i++
         }
         canvas.restore()
-        val text = "CLIPPING"
-        paint.getTextBounds(text, 0, text.length, tempRect)
 
-        val centerX = this.width / 2f
-        val centerY = this.height / 2f
+        val text = currentlyDisplayedText
+        if (text != null) {
+            paint.getTextBounds(text, 0, text.length, tempRect)
 
-        canvas.drawRect(centerX - tempRect.width() / 2f, centerY - tempRect.height() / 2f,
-            centerX + tempRect.width() / 2f, centerY + tempRect.height() / 2f, paint.apply {
-                color = Color.WHITE
-            })
-
-        canvas.drawText("CLIPPING",
-            this.width / 2f - (tempRect.width() / 2f),
-            this.height / 2f + (tempRect.height() / 2f), paint.apply {
-                color = Color.BLUE
-            })
+            canvas.drawText(text,
+                this.width / 2f - (tempRect.width() / 2f),
+                this.height / 2f + (tempRect.height() / 2f), paint.apply {
+                    color = textColor
+                })
+        }
     }
 
-    override fun onSaveInstanceState(): Parcelable? {
-        return super.onSaveInstanceState()
+    override fun onSaveInstanceState(): Parcelable {
+        val parcelable = super.onSaveInstanceState()
+        val savedState = SavedState(parcelable)
+        savedState.apply {
+            offsetAngle = this@PieChartView.offsetAngle
+            seed = this@PieChartView.seed
+            groupByCategories = this@PieChartView.groupByCategories
+        }
+        return savedState
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable) {
+        val savedState = state as SavedState
+        super.onRestoreInstanceState(savedState.superState)
+        savedState.apply {
+            this@PieChartView.offsetAngle = offsetAngle
+            this@PieChartView.seed = seed
+            this@PieChartView.groupByCategories = groupByCategories
+        }
+        updateColorStack()
+        invalidate()
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            ACTION_UP -> {
+                val x = event.x
+                val y = event.y
+                // need to center the touch point
+                val correctedX = x - cacheGraphCenterX
+                val correctedY = y - cacheGraphCenterY
+                convertDecartToRadial(tempRectF, correctedX, correctedY)
+                // need to understand if falls in correct distance from circle center
+                val smallestRadius = cachedRadius * (1 - constTorWidthCoef)
+                if (smallestRadius <= tempRectF.x() && tempRectF.x() <= cachedRadius) {
+                    Log.d("FOCK",
+                        "angle is ${tempRectF.y()}, correctedX : $correctedX, correctedY: $correctedY")
+                    // need to understand the clicked sector now
+                    val listToCheck =
+                        if (groupByCategories) cacheCategoriesAmounts else cacheDataAmounts
+                    val scalingFactor =
+                        (360 - getElementsAmount() * getAngleGap()) / getTotalDataAmount()
+                    val offsetCorrectedAngle = (tempRectF.y() - offsetAngle).let {
+                        if (it < 0f) {
+                            360f + it
+                        } else {
+                            it
+                        }
+                    }
+                    Log.d("FOCK", "offsetCorrectedAngle : $offsetCorrectedAngle")
+                    val index = listToCheck.findSectorThatValueFallsIn(
+                        ((offsetCorrectedAngle + getAngleGap()) / scalingFactor).toInt(),
+                        gapAngle = getAngleGap(),
+                        scalingFactor = scalingFactor,
+                        startIndex = 1,
+                        endIndex = listToCheck.size) - 1
+                    if (index >= 0) {
+                        val colorToChangeIndex = colorStack.getColorIndexGivenForIndex(index)
+                        val colorToChange = colors[colorToChangeIndex]
+                        Color.colorToHSV(colorToChange, colorValuesArr)
+                        // increasing V value of hsv color
+                        colorValuesArr[2] =
+                            (colorValuesArr[2] + colorValuesArr[2] * 0.4f).coerceAtMost(1f)
+                        val color = Color.HSVToColor(colorValuesArr)
+                        val updatedColorsArr = colors.toMutableList().apply {
+                            removeAt(colorToChangeIndex)
+                            add(colorToChangeIndex, color)
+                        }
+                        colorStack =
+                            ColorStack(shuffledColors = updatedColorsArr.mapIndexed { index, i ->
+                                Pair(index,
+                                    i)
+                            }.shuffled(Random(seed)))
+                        val toDisplay = if (groupByCategories) {
+                            cacheCategories[index]
+                        } else {
+                            data[index].name
+                        }
+                        currentlyDisplayedText = toDisplay
+                        sectorClickListener?.onSectorClick(toDisplay)
+                        invalidate()
+                    }
+                } else {
+                    return false
+                }
+            }
+        }
+        return super.onTouchEvent(event)
+    }
+
+    // sorted ascending
+    private fun List<Int>.findSectorThatValueFallsIn(
+        valueToCheck: Int,
+        gapAngle: Float,
+        scalingFactor: Float,
+        startIndex: Int,
+        endIndex: Int,
+    ): Int {
+        val amountCoef = gapAngle / scalingFactor
+
+        var i = startIndex
+        while (i < endIndex) {
+            val currentValue = get(i)
+            if (currentValue + (amountCoef * i) > valueToCheck) {
+                return i
+            }
+            i++
+        }
+        return -1
     }
 
     // ANIMATION
@@ -326,7 +453,7 @@ class PieChartView @JvmOverloads constructor(
     var interpolator: Interpolator = LinearInterpolator()
     private val floatEvaluator = FloatEvaluator()
     private var nextValue: Float? = null
-
+    private var duration = 100L
     fun setOffset(offset: Float) {
         nextValue = offset
         restartAnimationWithRecentValue()
@@ -340,7 +467,7 @@ class PieChartView @JvmOverloads constructor(
                 .apply {
                     interpolator = this@PieChartView.interpolator
                     setEvaluator(floatEvaluator)
-                    this.duration = 100
+                    this.duration = this@PieChartView.duration
                     addUpdateListener {
                         this@PieChartView.offsetAngle = it.animatedValue as Float
                         invalidate()
@@ -352,6 +479,73 @@ class PieChartView @JvmOverloads constructor(
                     }
                 }
 
+        }
+    }
+
+    private fun String.toColor(): Int = Color.parseColor(this)
+
+    private class ColorStack(val shuffledColors: List<Pair<Int, Int>>) {
+        private var currentIndex = 0
+        private var cycles = 0
+
+        fun nextColor(): Int {
+            if (currentIndex >= shuffledColors.size) {
+                innerReset()
+                cycles++
+            }
+            return shuffledColors[currentIndex++].second
+        }
+
+        fun reset() {
+            innerReset()
+            cycles = 0
+        }
+
+        fun getColorIndexGivenForIndex(index: Int): Int {
+            return shuffledColors[index % shuffledColors.size].first
+        }
+
+        private fun innerReset() {
+            currentIndex = 0
+        }
+    }
+
+    interface SectorClickListener {
+        fun onSectorClick(sectorName: String)
+    }
+
+    class SavedState : View.BaseSavedState {
+        var offsetAngle: Float = 0f
+        var groupByCategories: Boolean = true
+        var seed: Long = 100L
+
+        private constructor(source: Parcel) : super(source) {
+            offsetAngle = source.readFloat()
+            groupByCategories = source.readInt() != 0
+            seed = source.readLong()
+        }
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        override fun writeToParcel(out: Parcel, flags: Int) {
+            super.writeToParcel(out, flags)
+            out.writeFloat(offsetAngle)
+            out.writeInt(if (groupByCategories) 1 else 0)
+            out.writeLong(seed)
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        companion object CREATOR : Creator<SavedState> {
+            override fun createFromParcel(parcel: Parcel): SavedState {
+                return SavedState(parcel)
+            }
+
+            override fun newArray(size: Int): Array<SavedState?> {
+                return arrayOfNulls(size)
+            }
         }
     }
 }

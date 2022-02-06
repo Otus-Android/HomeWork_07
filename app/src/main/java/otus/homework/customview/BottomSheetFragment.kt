@@ -40,65 +40,56 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         )
 
         buildor.setNewCells(cells) {
-            registerTypeAndHoldar(InterpolatorDelegateCell::class) { cellProvider ->
-                HoldarCreator { viewGroup ->
-                    val binding: ItemOptionBinding = ItemOptionBinding.inflate(layoutInflater,
-                        viewGroup,
-                        false)
-                    fastHolderBuilder(binding.root) { position ->
-                        val interpolatorCell = cellProvider.getItem(position)
-                        binding.textTitle.text = interpolatorCell.name
-                        binding.root.setOnClickListener {
-                            (requireActivity() as? MainActivity)?.onSelectInterpolator(
-                                interpolatorCell.type)
-                            Toast.makeText(view.context,
-                                "interpolator: ${interpolatorCell.name} selected",
-                                Toast.LENGTH_SHORT).show()
+            registerTypeAndHoldarCreator(InterpolatorDelegateCell::class) { viewGroup, cellProvider ->
+                val binding: ItemOptionBinding = ItemOptionBinding.inflate(layoutInflater,
+                    viewGroup,
+                    false)
+                fastHolderBuilder(binding.root) { position ->
+                    val interpolatorCell = cellProvider.getItem(position)
+                    binding.textTitle.text = interpolatorCell.name
+                    binding.root.setOnClickListener {
+                        (requireActivity() as? MainActivity)?.onSelectInterpolator(
+                            interpolatorCell.type)
+                        Toast.makeText(view.context,
+                            "interpolator: ${interpolatorCell.name} selected",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            registerTypeAndHoldarCreator(Header1::class) { viewGroup, cellProvider ->
+                val binding: ItemHeader1Binding = ItemHeader1Binding.inflate(layoutInflater,
+                    viewGroup,
+                    false)
+                fastHolderBuilder(binding.root) { position ->
+                    val someOtherCell = cellProvider.getItem(position)
+                    binding.text.text = someOtherCell.text
+                }
+
+            }
+            registerTypeAndHoldarCreator(Header2::class) { viewGroup, cellProvider ->
+                val binding: ItemHeader2Binding = ItemHeader2Binding.inflate(layoutInflater,
+                    viewGroup,
+                    false)
+                fastHolderBuilder(binding.root) { position ->
+                    val someOtherCell = cellProvider.getItem(position)
+                    binding.text.text = someOtherCell.text
+                }
+
+            }
+            registerTypeAndHoldarCreator(Switch::class) { viewGroup, cellProvider ->
+                val binding: ItemFlagBinding = ItemFlagBinding.inflate(layoutInflater, viewGroup, false)
+                fastHolderBuilder(binding.root) { position ->
+                    val cell = cellProvider.getItem(position)
+                    binding.text.text = cell.text
+                    binding.switchButton.setOnCheckedChangeListener(null)
+                    binding.switchButton.isChecked = cell.on
+                    val callback =
+                        CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+                            (requireActivity() as? MainActivity)?.onGroupByCategories(isChecked)
                         }
-                    }
-                }
-            }
-            registerTypeAndHoldar(Header1::class) { cellProvider ->
-                HoldarCreator { viewGroup ->
-                    val binding: ItemHeader1Binding = ItemHeader1Binding.inflate(layoutInflater,
-                        viewGroup,
-                        false)
-                    fastHolderBuilder(binding.root) { position ->
-                        val someOtherCell = cellProvider.getItem(position)
-                        binding.text.text = someOtherCell.text
-                    }
-                }
-            }
-            registerTypeAndHoldar(Header2::class) { cellProvider ->
-                HoldarCreator { viewGroup ->
-                    val binding: ItemHeader2Binding = ItemHeader2Binding.inflate(layoutInflater,
-                        viewGroup,
-                        false)
-                    fastHolderBuilder(binding.root) { position ->
-                        val someOtherCell = cellProvider.getItem(position)
-                        binding.text.text = someOtherCell.text
-                    }
-                }
-            }
-            registerTypeAndHoldar(Switch::class) { cellProvider ->
-                HoldarCreator {
-                    val binding: ItemFlagBinding =
-                        ItemFlagBinding.inflate(layoutInflater, it, false)
-                    fastHolderBuilder(binding.root) { position ->
-                        val cell = cellProvider.getItem(position)
-                        binding.text.text = cell.text
-                        binding.switchButton.setOnCheckedChangeListener(null)
-                        binding.switchButton.isChecked = cell.on
-                        val callback =
-                            CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
-                                (requireActivity() as? MainActivity)?.onGroupByCategories(isChecked)
-                            }
-                        binding.switchButton.setOnCheckedChangeListener(callback)
-                        binding.root.setOnClickListener {
-                            binding.switchButton.setOnCheckedChangeListener(null)
-                            binding.switchButton.isChecked = !binding.switchButton.isChecked
-                            binding.switchButton.setOnCheckedChangeListener(callback)
-                        }
+                    binding.switchButton.setOnCheckedChangeListener(callback)
+                    binding.root.setOnClickListener {
+                        binding.switchButton.isChecked = !binding.switchButton.isChecked
                     }
                 }
             }
