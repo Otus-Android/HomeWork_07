@@ -1,6 +1,5 @@
 package otus.homework.customview.data.graphics
 
-import android.graphics.Rect
 import android.view.View
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -22,12 +21,6 @@ object PiePoint {
   }
 
   fun locatedInChartWith(x: Float, y: Float, view: View): Boolean {
-//    val rect = Rect()
-//    val location = IntArray(2)
-//    view.getDrawingRect(rect)
-//    view.getLocationOnScreen(location)
-//    rect.offset(location[0], location[1])
-//    return rect.contains(x.toInt(), y.toInt()
     return (x - view.width/2).pow(2) + (y - view.height/2).pow(2) < (view.height/2.0 - 20).pow(2)
   }
 }

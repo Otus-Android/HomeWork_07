@@ -25,14 +25,9 @@ class CustomPieChart @JvmOverloads constructor(
 
   private val paint = Paint()
   private val border = Paint()
-
-  //  private val line = Paint()
-//  private val marker = Paint()
   private val text = Paint()
   private val shape = RectF()
   private val selectedShape = RectF()
-//  private var radius = 0f
-
   private var selectedCategory: String? = null
 
   private var clickListener: OnSegmentClickListener? = null
@@ -43,20 +38,6 @@ class CustomPieChart @JvmOverloads constructor(
       isAntiAlias = true
       color = Color.WHITE
     }
-
-//    line.apply {
-//      style = Paint.Style.STROKE
-//      isAntiAlias = true
-//      color = Color.BLACK
-//      alpha = 0
-//    }
-//
-//    marker.apply {
-//      style = Paint.Style.FILL
-//      isAntiAlias = true
-//      color = Color.BLACK
-//      alpha = 0
-//    }
 
     text.apply {
       isAntiAlias = true
@@ -115,7 +96,6 @@ class CustomPieChart @JvmOverloads constructor(
           canvas?.drawArc(shape, it.value.startAngle, it.value.endAngle, true, it.value.paint)
           canvas?.drawArc(shape, it.value.startAngle, it.value.endAngle, true, border)
         }
-//        drawMarkers(canvas, it.value)
       }
     }
   }
@@ -149,8 +129,6 @@ class CustomPieChart @JvmOverloads constructor(
   override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
     super.onSizeChanged(w, h, oldw, oldh)
     setBounds()
-//    setSizes()
-//    chartData.segments.forEach { setMarker(it.key) }
   }
 
   override fun onSaveInstanceState(): Parcelable {
@@ -201,18 +179,8 @@ class CustomPieChart @JvmOverloads constructor(
       it.value.startAngle = current
       it.value.endAngle = ((it.value.data / chartData.total) * 360f).toFloat()
       current += it.value.endAngle
-//      setMarker(it.key)
     }
   }
-
-//  private fun setMarker(key: String) {
-//    chartData.segments[key]?.let { segment ->
-//      val center = segment.endAngle/2 + segment.startAngle
-//      val distance = layoutParams.height.toFloat()/2 - layoutParams.height.toFloat()/8
-//      segment.markerPosition.x =  distance * cos(Math.toRadians(center.toDouble())).toFloat() + width/2f
-//      segment.markerPosition.y = distance * sin(Math.toRadians(center.toDouble())).toFloat() + layoutParams.height/2f
-//    }
-//  }
 
   private fun setBounds(
     top: Float = OFFSET,
@@ -229,35 +197,6 @@ class CustomPieChart @JvmOverloads constructor(
     shape.left = left
     shape.right = right
   }
-
-//  private fun setSizes() {
-//    text.textSize = height/20f
-//    border.strokeWidth = height/180f
-//    line.strokeWidth = height/120f
-//    radius = height/90f
-//  }
-
-//  private fun drawMarkers(canvas: Canvas?, segment: ChartSegment) {
-//    with(segment) {
-//      if (markerPosition.x < width/2)
-//        drawMarker(canvas, this, MarkerOffset.left)
-//      else
-//        drawMarker(canvas, this, MarkerOffset.right)
-//
-//      canvas?.drawCircle(markerPosition.x, markerPosition.y, radius, marker)
-//    }
-//  }
-//
-//  private fun drawMarker(canvas: Canvas?, segment: ChartSegment, markerOffset: MarkerOffset) {
-//    val offset = (if (markerOffset == MarkerOffset.left) -1 else 1) * width/4
-//    text.textAlign = if (markerOffset == MarkerOffset.left)
-//      Paint.Align.LEFT
-//    else Paint.Align.RIGHT
-//    with(segment) {
-//      canvas?.drawLine(markerPosition.x, markerPosition.y, markerPosition.x + offset, markerPosition.y, line)
-//      canvas?.drawText(title, markerPosition.x + offset, markerPosition.y - 10, text)
-//    }
-//  }
 
   companion object {
     const val DEFAULT_SIZE = 900
