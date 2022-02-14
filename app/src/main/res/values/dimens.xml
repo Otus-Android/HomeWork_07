@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--LineChart-->
+    <dimen name="line_width">2dp</dimen>
+    <dimen name="corner_radius">3dp</dimen>
+
+</resources>

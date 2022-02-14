@@ -8,6 +8,7 @@ typealias ItemSegment = Float
 typealias Category = String
 typealias Count = Int
 typealias Items = List<Item>
+typealias GraphDataSet = ArrayList<Pair<Float,  Float>>
 
 fun String.asResource(doWorkWith: (String?) -> Unit) {
   val content = this.javaClass.getResource(this)?.readText(Charsets.UTF_8)
@@ -18,6 +19,15 @@ fun Long.toDay(): Long {
   val cal = Calendar.getInstance()
   cal.timeInMillis = this * 1000
   cal.set(Calendar.HOUR, 0)
+  cal.set(Calendar.MINUTE, 0)
+  cal.set(Calendar.SECOND, 0)
+
+  return cal.timeInMillis / 1000
+}
+
+fun Long.toStartOfTheHour(): Long {
+  val cal = Calendar.getInstance()
+  cal.timeInMillis = this * 1000 * 24
   cal.set(Calendar.MINUTE, 0)
   cal.set(Calendar.SECOND, 0)
 

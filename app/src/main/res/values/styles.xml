@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomLineGraph">
+        <item name="linechart_lineColor">@color/purple_200</item>
+        <item name="linechart_lineWidth">@dimen/line_width</item>
+        <item name="linechart_cornerRadius">@dimen/corner_radius</item>
+        <item name="linechart_fillColor">@color/purple_200</item>
+        <item name="linechart_animateChanges">true</item>
+    </style>
+</resources>
