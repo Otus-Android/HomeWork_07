@@ -17,8 +17,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var lineChartViewModelFactory: LineChartViewModelFactory
     lateinit var mainActivityComponent: ActivityComponent
 
-    private val lastTouchDownXY = FloatArray(2)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainActivityComponent = DaggerActivityComponent.factory().create(this)
@@ -28,25 +26,9 @@ class MainActivity : AppCompatActivity() {
         initLineChartView()
     }
 
-    private fun onPieceOfPieClick(category: String) {
-        Log.d("iszx", category)
-    }
-
     private fun initPieChartView() {
         val view = findViewById<PieChartView>(R.id.pie_chart_view)
         view.pieChartViewModel = ViewModelProvider(this, pieChartViewModelFactory).get(PieChartViewModel::class.java)
-        view.setOnTouchListener { view, event ->
-            if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                lastTouchDownXY[0] = event.x
-                lastTouchDownXY[1] = event.y
-            }
-            return@setOnTouchListener false
-        }
-        view.setOnClickListener {
-            if(it is PieChartView) {
-                onPieceOfPieClick(it.getCategory(lastTouchDownXY[0], lastTouchDownXY[1]))
-            }
-        }
         view.onInit()
     }
 

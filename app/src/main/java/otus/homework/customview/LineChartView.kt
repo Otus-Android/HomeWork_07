@@ -36,28 +36,28 @@ class LineChartView(context: Context, attributeSet: AttributeSet) : View(context
 
     var paints: MutableList<Paint> = mutableListOf()
     private val colors = listOf(
-        Color.BLACK,
+        Color.MAGENTA,
         Color.BLUE,
         Color.CYAN,
-        Color.DKGRAY,
-        Color.MAGENTA,
-        Color.GRAY,
         Color.GREEN,
-        Color.LTGRAY,
+        Color.GRAY,
         Color.RED,
-        Color.YELLOW
+        Color.YELLOW,
+        Color.LTGRAY,
+        Color.BLACK,
+        Color.DKGRAY
     )
 
     companion object {
         private const val DAY_SECONDS = 86400
-        private const val pointsLocation = 0.5f
+        private const val pointsLocation = 1f
 
         private val chartPaint = Paint().apply {
             color = Color.BLACK
             style = Paint.Style.STROKE
         }
         private val axisPaint = Paint().apply {
-            color = Color.GRAY
+            color = Color.BLACK
             style = Paint.Style.STROKE
         }
         private val textXPaint = Paint().apply {
@@ -74,7 +74,11 @@ class LineChartView(context: Context, attributeSet: AttributeSet) : View(context
 
     init {
         colors.forEachIndexed { index, element ->
-            paints.add(index, Paint().apply { color = element })
+            paints.add(index, Paint().apply {
+                color = element
+                style = Paint.Style.STROKE
+                strokeWidth = 4F
+            })
         }
     }
 
@@ -155,23 +159,32 @@ class LineChartView(context: Context, attributeSet: AttributeSet) : View(context
         }
 
         path.reset()
-        path.moveTo(listData[0].x, listData[0].y)
+        path.moveTo(padding, height.toFloat() - padding)
 
-        listData.forEachIndexed { index, it ->
-            path
-            path.lineTo(it.x, it.y)
-            canvas.drawCircle(it.x, it.y, 5f, paints[index % paints.size])
+        var category = listData[0].category
+        var paintIndex = 0
+        var paint: Paint = paints[paintIndex]
+
+        listData.forEach { it ->
+                if (!category.equals(it.category)) {
+                    paint = paints[++paintIndex]
+                    path.reset()
+                    path.moveTo(padding, height.toFloat() - padding)
+                }
+                path.lineTo(it.x, it.y)
+                canvas.drawPath(path, paint)
+                category = it.category
         }
-
-        canvas.drawPath(path, chartPaint)
     }
 
     fun onInit() {
         lineChartViewModel.onInit()
         lineChartViewModel.payloads.observe(context as AppCompatActivity) { payloads ->
             listData.clear()
-            payloads.forEach {
-                listData.add(LineData(it.amount, it.category, it.time))
+            payloads.forEach { category ->
+                category.value.forEach {
+                    listData.add(LineData(it.amount, it.category, it.time))
+                }
             }
             requestLayout()
             invalidate()

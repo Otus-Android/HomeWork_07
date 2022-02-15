@@ -7,6 +7,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.toRegion
@@ -16,16 +17,16 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
     lateinit var pieChartViewModel: PieChartViewModel
     var paints: MutableList<Paint> = mutableListOf()
     private val colors = listOf(
-        Color.BLACK,
+        Color.MAGENTA,
         Color.BLUE,
         Color.CYAN,
-        Color.DKGRAY,
-        Color.MAGENTA,
-        Color.GRAY,
         Color.GREEN,
-        Color.LTGRAY,
+        Color.GRAY,
         Color.RED,
-        Color.YELLOW
+        Color.YELLOW,
+        Color.LTGRAY,
+        Color.BLACK,
+        Color.DKGRAY
     )
 
     var listCat: MutableList<PieCategory> = mutableListOf()
@@ -35,7 +36,10 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
 
     init {
         colors.forEachIndexed { index, element ->
-            paints.add(index, Paint().apply { color = element })
+            paints.add(index, Paint().apply {
+                color = element
+                textSize = 30F
+            })
         }
     }
 
@@ -88,6 +92,9 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
                 "iszx",
                 "start=$start angle=" + element.angle + " color=" + paints[index % paints.size]
             )
+            element.category?.let {
+                canvas.drawText(it, box.left, box.top + paints[0].textSize + (paints[0].textSize+10)*index, paints[index % paints.size])
+            }
             start += element.angle
         }
     }
@@ -96,14 +103,24 @@ class PieChartView(context: Context, attributeSet: AttributeSet) : View(context,
         pieChartViewModel.onInit()
         pieChartViewModel.payloads.observe(context as AppCompatActivity, { payloads ->
             listCat.clear()
-            val sum = payloads.sumOf { it.amount }
-            payloads.forEach {
-                listCat.add(PieCategory(it.category, (360.0f / sum) * it.amount))
-            }
+            val sum = payloads.values.sum()
+            listCat = payloads.map {
+                PieCategory(it.key, (360.0f / sum) * it.value)
+            }.toMutableList()
         })
     }
 
-    fun getCategory(x: Float, y: Float): String {
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_UP -> {
+                val category = getCategory(event.x, event.y)
+                Log.d("iszx", "category=$category")
+            }
+        }
+        return true
+    }
+
+    private fun getCategory(x: Float, y: Float): String {
         if (box.contains(x, y)) {
             Log.d("iszx", "x=$x, y=$y")
             val r = Region()
