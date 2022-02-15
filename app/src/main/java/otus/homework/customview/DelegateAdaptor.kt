@@ -65,16 +65,7 @@ class DelegateAdaptor(private val dataDelegator: IDataDelegator) :
     }
 }
 
-inline fun <reified T : Any> T.castAndPutInto(
-    position: Int,
-    any: Any,
-    maps: MutableMap<Int, T>,
-) {
-    val t: T = any as T
-    maps[position] = t
-}
-
-fun fastHolderBuilder(
+fun createHoldar(
     itemView: View,
     binder: (position: Int) -> Unit,
 ): DelegateAdaptor.Holdar {
@@ -85,21 +76,11 @@ fun fastHolderBuilder(
     }
 }
 
-inline fun <reified T : Any> MutableMap<Int, T>.putInto(mutableMap: MutableMap<KClass<*>, MutableMap<Int, out Any>>): MutableMap<Int, T> {
-    val class_ = T::class
-    mutableMap[class_] = this
-    return this
-}
-
-inline fun <reified T : Any> KClass<T>.createIntToTypeMap(): MutableMap<Int, T> {
-    return mutableMapOf()
-}
-
 class DelegateAdaptorBuildor {
     interface CellProvider<T : Any> {
         fun getItem(position: Int): T
-        fun updateMapping(map: MutableMap<Int, T>)
-        fun getMapping(): MutableMap<Int, T>
+        fun updateMapping(map: MutableList<T>)
+        fun getMapping(): MutableList<T>
     }
 
     fun setNewCells(
@@ -112,13 +93,14 @@ class DelegateAdaptorBuildor {
             val block = DelegateAdaptorCellsPreparorBlock(cells)
             block.initializationBlock()
             // fill cell providers with data
-            for ((index, value) in cells.withIndex()) {
+            for (value in cells) {
                 val positionToCellsMap = currentCellsMapping[value::class] ?: continue
 
-                @Suppress("UNCHECKED_CAST")
-                value::class.castAndPutInto(index,
-                    value,
-                    positionToCellsMap.getMapping() as MutableMap<Int, Any>)
+                // just run through types and fill each list
+                val provider : MutableList<Any> = positionToCellsMap.getMapping() as MutableList<Any>
+                val currentSize = provider.size
+                niggasIndicesList.add(currentSize)
+                provider.add(value)
             }
         }
     }
@@ -138,6 +120,8 @@ class DelegateAdaptorBuildor {
     var viewTypeToHoldar: MutableMap<Int, HoldarCreator> = mutableMapOf()
     var cellTypes: MutableList<Int> = mutableListOf()
 
+    val niggasIndicesList  : MutableList<Int> = mutableListOf()
+
     private fun getCellViewTypes(): List<Int> {
         val cells = cells ?: return emptyList()
         cellTypes.clear()
@@ -156,21 +140,20 @@ class DelegateAdaptorBuildor {
             val provider = if (oldUncastedCellProvider != null) {
                 @Suppress("UNCHECKED_CAST")
                 val oldCellProvider: CellProvider<T> = currentCellsMapping[klass] as CellProvider<T>
-                oldCellProvider.updateMapping(T::class.createIntToTypeMap())
+                oldCellProvider.updateMapping(mutableListOf())
                 oldCellProvider
             } else {
                 object : CellProvider<T> {
-                    val map = mutableMapOf<Int, T>()
+                    val map = mutableListOf<T>()
                     override fun getItem(position: Int): T {
-                        return map[position]!!
+                        return niggasIndicesList[position].let { map[it] }
                     }
 
-                    override fun updateMapping(map: MutableMap<Int, T>) {
+                    override fun updateMapping(map: MutableList<T>) {
                         this.map.clear()
-                        this.map.putAll(map)
                     }
 
-                    override fun getMapping(): MutableMap<Int, T> {
+                    override fun getMapping(): MutableList<T> {
                         return map
                     }
                 }.also {

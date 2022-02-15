@@ -25,6 +25,16 @@ class ExampleUnitTest {
         return mutableMapOf()
     }
 
+
+    inline fun <reified T : Any> T.castAndPutInto(
+        position: Int,
+        any: Any,
+        maps: MutableMap<Int, T>,
+    ) {
+        val t: T = any as T
+        maps[position] = t
+    }
+
     @Test
     fun creatingAdaptorInfrastructure() {
         val cells: List<Any> = listOf(

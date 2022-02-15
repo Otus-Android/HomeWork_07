@@ -44,7 +44,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 val binding: ItemOptionBinding = ItemOptionBinding.inflate(layoutInflater,
                     viewGroup,
                     false)
-                fastHolderBuilder(binding.root) { position ->
+                createHoldar(binding.root) { position ->
                     val interpolatorCell = cellProvider.getItem(position)
                     binding.textTitle.text = interpolatorCell.name
                     binding.root.setOnClickListener {
@@ -60,7 +60,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 val binding: ItemHeader1Binding = ItemHeader1Binding.inflate(layoutInflater,
                     viewGroup,
                     false)
-                fastHolderBuilder(binding.root) { position ->
+                createHoldar(binding.root) { position ->
                     val someOtherCell = cellProvider.getItem(position)
                     binding.text.text = someOtherCell.text
                 }
@@ -70,7 +70,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 val binding: ItemHeader2Binding = ItemHeader2Binding.inflate(layoutInflater,
                     viewGroup,
                     false)
-                fastHolderBuilder(binding.root) { position ->
+                createHoldar(binding.root) { position ->
                     val someOtherCell = cellProvider.getItem(position)
                     binding.text.text = someOtherCell.text
                 }
@@ -78,7 +78,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             }
             registerTypeAndHoldarCreator(Switch::class) { viewGroup, cellProvider ->
                 val binding: ItemFlagBinding = ItemFlagBinding.inflate(layoutInflater, viewGroup, false)
-                fastHolderBuilder(binding.root) { position ->
+                createHoldar(binding.root) { position ->
                     val cell = cellProvider.getItem(position)
                     binding.text.text = cell.text
                     binding.switchButton.setOnCheckedChangeListener(null)
