@@ -1,2 +1,4 @@
-include ':app'
 rootProject.name = "Custom View"
+include ':app'
+include ':lib:views:pie-chart'
+include ':lib:views:line-chart'

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Widget.App.Chip" parent="Widget.MaterialComponents.Chip.Filter">
+        <item name="android:checkable">true</item>
+        <item name="chipBackgroundColor">?attr/colorPrimary</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="checkedIconTint">?attr/colorOnPrimary</item>
+    </style>
+</resources>
