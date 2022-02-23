@@ -26,7 +26,7 @@ class PieChartFragment : Fragment(R.layout.fragment_pie_chart) {
 
         view.initSettings(pieChart)
 
-        val purchasesMap = loadPurchases()
+        val purchasesMap = (requireActivity() as MainActivity).purchases
         val purchasesChartItemMap = purchasesMap.mapToPieChartItems()
         val categories = purchasesChartItemMap.keys.toList()
 
@@ -114,14 +114,6 @@ class PieChartFragment : Fragment(R.layout.fragment_pie_chart) {
             addOnChangeListener { _, value, _ ->
                 pieChart.segmentStartAngle = value
             }
-        }
-    }
-
-    private fun loadPurchases(): Map<String, List<Purchase>> {
-        val dataType = object : TypeToken<List<Purchase>>() {}.type
-        return InputStreamReader(resources.openRawResource(R.raw.payload)).use { reader ->
-            Gson().fromJson<List<Purchase>>(reader, dataType)
-                .groupBy { it.category }
         }
     }
 
