@@ -19,7 +19,7 @@
         <attr name="animation_intepolation"/>
     </declare-styleable>
 
-    <declare-styleable name="CustomLineGraph">
+    <declare-styleable name="AnimatedLineGraph">
         <attr name="linechart_lineColor" format="color|reference" />
         <attr name="linechart_lineWidth" format="dimension|reference" />
         <attr name="linechart_cornerRadius" format="dimension|reference" />

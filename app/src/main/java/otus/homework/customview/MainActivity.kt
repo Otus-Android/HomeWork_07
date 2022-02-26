@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
 import otus.homework.customview.data.pie.OnSegmentClickListener
-import otus.homework.customview.view.CustomLineGraph
+import otus.homework.customview.view.AnimatedLineGraph
 import otus.homework.customview.view.CustomPieChart
 
 class MainActivity : AppCompatActivity() {
@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
     setContentView(R.layout.activity_main)
 
     val textField = findViewById<TextView>(R.id.category_info)
-    val graph = findViewById<CustomLineGraph>(R.id.line_graph)
+    val graph = findViewById<AnimatedLineGraph>(R.id.line_graph)
 
     findViewById<CustomPieChart>(R.id.pie_chart).apply {
       setChartData()

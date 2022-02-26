@@ -4,35 +4,35 @@ import otus.homework.customview.util.GraphDataSet
 
 
 class LineGraphAdapter(
-  private var yData: GraphDataSet = arrayListOf()
+  private var lineGraphData: GraphDataSet = arrayListOf()
 ) : ChartAdapter() {
   override val count: Int
-    get() = yData.size
+    get() = lineGraphData.size
 
-  override fun getItem(index: Int): Any = yData[index]
+  override fun getItem(index: Int): Any = lineGraphData[index]
 
-  override fun getX(index: Int): Float = yData[index].first
+  override fun getX(index: Int): Float = lineGraphData[index].first
 
-  override fun getY(index: Int): Float = yData[index].second
+  override fun getY(index: Int): Float = lineGraphData[index].second
 
   override fun hasBaseline(): Boolean = containsNegativeValue()
 
   fun setData(data: GraphDataSet) {
-    this.yData = data
+    this.lineGraphData = data
     notifyDataSetChanged()
   }
 
   fun hideGraph() {
     var minValue = Float.MIN_VALUE
-    for (data in yData) {
+    for (data in lineGraphData) {
       if (data.second < minValue) {
         minValue = data.second
       }
     }
 
     var i = 0
-    while (i < yData.size) {
-      yData[i] = Pair(yData[i].first, minValue)
+    while (i < lineGraphData.size) {
+      lineGraphData[i] = Pair(lineGraphData[i].first, minValue)
       i++
     }
     notifyDataSetChanged()
@@ -43,7 +43,7 @@ class LineGraphAdapter(
   }
 
   private fun containsNegativeValue(): Boolean {
-    for (value in yData) {
+    for (value in lineGraphData) {
       if (value.second < 0) return true
     }
     return false
