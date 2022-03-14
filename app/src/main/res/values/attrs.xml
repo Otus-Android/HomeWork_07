@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="animation_intepolation" format="enum">
+        <enum name="LinearOutSlowInInterpolator" value="0"/>
+        <enum name="AccelerateDecelerateInterpolator" value="1"/>
+        <enum name="AccelerateInterpolator" value="2"/>
+        <enum name="AnticipateInterpolator" value="3"/>
+        <enum name="AnticipateOvershootInterpolator" value="4"/>
+        <enum name="BounceInterpolator" value="5"/>
+        <enum name="DecelerateInterpolator" value="6"/>
+        <enum name="FastOutLinearInInterpolator" value="7"/>
+        <enum name="FastOutSlowInInterpolator" value="8"/>
+        <enum name="OvershootInterpolator" value="9"/>
+    </attr>
+
+    <attr name="LineChartStyle" format="reference" />
+
+    <declare-styleable name="SliderAnimationView">
+        <attr name="animation_intepolation"/>
+    </declare-styleable>
+
+    <declare-styleable name="AnimatedLineGraph">
+        <attr name="linechart_lineColor" format="color|reference" />
+        <attr name="linechart_lineWidth" format="dimension|reference" />
+        <attr name="linechart_cornerRadius" format="dimension|reference" />
+        <attr name="linechart_fillColor" format="color|reference" />
+        <attr name="linechart_fillType" format="enum">
+            <!-- must match values in LineChartView.FillType -->
+            <enum name="none" value="0" />
+            <enum name="up" value="1" />
+            <enum name="down" value="2" />
+            <enum name="towardZero" value="3" />
+        </attr>
+        <attr name="linechart_gradientFill" format="boolean|reference" />
+        <attr name="linechart_animateChanges" format="boolean|reference" />
+        <attr name="linechart_aimationDelay" format="integer" />
+    </declare-styleable>
+
+</resources>
