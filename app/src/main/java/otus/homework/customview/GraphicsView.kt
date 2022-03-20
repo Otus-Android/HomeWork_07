@@ -6,6 +6,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 
@@ -102,8 +104,8 @@ class GraphicsView(context: Context, attr: AttributeSet) : View(context, attr) {
         }
 
         val desiredSize = 500
-        actualWidth = actualWidth.coerceAtLeast(desiredSize)
-        actualHeight = actualHeight.coerceAtLeast(desiredSize)
+        actualWidth = if (rec.right > 0) rec.right.toInt() else actualWidth.coerceAtLeast(desiredSize)
+        actualHeight = if (rec.bottom > 0) rec.bottom.toInt() else actualHeight.coerceAtLeast(desiredSize)
 
         rec.right = actualWidth.toFloat()
         rec.bottom = actualHeight.toFloat()
@@ -200,4 +202,27 @@ class GraphicsView(context: Context, attr: AttributeSet) : View(context, attr) {
         var x: Float,
         var y: Float
     )
+
+    override fun onSaveInstanceState(): Parcelable =
+        SavedState(rec, super.onSaveInstanceState())
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is SavedState) {
+            super.onRestoreInstanceState(state.superState)
+            rec.set(state.savedRec)
+        } else {
+            super.onRestoreInstanceState(state)
+        }
+    }
+
+    class SavedState(
+        val savedRec: RectF,
+        superState: Parcelable?
+    ) : BaseSavedState(superState) {
+
+        override fun writeToParcel(out: Parcel?, flags: Int) {
+            super.writeToParcel(out, flags)
+            out?.writeParcelable(savedRec, flags)
+        }
+    }
 }

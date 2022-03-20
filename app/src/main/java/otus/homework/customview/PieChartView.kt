@@ -6,6 +6,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
 import android.graphics.RectF
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -79,8 +81,8 @@ class PieChartView(context: Context, attr: AttributeSet) : View(context, attr) {
         }
 
         val desiredSize = 500
-        actualWidth = actualWidth.coerceAtLeast(desiredSize)
-        actualHeight = actualHeight.coerceAtLeast(desiredSize)
+        actualWidth = if (rec.right > 0) rec.right.toInt() else actualWidth.coerceAtLeast(desiredSize)
+        actualHeight = if (rec.bottom > 0) rec.bottom.toInt() else actualHeight.coerceAtLeast(desiredSize)
 
         rec.right = actualWidth.toFloat()
         rec.bottom = actualHeight.toFloat()
@@ -145,7 +147,7 @@ class PieChartView(context: Context, attr: AttributeSet) : View(context, attr) {
         val x = xPos - (rec.right * 0.5f)
         val y = yPos - (rec.bottom * 0.5f)
 
-        var angle = Math.toDegrees(atan2(y.toDouble(), x.toDouble()) + Math.PI / 2)
+        var angle = Math.toDegrees(atan2(y.toDouble(), x.toDouble()) + Math.PI / 2) - 90
         angle = if (angle < 0) angle + 360 else angle
         return angle
     }
@@ -181,4 +183,30 @@ class PieChartView(context: Context, attr: AttributeSet) : View(context, attr) {
         val category: String,
         val amount: Int
     )
+
+    override fun onSaveInstanceState(): Parcelable =
+        SavedState(rec, clickedPoint, super.onSaveInstanceState())
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is SavedState) {
+            super.onRestoreInstanceState(state.superState)
+            rec.set(state.savedRec)
+            clickedPoint.set(state.savedClickedPoint)
+        } else {
+            super.onRestoreInstanceState(state)
+        }
+    }
+
+    class SavedState(
+        val savedRec: RectF,
+        val savedClickedPoint: PointF,
+        superState: Parcelable?
+    ) : BaseSavedState(superState) {
+
+        override fun writeToParcel(out: Parcel?, flags: Int) {
+            super.writeToParcel(out, flags)
+            out?.writeParcelable(savedRec, flags)
+            out?.writeParcelable(savedClickedPoint, flags)
+        }
+    }
 }
