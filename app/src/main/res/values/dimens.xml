@@ -4,4 +4,12 @@
     <dimen name="pie_chart_center_subtext_size">12sp</dimen>
     <dimen name="pie_chart_center_text_size">32sp</dimen>
     <dimen name="pie_chart_center_text_padding">8dp</dimen>
+
+    <dimen name="graph_period_width">60dp</dimen>
+    <dimen name="graph_period_padding">20dp</dimen>
+    <dimen name="graph_separator_width">1dp</dimen>
+    <dimen name="graph_axis_name_text_size">8sp</dimen>
+    <dimen name="graph_line_stroke_width">2sp</dimen>
+    <dimen name="graph_row_height">20dp</dimen>
+    <dimen name="graph_row_padding">8dp</dimen>
 </resources>
