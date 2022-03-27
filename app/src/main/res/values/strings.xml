@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Custom View</string>
+    <string name="pai_chart_center_text">Total Amount</string>
 </resources>
