@@ -10,6 +10,8 @@ import android.view.View
 import java.util.*
 import android.graphics.Paint.Style
 import android.graphics.RectF
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
 class PieChart(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
     companion object {
@@ -32,11 +34,13 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
     private var radius = 200
 
     private var coef = 1f
-    private var next=0
+    private var next = 0
 
-    private val list = ArrayList<Int>()
+    private var list = ArrayList<Int>()
 
-    private val colors = arrayOf(Color.CYAN,
+
+    private val colors = arrayOf(
+        Color.CYAN,
         Color.BLUE,
         Color.MAGENTA,
         Color.GREEN,
@@ -45,7 +49,8 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         Color.RED,
         Color.BLACK,
         Color.LTGRAY,
-        Color.WHITE)
+        Color.WHITE
+    )
 
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -104,7 +109,8 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         var startAngle = 0f
         paint.style = Style.FILL
         for (item in list) {
-          paint.color = getNextColor() // ) paint.color = Color.MAGENTA else paint.color = Color.GRAY
+            paint.color =
+                getNextColor() // ) paint.color = Color.MAGENTA else paint.color = Color.GRAY
             canvas?.drawArc(oval!!, startAngle, (coef * item).toFloat(), true, paint)
             startAngle = startAngle + coef * item
         }
@@ -113,7 +119,7 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
     }
 
     fun getNextColor(): Int {
-        val color= colors[next]
+        val color = colors[next]
         next++
         if (next >= colors.size) {
             next = 0
@@ -130,4 +136,22 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         requestLayout()
         invalidate()
     }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        val superState = super.onSaveInstanceState()
+        return PieState(superState, list)
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        val pieState = state as? PieState
+        super.onRestoreInstanceState(pieState?.superSavedState ?: state)
+
+        list = pieState?.list ?: ArrayList<Int>()
+    }
 }
+
+@Parcelize
+class PieState(
+    val superSavedState: Parcelable?,
+    val list: ArrayList<Int>
+) : View.BaseSavedState(superSavedState), Parcelable
