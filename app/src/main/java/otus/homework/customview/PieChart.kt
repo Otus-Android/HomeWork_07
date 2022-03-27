@@ -11,6 +11,9 @@ import java.util.*
 import android.graphics.Paint.Style
 import android.graphics.RectF
 import android.os.Parcelable
+import android.view.MotionEvent
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.graphics.minus
 import kotlinx.parcelize.Parcelize
 
 class PieChart(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
@@ -31,12 +34,11 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
     private var vHeight = 300
     private var centerX = 200
     private var centerY = 150
-    private var radius = 200
 
     private var coef = 1f
     private var next = 0
 
-    private var list = ArrayList<Int>()
+    private var categories: List<Category> = listOf()
 
 
     private val colors = arrayOf(
@@ -63,7 +65,7 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
 
         when (widthMode) {
             MeasureSpec.UNSPECIFIED -> {
-                setMeasuredDimension(vWidth, vHeight)
+                //  оставляем дефолную ширину и высоту
             }
             MeasureSpec.AT_MOST -> {
                 if (widthSize < vWidth) {
@@ -77,18 +79,13 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
 
                 vWidth = widthSize
                 vHeight = heightSize
-
-                //??? почему здесь нужно это
-                super.onMeasure(widthMeasureSpec, heightMeasureSpec)
             }
         }
+        centerX = vWidth / 2
+        centerY = vHeight / 2
         setMeasuredDimension(vWidth, vHeight)
         this.oval = RectF(padWidth, padWidth, vWidth - padWidth, vHeight - padWidth)
-        var itemSum = 0
-        for (item in list) {
-            itemSum += item
-        }
-        coef = 360f / itemSum // сколько занимает одна единица в градусах
+
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -102,20 +99,56 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         if (this.oval === null) {
             return
         }
+        paint.style = Style.STROKE
         canvas?.drawOval(this.oval!!, paint)
+        Log.d(TAG, "draw canvas")
+        if (categories.size == 0) return
 
-        if (list.size == 0) return
-
-        var startAngle = 0f
         paint.style = Style.FILL
-        for (item in list) {
-            paint.color =
-                getNextColor() // ) paint.color = Color.MAGENTA else paint.color = Color.GRAY
-            canvas?.drawArc(oval!!, startAngle, (coef * item).toFloat(), true, paint)
-            startAngle = startAngle + coef * item
+        for (item in categories) {
+            paint.color = getNextColor()
+            canvas?.drawArc(oval!!, item.startAngle, item.angle, true, paint)
         }
 
         Log.d(TAG, "onDraw")
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val category = getTouchedCategory(
+                event.x,
+                event.y
+            )
+        }
+        return true
+    }
+
+    fun getTouchedCategory(x: Float, y: Float): Category? {
+        var angle = Math.atan((y - centerY) / (x - centerX).toDouble())
+        angle = (180 / 3.14) * angle
+        if ((x - centerX) < 0) {
+            angle = 180 + angle
+        } else {
+            if ((y - centerY) < 0) {
+                angle = 360 + angle
+            }
+        }
+
+        Log.d(TAG, "угол " + angle.toString())
+        return findCategory(angle.toFloat())
+    }
+
+    fun findCategory(sAngle: Float): Category? {
+        for (category in categories) {
+            if ((category.startAngle < sAngle) && ((category.startAngle + category.angle) >= sAngle)) {
+                Log.d(TAG, "founded" + category.category)
+                return category
+            }
+        }
+
+        return null
+
+
     }
 
     fun getNextColor(): Int {
@@ -127,11 +160,23 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         return color
     }
 
-    fun setValues(values: List<Int>) {
+    fun setValues(values: List<Category>) {
         Log.d(TAG, "setValues")
 
-        list.clear()
-        list.addAll(values)
+        categories = values
+
+        var itemSum = 0
+        for (item in categories) {
+            itemSum += item.amount
+        }
+        coef = 360f / itemSum // сколько занимает одна единица в градусах
+
+        var startAngle = 0f
+        for (item in categories) {
+            item.startAngle = startAngle
+            startAngle = startAngle + coef * item.amount
+            item.angle = coef * item.amount
+        }
 
         requestLayout()
         invalidate()
@@ -139,19 +184,19 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
 
     override fun onSaveInstanceState(): Parcelable? {
         val superState = super.onSaveInstanceState()
-        return PieState(superState, list)
+        return PieState(superState, categories)
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         val pieState = state as? PieState
         super.onRestoreInstanceState(pieState?.superSavedState ?: state)
 
-        list = pieState?.list ?: ArrayList<Int>()
+        categories = pieState?.categories ?: listOf()
     }
 }
 
 @Parcelize
 class PieState(
     val superSavedState: Parcelable?,
-    val list: ArrayList<Int>
+    val categories: List<Category>
 ) : View.BaseSavedState(superSavedState), Parcelable

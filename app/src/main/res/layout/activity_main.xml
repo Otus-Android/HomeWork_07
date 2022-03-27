@@ -9,13 +9,21 @@
 
     <otus.homework.customview.PieChart
         android:id="@+id/pieChart"
-        android:layout_width="wrap_content"
 
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_margin="10dp"
-        android:layout_height="wrap_content"/>
+        android:layout_width="400dp"
+        android:layout_height="400dp"/>
 
+    <Button android:id="@+id/showBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/pieChart"
+
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:text="Показать график"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
