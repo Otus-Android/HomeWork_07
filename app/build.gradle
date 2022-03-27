@@ -1,6 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
+
 }
 
 android {
@@ -10,7 +12,7 @@ android {
     defaultConfig {
         applicationId "otus.homework.customview"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdk  30
         versionCode 1
         versionName "1.0"
 
