@@ -7,4 +7,15 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <item name="blue" type="color">#00BAFF</item>
+    <item name="violet" type="color">#AA00FF</item>
+    <item name="green" type="color">#1AFF00</item>
+    <item name="orange" type="color">#FF8400</item>
+    <item name="red" type="color">#FF0000</item>
+    <item name="purple" type="color">#FF00B7</item>
+    <item name="yellow" type="color">#FFF200</item>
+    <item name="chambray" type="color">#354E8C</item>
+    <item name="aqua" type="color">#00FFF7</item>
+    <item name="bilbao" type="color">#327C14</item>
 </resources>

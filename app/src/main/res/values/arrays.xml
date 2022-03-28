@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer-array name="chart_colors">
+        <item>@color/blue</item>
+        <item>@color/violet</item>
+        <item>@color/green</item>
+        <item>@color/orange</item>
+        <item>@color/red</item>
+        <item>@color/purple</item>
+        <item>@color/yellow</item>
+        <item>@color/chambray</item>
+        <item>@color/aqua</item>
+        <item>@color/bilbao</item>
+    </integer-array>
+</resources>
