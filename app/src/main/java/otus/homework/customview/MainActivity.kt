@@ -2,33 +2,29 @@ package otus.homework.customview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import com.google.gson.Gson
-import java.io.FileReader
 import android.content.res.Resources
-import android.widget.Toast
-import android.util.Log
 
 
 class MainActivity : AppCompatActivity(), PieChartTouchListener {
+    private lateinit var expencesList: Array<Expence>
+    private var detailsGraph: DetailsGraph? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val pieChart = findViewById<PieChart>(R.id.pieChart)
-        val expencesList = readJson()
-        val pieList = doPieItems(expencesList)
-
-        findViewById<Button>(R.id.showBtn).setOnClickListener {
-            pieChart?.setValues(pieList)
-        }
+        expencesList = readJson()
+        val pieItems = doPieItems(expencesList)
+        detailsGraph = findViewById<DetailsGraph>(R.id.detailsGraph)
+        pieChart?.setValues(pieItems)
         pieChart?.setPieChartTouchListener(this)
     }
 
     fun doPieItems(expenceList: Array<Expence>): List<PieItem> {
-        // здесь храним иконки
+
         val catMap: MutableMap<String, PieItem> = mutableMapOf()
         for (expence in expenceList) {
             if (!catMap.containsKey(expence.category)) {
@@ -37,7 +33,7 @@ class MainActivity : AppCompatActivity(), PieChartTouchListener {
                 catMap.getValue(expence.category).value += expence.amount
             }
         }
-        return catMap.map{it.value}
+        return catMap.map { it.value }
     }
 
     fun Resources.getRawTextFile(id: Int) =
@@ -45,15 +41,18 @@ class MainActivity : AppCompatActivity(), PieChartTouchListener {
 
     fun readJson(): Array<Expence> {
         val fileContent = resources.getRawTextFile(R.raw.payload)
-        var gson = Gson();
-        return gson?.fromJson(fileContent, Array<Expence>::class.java)
+        return Gson().fromJson(fileContent, Array<Expence>::class.java)
     }
 
-    override fun onPieItemClick(pieItem: PieItem) {
-        val catName = pieItem?.name ?: "неизвестная категория"
-        val catPercent = pieItem?.value.toString() ?: "-"
+    override fun onPieItemClick(item: PieItem) {
+        val catName = item.name
+        val catPercent = item.value.toString()
+        val catColor = item.color
         findViewById<TextView>(R.id.txtComment).text =
             getString(R.string.catInfo, catName, catPercent)
-    }
 
+        val categoryExpences = expencesList.filter { it.category == catName }
+        detailsGraph?.setColor(catColor)
+        detailsGraph?.setValues(categoryExpences)
+    }
 }

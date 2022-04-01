@@ -32,10 +32,10 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
     }
 
     private var oval: RectF? = null
-    private var vWidth = 400
-    private var vHeight = 300
-    private var centerX = 200
-    private var centerY = 150
+    private var vWidth = 600
+    private var vHeight = 600
+    private var centerX = 300
+    private var centerY = 300
 
     private var coef = 1f
     private var next = 0
@@ -75,12 +75,21 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
                 if (widthSize < vWidth) {
                     vWidth = widthSize
                 }
+            }
+            MeasureSpec.EXACTLY -> {
+                vWidth = widthSize
+            }
+        }
+        when (heightMode) {
+            MeasureSpec.UNSPECIFIED -> {
+                vHeight = vWidth
+            }
+            MeasureSpec.AT_MOST -> {
                 if (heightSize < vHeight) {
                     vHeight = heightSize
                 }
             }
             MeasureSpec.EXACTLY -> {
-                vWidth = widthSize
                 vHeight = heightSize
             }
         }
@@ -100,13 +109,14 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         if (this.oval === null) {
             return
         }
+        paint.color = Color.BLACK
         paint.style = Style.STROKE
         canvas?.drawOval(this.oval!!, paint)
         if (items.size == 0) return
 
         paint.style = Style.FILL
         for (item in items) {
-            paint.color = getNextColor()
+            paint.color = item.color
             canvas?.drawArc(oval!!, item.startAngle, item.angle, true, paint)
         }
 
@@ -126,7 +136,8 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
     }
 
     fun getTouchedItem(x: Float, y: Float): PieItem? {
-        val inEllipse = (((x - centerX) * (x - centerX) / (vWidth * vWidth/4)) + ((y - centerY) * (y - centerY) / (vHeight * vHeight/4)))
+        val inEllipse =
+            (((x - centerX) * (x - centerX) / (vWidth * vWidth / 4)) + ((y - centerY) * (y - centerY) / (vHeight * vHeight / 4)))
         if (inEllipse > 1) {
             return null // мы за пределами пайчарта
         }
@@ -177,6 +188,7 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
             item.startAngle = startAngle
             startAngle = startAngle + coef * item.value
             item.angle = coef * item.value
+            item.color = getNextColor()
         }
 
         requestLayout()
@@ -191,8 +203,8 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
     override fun onRestoreInstanceState(state: Parcelable?) {
         val pieState = state as? PieState
         super.onRestoreInstanceState(pieState?.superSavedState ?: state)
-
         items = pieState?.items ?: listOf()
+        next = 0
     }
 }
 
