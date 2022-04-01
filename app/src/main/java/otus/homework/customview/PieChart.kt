@@ -21,6 +21,8 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         const val TAG = "PieChart"
     }
 
+    private var pieChartListener: PieChartTouchListener? = null;
+
     val padWidth = 10f
 
     private val paint = Paint().apply {
@@ -38,7 +40,7 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
     private var coef = 1f
     private var next = 0
 
-    private var categories: List<Category> = listOf()
+    private var items: List<PieItem> = listOf()
 
 
     private val colors = arrayOf(
@@ -55,13 +57,15 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
     )
 
 
+    fun setPieChartTouchListener(listener: PieChartTouchListener) {
+        this.pieChartListener = listener
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
-
-
 
         when (widthMode) {
             MeasureSpec.UNSPECIFIED -> {
@@ -76,7 +80,6 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
                 }
             }
             MeasureSpec.EXACTLY -> {
-
                 vWidth = widthSize
                 vHeight = heightSize
             }
@@ -90,8 +93,6 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-
-        Log.d(TAG, "onLayout")
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -101,29 +102,35 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         }
         paint.style = Style.STROKE
         canvas?.drawOval(this.oval!!, paint)
-        Log.d(TAG, "draw canvas")
-        if (categories.size == 0) return
+        if (items.size == 0) return
 
         paint.style = Style.FILL
-        for (item in categories) {
+        for (item in items) {
             paint.color = getNextColor()
             canvas?.drawArc(oval!!, item.startAngle, item.angle, true, paint)
         }
 
-        Log.d(TAG, "onDraw")
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
-            val category = getTouchedCategory(
+            val item = getTouchedItem(
                 event.x,
                 event.y
             )
+            if ((pieChartListener != null) && (item != null)) {
+                pieChartListener?.onPieItemClick(item);
+            }
         }
         return true
     }
 
-    fun getTouchedCategory(x: Float, y: Float): Category? {
+    fun getTouchedItem(x: Float, y: Float): PieItem? {
+        val inEllipse = (((x - centerX) * (x - centerX) / (vWidth * vWidth/4)) + ((y - centerY) * (y - centerY) / (vHeight * vHeight/4)))
+        if (inEllipse > 1) {
+            return null // мы за пределами пайчарта
+        }
+
         var angle = Math.atan((y - centerY) / (x - centerX).toDouble())
         angle = (180 / 3.14) * angle
         if ((x - centerX) < 0) {
@@ -134,21 +141,16 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
             }
         }
 
-        Log.d(TAG, "угол " + angle.toString())
-        return findCategory(angle.toFloat())
+        return findPieItem(angle.toFloat())
     }
 
-    fun findCategory(sAngle: Float): Category? {
-        for (category in categories) {
-            if ((category.startAngle < sAngle) && ((category.startAngle + category.angle) >= sAngle)) {
-                Log.d(TAG, "founded" + category.category)
-                return category
+    fun findPieItem(sAngle: Float): PieItem? {
+        for (item in items) {
+            if ((item.startAngle < sAngle) && ((item.startAngle + item.angle) >= sAngle)) {
+                return item
             }
         }
-
         return null
-
-
     }
 
     fun getNextColor(): Int {
@@ -160,22 +162,21 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         return color
     }
 
-    fun setValues(values: List<Category>) {
-        Log.d(TAG, "setValues")
+    fun setValues(values: List<PieItem>) {
 
-        categories = values
+        items = values
 
         var itemSum = 0
-        for (item in categories) {
-            itemSum += item.amount
+        for (item in items) {
+            itemSum += item.value
         }
         coef = 360f / itemSum // сколько занимает одна единица в градусах
 
         var startAngle = 0f
-        for (item in categories) {
+        for (item in items) {
             item.startAngle = startAngle
-            startAngle = startAngle + coef * item.amount
-            item.angle = coef * item.amount
+            startAngle = startAngle + coef * item.value
+            item.angle = coef * item.value
         }
 
         requestLayout()
@@ -184,19 +185,19 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
 
     override fun onSaveInstanceState(): Parcelable? {
         val superState = super.onSaveInstanceState()
-        return PieState(superState, categories)
+        return PieState(superState, items)
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         val pieState = state as? PieState
         super.onRestoreInstanceState(pieState?.superSavedState ?: state)
 
-        categories = pieState?.categories ?: listOf()
+        items = pieState?.items ?: listOf()
     }
 }
 
 @Parcelize
 class PieState(
     val superSavedState: Parcelable?,
-    val categories: List<Category>
+    val items: List<PieItem>
 ) : View.BaseSavedState(superSavedState), Parcelable
