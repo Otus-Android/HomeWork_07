@@ -4,16 +4,13 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
-import java.util.*
 import android.graphics.Paint.Style
 import android.graphics.RectF
 import android.os.Parcelable
 import android.view.MotionEvent
-import androidx.constraintlayout.widget.ConstraintSet
-import androidx.core.graphics.minus
 import kotlinx.parcelize.Parcelize
 
 class PieChart(context: Context, attributeSet: AttributeSet) : View(context, attributeSet) {
@@ -23,37 +20,45 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
 
     private var pieChartListener: PieChartTouchListener? = null;
 
-    val padWidth = 10f
+    val strokeWidth = 4f
 
-    private val paint = Paint().apply {
+    private val paintBorder = Paint(ANTI_ALIAS_FLAG).apply {
         color = Color.BLACK
-        strokeWidth = padWidth
+        strokeWidth = strokeWidth
         style = Style.STROKE
     }
 
-    private var oval: RectF? = null
-    private var vWidth = 600
-    private var vHeight = 600
-    private var centerX = 300
-    private var centerY = 300
+    private val paintSector = Paint(ANTI_ALIAS_FLAG).apply {
+        color = Color.CYAN
+        strokeWidth = strokeWidth
+        style = Style.FILL
+    }
 
-    private var coef = 1f
-    private var next = 0
+    private var oval: RectF? = null
+    private var vWidth = 600 // дефолтная ширина
+    private var vHeight = 600 //дефолтная высота
+
+    private var centerX = 0 //координаты центра овала
+    private var centerY = 0
+
+    private var coef = 1f  //коэф для расчета угла сектора
+    private var next = 0   //счетчик цветов
 
     private var items: List<PieItem> = listOf()
 
-
+    // возможные цвета
     private val colors = arrayOf(
-        Color.CYAN,
-        Color.BLUE,
-        Color.MAGENTA,
-        Color.GREEN,
-        Color.YELLOW,
-        Color.DKGRAY,
-        Color.RED,
-        Color.BLACK,
-        Color.LTGRAY,
-        Color.WHITE
+        Color.rgb(98, 0, 238),
+
+        Color.rgb(3, 218, 197),
+        Color.rgb(233, 141, 245),
+        Color.rgb(255, 199, 125),
+        Color.rgb(199, 0, 110),
+        Color.rgb(248, 187, 208),
+        Color.rgb(144, 202, 249),
+        Color.rgb(55, 0, 179),
+        Color.rgb(229, 57, 53),
+        Color.rgb(144, 238, 2),
     )
 
 
@@ -68,9 +73,6 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
         when (widthMode) {
-            MeasureSpec.UNSPECIFIED -> {
-                //  оставляем дефолную ширину и высоту
-            }
             MeasureSpec.AT_MOST -> {
                 if (widthSize < vWidth) {
                     vWidth = widthSize
@@ -80,23 +82,34 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
                 vWidth = widthSize
             }
         }
+        vHeight = vWidth
         when (heightMode) {
             MeasureSpec.UNSPECIFIED -> {
-                vHeight = vWidth
+
             }
             MeasureSpec.AT_MOST -> {
+
                 if (heightSize < vHeight) {
                     vHeight = heightSize
+                    vWidth = vHeight
                 }
+
             }
             MeasureSpec.EXACTLY -> {
                 vHeight = heightSize
+
             }
         }
+        if (vHeight != vWidth) { // если указани размером позволяет, делаем овал кругом
+            if ((widthMode != MeasureSpec.EXACTLY) && ((widthMode != MeasureSpec.AT_MOST) || (widthSize > vHeight))) {
+                vWidth = vHeight
+            }
+        }
+
         centerX = vWidth / 2
         centerY = vHeight / 2
         setMeasuredDimension(vWidth, vHeight)
-        this.oval = RectF(padWidth, padWidth, vWidth - padWidth, vHeight - padWidth)
+        this.oval = RectF(strokeWidth, strokeWidth, vWidth - strokeWidth, vHeight - strokeWidth)
 
     }
 
@@ -109,15 +122,13 @@ class PieChart(context: Context, attributeSet: AttributeSet) : View(context, att
         if (this.oval === null) {
             return
         }
-        paint.color = Color.BLACK
-        paint.style = Style.STROKE
-        canvas?.drawOval(this.oval!!, paint)
+
+        canvas?.drawOval(this.oval!!, paintBorder)
         if (items.size == 0) return
 
-        paint.style = Style.FILL
         for (item in items) {
-            paint.color = item.color
-            canvas?.drawArc(oval!!, item.startAngle, item.angle, true, paint)
+            paintSector.color = item.color
+            canvas?.drawArc(oval!!, item.startAngle, item.angle, true, paintSector)
         }
 
     }

@@ -44,6 +44,9 @@ class MainActivity : AppCompatActivity(), PieChartTouchListener {
         return Gson().fromJson(fileContent, Array<Expence>::class.java)
     }
 
+    /**
+     * при клике на категорию в пайчарте показываем детализацию расходов для категории
+     */
     override fun onPieItemClick(item: PieItem) {
         val catName = item.name
         val catPercent = item.value.toString()

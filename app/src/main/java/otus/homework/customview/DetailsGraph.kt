@@ -18,24 +18,31 @@ class DetailsGraph(context: Context, attributeSet: AttributeSet) : View(context,
     }
 
 
-    private var rectF: RectF? = null
     private var vWidth = 400
     private var vHeight = 300
     private var maxAmount = 0
+
     private var minDay = 0
     private var maxDay = 0
-    private var itemWidth = 0f
-    private var heightCoef = 1f
-    private var padWidth = 4f
 
-    private var topPadding = 80f
+    private var secondsPerDay = 60 * 60 * 24
+    private var minDaysInGraph = 3
 
-    private var graphColor = Color.CYAN
-    private var borderColor = Color.BLACK
+    private var itemWidth = 0f    // ширина столбика
+    private var heightCoef = 1f   // кэф для расчета высоты столбика
+    private var strokeWidth = 4f  //ширирна обводки
+    private var textPadding = 10f //отступ для подписей
+    private var rectF: RectF? = null
+
+    private var topPadding = 80f  // отступ сверху чтобы было куда добавлять подписи к столбикам
+
+    private var graphColor = Color.CYAN   // цвет графика по умолчанию
+    private var borderColor = Color.BLACK // цвет обводки по умолчанию
+
 
     private val paintBorder = Paint().apply {
         color = borderColor
-        strokeWidth = padWidth
+        strokeWidth = strokeWidth
         style = Paint.Style.STROKE
         textSize = 0F
     }
@@ -45,8 +52,8 @@ class DetailsGraph(context: Context, attributeSet: AttributeSet) : View(context,
         strokeWidth = 0f
         style = Paint.Style.FILL
         textSize = 40f
-        textAlignment = TEXT_ALIGNMENT_CENTER
     }
+
     private val paint = Paint().apply {
         color = graphColor
         strokeWidth = 0f
@@ -63,7 +70,7 @@ class DetailsGraph(context: Context, attributeSet: AttributeSet) : View(context,
 
         when (widthMode) {
             MeasureSpec.UNSPECIFIED -> {
-                //  оставляем дефолную ширину и высоту
+                //  оставляем дефолную ширину
             }
             MeasureSpec.AT_MOST -> {
                 if (widthSize < vWidth) {
@@ -76,7 +83,7 @@ class DetailsGraph(context: Context, attributeSet: AttributeSet) : View(context,
         }
         when (heightMode) {
             MeasureSpec.UNSPECIFIED -> {
-                //  оставляем дефолную ширину и высоту
+                //  оставляем дефолную  высоту
             }
             MeasureSpec.AT_MOST -> {
                 if (heightSize < vHeight) {
@@ -92,13 +99,17 @@ class DetailsGraph(context: Context, attributeSet: AttributeSet) : View(context,
         maxDay = itemsMap.maxByOrNull { it.key }?.key ?: 0
         maxAmount = itemsMap.maxByOrNull { it.value }?.value ?: 1
 
-        itemWidth = ceil((vWidth - (3 * padWidth)) / (maxDay - minDay + 1).toFloat())
+        var daysInGraph = (maxDay - minDay + 1)
+        if (daysInGraph < minDaysInGraph) {
+            daysInGraph = minDaysInGraph
+        }
+        itemWidth = ceil((vWidth - (3 * strokeWidth)) / daysInGraph.toFloat())
 
         if (maxAmount > 0) {
-            heightCoef = (vHeight - topPadding) / maxAmount.toFloat()
+            heightCoef = (vHeight - topPadding) / maxAmount
         }
         setMeasuredDimension(vWidth, vHeight)
-        this.rectF = RectF(padWidth, padWidth, vWidth - padWidth, vHeight - padWidth)
+        this.rectF = RectF(strokeWidth, strokeWidth, vWidth - strokeWidth, vHeight - strokeWidth)
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -115,15 +126,16 @@ class DetailsGraph(context: Context, attributeSet: AttributeSet) : View(context,
         if (itemsMap.size == 0) return
 
         var top = 0f
-        var x = padWidth * 1.5f
+        var x = strokeWidth * 1.5f
         for (day in minDay..maxDay) {
             if (itemsMap.containsKey(day)) {
-                top = (vHeight - itemsMap.getValue(day) * heightCoef).toFloat()
-                canvas?.drawRect(x, top, x + itemWidth - 1f, vHeight - padWidth - 1, paint)
+                top = (vHeight - itemsMap.getValue(day) * heightCoef)
+                canvas?.drawRect(x, top, x + itemWidth - 1f, vHeight - strokeWidth - 1, paint)
                 canvas?.drawText(
-                    itemsMap.getValue(day).toString(),
-                    x + 10,
-                    top - 10,
+                    itemsMap.getValue(day)
+                        .toString() + " руб / " + DateUtils.DateFromTimestamp(day * secondsPerDay),
+                    x + textPadding,
+                    top - textPadding,
                     paintText
                 )
             }
@@ -140,7 +152,7 @@ class DetailsGraph(context: Context, attributeSet: AttributeSet) : View(context,
     fun setValues(values: List<Expence>) {
         itemsMap.clear()
         for (expence in values) {
-            val day = expence.time / (60 * 60 * 24)
+            val day = expence.time / secondsPerDay
             if (!itemsMap.containsKey(day)) {
                 itemsMap.put(day, expence.amount)
             } else {
@@ -160,10 +172,8 @@ class DetailsGraph(context: Context, attributeSet: AttributeSet) : View(context,
     override fun onRestoreInstanceState(state: Parcelable?) {
         val detailsGraphState = state as? DetailsGraphState
         super.onRestoreInstanceState(detailsGraphState?.superSavedState ?: state)
-        setColor(detailsGraphState?.color?: Color.RED)
+        setColor(detailsGraphState?.color ?: Color.RED)
         itemsMap = detailsGraphState?.itemsMap ?: mutableMapOf()
-        //requestLayout()
-        //invalidate()
     }
 }
 
