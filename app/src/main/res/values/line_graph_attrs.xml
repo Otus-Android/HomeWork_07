@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SpendingLineGraph">
+        <attr name="axis_color" format="color" />
+        <attr name="x_grid_color" format="color" />
+        <attr name="y_grid_color" format="color" />
+        <attr name="text_color" format="color" />
+    </declare-styleable>
+</resources>

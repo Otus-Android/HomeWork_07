@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="default_chart_size">200dp</dimen>
+    <dimen name="percent_text_size">16sp</dimen>
+    <dimen name="percent_text_offset">30dp</dimen>
+    <dimen name="x_mark_interval">64dp</dimen>
+    <dimen name="y_mark_interval">36dp</dimen>
+    <dimen name="axis_paint_width">2dp</dimen>
+    <dimen name="line_graph_amounts_text_size">14sp</dimen>
+    <dimen name="line_graph_dates_text_size">14sp</dimen>
+    <dimen name="date_text_offset">8dp</dimen>
+</resources>
