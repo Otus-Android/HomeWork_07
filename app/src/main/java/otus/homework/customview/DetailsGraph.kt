@@ -156,7 +156,7 @@ class DetailsGraph(context: Context, attributeSet: AttributeSet) : View(context,
             if (!itemsMap.containsKey(day)) {
                 itemsMap.put(day, expence.amount)
             } else {
-                itemsMap[day] = itemsMap[day] ?: 0 + expence.amount
+                itemsMap[day] = (itemsMap[day] ?: 0) + expence.amount
             }
         }
 
