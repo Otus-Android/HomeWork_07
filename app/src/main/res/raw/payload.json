@@ -81,6 +81,54 @@
     "name": "Uber",
     "amount": 389,
     "category": "Транспорт",
-    "time": 1623419934
+    "time": 1623473958
+  },
+  {
+    "id": 13,
+    "name": "Uber",
+    "amount": 500,
+    "category": "Транспорт",
+    "time": 1623646758
+  },
+  {
+    "id": 14,
+    "name": "Uber",
+    "amount": 120,
+    "category": "Транспорт",
+    "time": 1623992358
+  },
+  {
+    "id": 15,
+    "name": "Uber",
+    "amount": 1020,
+    "category": "Транспорт",
+    "time": 1624640418
+  },
+  {
+    "id": 16,
+    "name": "Uber",
+    "amount": 1520,
+    "category": "Транспорт",
+    "time": 1623240000
+  },
+  {
+    "id": 17,
+    "name": "Бензин",
+    "amount": 933,
+    "category": "Автомобиль",
+    "time": 1623240000
+  },
+  {
+    "id": 18,
+    "name": "Wildberry",
+    "amount": 2000,
+    "category": "Товары",
+    "time": 1623240000
+  },{
+    "id": 19,
+    "name": "HDD 1ТБ",
+    "amount": 5690,
+    "category": "Комьютер",
+    "time": 1623240000
   }
 ]
