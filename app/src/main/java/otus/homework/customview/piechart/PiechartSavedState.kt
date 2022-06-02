@@ -5,7 +5,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.view.View
 import kotlinx.parcelize.Parcelize
-import otus.homework.customview.Purchase
 
 class PiechartSavedState : View.BaseSavedState {
     private var list: List<SavedSector>? = null

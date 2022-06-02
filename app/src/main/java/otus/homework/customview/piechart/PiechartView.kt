@@ -2,13 +2,10 @@ package otus.homework.customview.piechart
 
 import android.content.Context
 import android.graphics.*
-import android.os.Build
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import android.view.MotionEvent
-import androidx.annotation.RequiresApi
-import otus.homework.customview.Purchase
 import java.util.*
 import kotlin.math.PI
 import kotlin.math.acos

@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.data
 
 data class Purchase (
     val id: Int,

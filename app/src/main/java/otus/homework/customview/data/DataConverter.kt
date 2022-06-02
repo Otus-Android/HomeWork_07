@@ -4,6 +4,7 @@ import android.content.Context
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types.newParameterizedType
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import otus.homework.customview.data.Purchase
 import java.io.BufferedReader
 import java.io.InputStreamReader
 

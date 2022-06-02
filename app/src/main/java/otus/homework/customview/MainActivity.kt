@@ -3,6 +3,7 @@ package otus.homework.customview
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
+import otus.homework.customview.data.Purchase
 import otus.homework.customview.lineargraph.LinearGraphView
 import otus.homework.customview.lineargraph.Point
 import otus.homework.customview.piechart.PiechartView
