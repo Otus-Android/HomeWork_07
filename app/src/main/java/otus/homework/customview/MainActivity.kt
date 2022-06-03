@@ -31,13 +31,17 @@ class MainActivity : AppCompatActivity() {
         Log.d("Category", categoryMap.toString() + "Общая сумма денег $summary")
 
         val pieChartView = findViewById<PieChartView>(R.id.pieChartView)
-
-        pieChartView.setValues(categoryMap,summary)
-        pieChartView.setOnSectorListener  =
-            {Toast.makeText(this,"Категория $it", Toast.LENGTH_SHORT).show() }
-
         val graphView = findViewById<GraphView>(R.id.graphView)
         graphView.setValues(payload)
+        pieChartView.setValues(categoryMap,summary)
+        pieChartView.setOnSectorListener  =
+            { category ->
+                Toast.makeText(this,"Категория $category", Toast.LENGTH_SHORT).show()
+                val payloadList = payload.filter { it.category == category }
+                graphView.setValues(payloadList)
+            }
+
+
 
     }
 

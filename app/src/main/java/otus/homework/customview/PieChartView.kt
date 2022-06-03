@@ -90,7 +90,6 @@ class PieChartView @JvmOverloads constructor(
             canvas.rotate(rotate,width/2f,height/2f)
             canvas.drawArc(rect,startAngle,angle,true,blackPaint)
             startAngle+=angle
-            Log.d("Category", "Категория ${it.key}, угол смещения $startAngle, угол товара: $angle")
         }
 
     }
