@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PieChartView">
+
+        <attr name="lineDefaultColor" format="color"/>
+        <attr name="lineStrokeWidth" format="float"/>
+
+    </declare-styleable>
+</resources>
