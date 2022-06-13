@@ -4,9 +4,12 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PointF
 import android.util.AttributeSet
+import android.util.Log
+import android.view.MotionEvent
 import android.view.View
-import kotlin.math.round
+import kotlin.math.*
 
 class PieChartView(
     context: Context,
@@ -31,6 +34,18 @@ class PieChartView(
     }
     private val mMinSize = resources.getDimensionPixelSize(R.dimen.pieChartMinSize)
     private var mSize: Int? = null
+    private var mOnSectorSelectListener: (PieChartState.ColorState) -> Unit = {}
+    private var mPieChartCenter = PointF(0f, 0f)
+    private var mOutRadius = 0f
+
+    fun setValue(pieChartState: PieChartState) {
+        if (mPieChartState == pieChartState) {
+            return
+        }
+
+        mPieChartState = pieChartState
+        invalidate()
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var widthSize = MeasureSpec.getSize(widthMeasureSpec)
@@ -54,15 +69,71 @@ class PieChartView(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawPieChart(canvas)
+
+//        canvas.drawCircle(temp.x, temp.y, 2f, mPiePaint)
+//        canvas.drawCircle(mPieChartCenter.x, mPieChartCenter.y, 2f, mPiePaint)
     }
 
-    fun setValue(pieChartState: PieChartState) {
-        if (mPieChartState == pieChartState) {
+    private var temp = PointF(0f, 0f)
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        //return
+        if (event.action == MotionEvent.ACTION_UP) {
+            temp = PointF(event.x, event.y)
+            findSector(event)
+            invalidate()
+        }
+
+        return true
+    }
+
+    private fun findSector(event: MotionEvent) {
+        var startAngle = 0f
+        var endAngle: Float
+        val distance = sqrt(
+            (mPieChartCenter.x - event.x).toDouble().pow(2.0) +
+                    (mPieChartCenter.y - event.y).toDouble().pow(2.0)
+        )
+        val inRadius = mOutRadius - mStrokeWidth
+        if (distance > mOutRadius || distance < inRadius) {
             return
         }
 
-        mPieChartState = pieChartState
-        invalidate()
+        //val startSegmentX = mPieChartCenter.x - mOutRadius
+        //val startSegmentY = mPieChartCenter.y
+        val eventX = event.x - mPieChartCenter.x
+        val eventY = event.y - mPieChartCenter.y
+        mPieChartState.colorStates.forEach { colorState ->
+            // TODO: вынести функцию
+            endAngle = 360 * mPieChartState.getPart(colorState.value)
+            //val vector1 = Pair(startSegmentX - mPieChartCenter.x, startSegmentY - mPieChartCenter.y)
+            //val vector2 = Pair(event.x - mPieChartCenter.x, event.y - mPieChartCenter.y)
+            val outStartYProj = mOutRadius * cos(startAngle)
+            val inStartYProj = inRadius * cos(startAngle)
+            val outEndYProj = mOutRadius * cos(endAngle)
+            val inEndYProj = inRadius * cos(endAngle)
+            val maxY = -min(min(min(outStartYProj, inStartYProj), outEndYProj), inEndYProj)
+            val minY = -max(max(max(outStartYProj, inStartYProj), outEndYProj), inEndYProj)
+
+            val outStartXProj = mOutRadius * sin(startAngle)
+            val inStartXProj = inRadius * sin(startAngle)
+            val outEndXProj = mOutRadius * sin(endAngle)
+            val inEndXProj = inRadius * sin(endAngle)
+            val maxX = max(max(max(outStartXProj, inStartXProj), outEndXProj), inEndXProj)
+            val minX = min(min(min(outStartXProj, inStartXProj), outEndXProj), inEndXProj)
+
+            if (eventX in minX..maxX && eventY in minY..maxY) {
+                mOnSectorSelectListener(colorState)
+                Log.d("findSector", "$colorState")
+                return
+            }
+
+            Log.d("findSector", "NOT FIND")
+        }
+    }
+
+    fun setOnSectorSelectListener(onSelect: (state: PieChartState.ColorState) -> Unit) {
+        mOnSectorSelectListener = onSelect
     }
 
     private fun drawPieChart(canvas: Canvas) {
@@ -71,7 +142,7 @@ class PieChartView(
         val right = width.toFloat() - mStrokeWidth / 2 - paddingRight
         val top = 0f + mStrokeWidth / 2 + paddingTop
         val bottom = size.toFloat() - mStrokeWidth / 2 - paddingBottom
-        var startAngle = -90f
+        var startAngle = START_ANGLE
 
         mPieChartState.colorStates.forEach { colorState ->
             val selectedOffset = getSelectedOffset(colorState)
@@ -163,16 +234,17 @@ class PieChartView(
             } ?: DEFAULT_CENTER_TEXT
         }
 
-        canvas.drawText(
-            text,
-            left + (right - left) / 2,
-            mStrokeWidth / 2 + top + (bottom - top) / 2,
-            mTextPaint
-        )
+        val centerX = left + (right - left) / 2
+        val centerY = top + (bottom - top) / 2
+
+        canvas.drawText(text, centerX, centerY + mStrokeWidth / 2, mTextPaint)
+        mPieChartCenter = PointF(centerX, centerY)
+        mOutRadius = (right - left) / 2
     }
 
     companion object {
         private const val DEFAULT_CENTER_TEXT = "-"
+        private const val START_ANGLE = -90f
     }
 
 }

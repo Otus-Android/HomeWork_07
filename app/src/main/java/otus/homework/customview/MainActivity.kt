@@ -10,20 +10,19 @@ import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
+    private var mState: PieChartState? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val payload = getPayload()
-        val pieChartState = payload.map {
-            PieChartState.ColorState(
-                value = it.amount,
-                color = generateHSVColor().toLong(),
-                id = it.id.toString()
-            )
-        }.let {
-            PieChartState(it, it[3])
+
+        val chart = findViewById<PieChartView>(R.id.pieChart)
+        mState = createState()
+        chart.setValue(mState!!)
+        chart.setOnSectorSelectListener {
+            mState = mState?.copy(selected = it)
+            chart.setValue(mState!!)
         }
-        findViewById<PieChartView>(R.id.pieChart).setValue(pieChartState)
     }
 
     private fun generateHSVColor(): Int {
@@ -40,5 +39,15 @@ class MainActivity : AppCompatActivity() {
                 format = DecodeSequenceMode.ARRAY_WRAPPED
             ).toList()
         }
+
+    private fun createState() = getPayload().map {
+        PieChartState.ColorState(
+            value = it.amount,
+            color = generateHSVColor().toLong(),
+            id = it.id.toString()
+        )
+    }.let {
+        PieChartState(it, it[3])
+    }
 
 }
