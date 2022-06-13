@@ -34,7 +34,7 @@ class PieChartView(
     }
     private val mMinSize = resources.getDimensionPixelSize(R.dimen.pieChartMinSize)
     private var mSize: Int? = null
-    private var mOnSectorSelectListener: (PieChartState.ColorState) -> Unit = {}
+    private var mOnSectorSelectListener: (PieChartState.ColorState?) -> Unit = {}
     private var mPieChartCenter = PointF(0f, 0f)
     private var mOutRadius = 0f
 
@@ -70,7 +70,7 @@ class PieChartView(
         super.onDraw(canvas)
         drawPieChart(canvas)
 
-//        canvas.drawCircle(temp.x, temp.y, 2f, mPiePaint)
+        canvas.drawCircle(temp.x, temp.y, 2f, mPiePaint)
 //        canvas.drawCircle(mPieChartCenter.x, mPieChartCenter.y, 2f, mPiePaint)
     }
 
@@ -88,7 +88,7 @@ class PieChartView(
     }
 
     private fun findSector(event: MotionEvent) {
-        var startAngle = 0f
+        var startAngle = 0f * PI.toFloat() / 180
         var endAngle: Float
         val distance = sqrt(
             (mPieChartCenter.x - event.x).toDouble().pow(2.0) +
@@ -96,6 +96,7 @@ class PieChartView(
         )
         val inRadius = mOutRadius - mStrokeWidth
         if (distance > mOutRadius || distance < inRadius) {
+            mOnSectorSelectListener(null)
             return
         }
 
@@ -105,15 +106,15 @@ class PieChartView(
         val eventY = event.y - mPieChartCenter.y
         mPieChartState.colorStates.forEach { colorState ->
             // TODO: вынести функцию
-            endAngle = 360 * mPieChartState.getPart(colorState.value)
+            endAngle = startAngle + 360 * mPieChartState.getPart(colorState.value) * PI.toFloat() / 180
             //val vector1 = Pair(startSegmentX - mPieChartCenter.x, startSegmentY - mPieChartCenter.y)
             //val vector2 = Pair(event.x - mPieChartCenter.x, event.y - mPieChartCenter.y)
-            val outStartYProj = mOutRadius * cos(startAngle)
-            val inStartYProj = inRadius * cos(startAngle)
-            val outEndYProj = mOutRadius * cos(endAngle)
-            val inEndYProj = inRadius * cos(endAngle)
-            val maxY = -min(min(min(outStartYProj, inStartYProj), outEndYProj), inEndYProj)
-            val minY = -max(max(max(outStartYProj, inStartYProj), outEndYProj), inEndYProj)
+            val outStartYProj =- mOutRadius * cos(startAngle)
+            val inStartYProj = -inRadius * cos(startAngle)
+            val outEndYProj = -mOutRadius * cos(endAngle)
+            val inEndYProj = -inRadius * cos(endAngle)
+            val minY = min(min(min(outStartYProj, inStartYProj), outEndYProj), inEndYProj)
+            val maxY = max(max(max(outStartYProj, inStartYProj), outEndYProj), inEndYProj)
 
             val outStartXProj = mOutRadius * sin(startAngle)
             val inStartXProj = inRadius * sin(startAngle)
@@ -127,12 +128,14 @@ class PieChartView(
                 Log.d("findSector", "$colorState")
                 return
             }
-
-            Log.d("findSector", "NOT FIND")
+            startAngle = endAngle
+            if (colorState.id == "9") {
+                Log.d("findSector", "NOT FIND")
+            }
         }
     }
 
-    fun setOnSectorSelectListener(onSelect: (state: PieChartState.ColorState) -> Unit) {
+    fun setOnSectorSelectListener(onSelect: (state: PieChartState.ColorState?) -> Unit) {
         mOnSectorSelectListener = onSelect
     }
 
@@ -239,7 +242,7 @@ class PieChartView(
 
         canvas.drawText(text, centerX, centerY + mStrokeWidth / 2, mTextPaint)
         mPieChartCenter = PointF(centerX, centerY)
-        mOutRadius = (right - left) / 2
+        mOutRadius = (right - left) / 2 + mStrokeWidth / 2
     }
 
     companion object {
