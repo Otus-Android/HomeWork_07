@@ -68,20 +68,11 @@ class PieChartView(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawPieChart(canvas)
-        mTextPaint.textSize = 16f
-        tempList.forEachIndexed { i, p ->
-            canvas.drawText("$i", p.x, p.y, mTextPaint)
-        }
-
-        tempList.clear()
-        canvas.drawCircle(temp.x, temp.y, 2f, mPiePaint)
-//        canvas.drawCircle(mPieChartCenter.x, mPieChartCenter.y, 2f, mPiePaint)
     }
 
     private var temp = PointF(0f, 0f)
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        //return
         if (event.action == MotionEvent.ACTION_UP) {
             temp = PointF(event.x, event.y)
             findSector(event)
@@ -90,8 +81,6 @@ class PieChartView(
 
         return true
     }
-
-    val tempList = mutableListOf<PointF>()
 
     private fun findSector(event: MotionEvent) {
         var startAngle = 0f * PI.toFloat() / 180
@@ -106,19 +95,17 @@ class PieChartView(
             return
         }
 
-        var startSegmentX = mPieChartCenter.x
-        var startSegmentY = mPieChartCenter.y - mOutRadius
-//        val eventX = event.x - mPieChartCenter.x
-//        val eventY = event.y - mPieChartCenter.y
+        val startSegmentX = mPieChartCenter.x
+        val startSegmentY = mPieChartCenter.y - mOutRadius
+        val vector1 = Pair(startSegmentX - mPieChartCenter.x, startSegmentY - mPieChartCenter.y)
+        val vector2 = Pair(event.x - mPieChartCenter.x, event.y - mPieChartCenter.y)
+        val cos = (vector1.first * vector2.first + vector1.second * vector2.second) /
+                (sqrt(vector1.first.pow(2) + vector1.second.pow(2)) *
+                        sqrt(vector2.first.pow(2) + vector2.second.pow(2)))
 
         mPieChartState.colorStates.forEach { colorState ->
             endAngle =
                 startAngle + 360 * mPieChartState.getPart(colorState.value) * PI.toFloat() / 180
-            val vector1 = Pair(startSegmentX - mPieChartCenter.x, startSegmentY - mPieChartCenter.y)
-            val vector2 = Pair(event.x - mPieChartCenter.x, event.y - mPieChartCenter.y)
-            val cos = (vector1.first * vector2.first + vector1.second * vector2.second) /
-                    (sqrt(vector1.first.pow(2) + vector1.second.pow(2)) *
-                            sqrt(vector2.first.pow(2) + vector2.second.pow(2)))
 
             val clickedAngle = when (event.x < mPieChartCenter.x) {
                 true -> 6.28f - acos(cos)
@@ -126,43 +113,11 @@ class PieChartView(
             }
             if (clickedAngle in startAngle..endAngle) {
                 mOnSectorSelectListener(colorState)
-                //return
+                return
             }
 
-            //startSegmentX = mPieChartCenter.x + mOutRadius * sin(endAngle)
-            //startSegmentY = mPieChartCenter.y - mOutRadius * cos(endAngle)
-            //tempList.add(PointF(startSegmentX, startSegmentY))
             startAngle = endAngle
         }
-//        mPieChartState.colorStates.forEach { colorState ->
-//            // TODO: вынести функцию
-//            endAngle = startAngle + 360 * mPieChartState.getPart(colorState.value) * PI.toFloat() / 180
-//            //val vector1 = Pair(startSegmentX - mPieChartCenter.x, startSegmentY - mPieChartCenter.y)
-//            //val vector2 = Pair(event.x - mPieChartCenter.x, event.y - mPieChartCenter.y)
-//            val outStartYProj =- mOutRadius * cos(startAngle)
-//            val inStartYProj = -inRadius * cos(startAngle)
-//            val outEndYProj = -mOutRadius * cos(endAngle)
-//            val inEndYProj = -inRadius * cos(endAngle)
-//            val minY = min(min(min(outStartYProj, inStartYProj), outEndYProj), inEndYProj)
-//            val maxY = max(max(max(outStartYProj, inStartYProj), outEndYProj), inEndYProj)
-//
-//            val outStartXProj = mOutRadius * sin(startAngle)
-//            val inStartXProj = inRadius * sin(startAngle)
-//            val outEndXProj = mOutRadius * sin(endAngle)
-//            val inEndXProj = inRadius * sin(endAngle)
-//            val maxX = max(max(max(outStartXProj, inStartXProj), outEndXProj), inEndXProj)
-//            val minX = min(min(min(outStartXProj, inStartXProj), outEndXProj), inEndXProj)
-//
-//            if (eventX in minX..maxX && eventY in minY..maxY) {
-//                mOnSectorSelectListener(colorState)
-//                Log.d("findSector", "$colorState")
-//                return
-//            }
-//            startAngle = endAngle
-//            if (colorState.id == "9") {
-//                Log.d("findSector", "NOT FIND")
-//            }
-//        }
     }
 
     fun setOnSectorSelectListener(onSelect: (state: PieChartState.ColorState?) -> Unit) {
