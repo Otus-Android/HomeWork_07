@@ -4,7 +4,6 @@ import androidx.annotation.ColorInt
 
 data class PieChartState(
     val colorStates: List<ColorState>,
-    val selected: ColorState?
 ) {
 
     private val totalValue = colorStates.sumOf { it.value }
@@ -22,8 +21,7 @@ data class PieChartState(
 
     companion object {
         fun default() = PieChartState(
-            colorStates = emptyList(),
-            selected = null
+            colorStates = emptyList()
         )
     }
 

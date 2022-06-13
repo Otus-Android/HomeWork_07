@@ -2,6 +2,7 @@ package otus.homework.customview
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.serialization.json.DecodeSequenceMode
 import kotlinx.serialization.json.Json
@@ -20,8 +21,7 @@ class MainActivity : AppCompatActivity() {
         mState = createState()
         chart.setValue(mState!!)
         chart.setOnSectorSelectListener {
-            mState = mState?.copy(selected = it)
-            chart.setValue(mState!!)
+            Log.d("MainActivity", "Select: $it")
         }
     }
 
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
             id = it.id.toString()
         )
     }.let {
-        PieChartState(it, it[3])
+        PieChartState(it)
     }
 
 }

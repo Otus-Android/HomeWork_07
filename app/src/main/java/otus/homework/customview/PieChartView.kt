@@ -18,6 +18,15 @@ class PieChartView(
 ) : View(context, attrs) {
 
     private var mPieChartState: PieChartState = PieChartState.default()
+    private var mSelected: PieChartState.ColorState? = null
+        set(value) {
+            if (field != value) {
+                mPreviousSelected = field
+                field = value
+                animateSelection()
+            }
+        }
+    private var mPreviousSelected: PieChartState.ColorState? = null
 
     // TODO: Перенести в атрибуты
     private val mStrokeWidth =
@@ -39,6 +48,7 @@ class PieChartView(
     private var mPieChartCenter = PointF(0f, 0f)
     private var mOutRadius = 0f
     private var mSelectedOffset = 0
+    private val mMaxSelectedOffset = resources.getDimensionPixelSize(R.dimen.pieChartSelectedOffset)
 
     fun setValue(pieChartState: PieChartState) {
         if (mPieChartState == pieChartState) {
@@ -46,15 +56,6 @@ class PieChartView(
         }
 
         mPieChartState = pieChartState
-        val maxSelectedOffset = resources.getDimensionPixelSize(R.dimen.pieChartSelectedOffset)
-        ValueAnimator.ofInt(0, maxSelectedOffset).apply {
-            duration = 200
-            interpolator = AccelerateInterpolator()
-            addUpdateListener {
-                mSelectedOffset = it.animatedValue as Int
-                invalidate()
-            }
-        }.start()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -81,11 +82,8 @@ class PieChartView(
         drawPieChart(canvas)
     }
 
-    private var temp = PointF(0f, 0f)
-
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_UP) {
-            temp = PointF(event.x, event.y)
             findSector(event)
             invalidate()
         }
@@ -102,7 +100,7 @@ class PieChartView(
         )
         val inRadius = mOutRadius - mStrokeWidth
         if (distance > mOutRadius || distance < inRadius) {
-            mOnSectorSelectListener(null)
+            mSelected = null
             return
         }
 
@@ -123,6 +121,7 @@ class PieChartView(
                 false -> acos(cosBetweenVectors)
             }
             if (clickedAngle in startAngle..endAngle) {
+                mSelected = colorState
                 mOnSectorSelectListener(colorState)
                 return
             }
@@ -161,8 +160,9 @@ class PieChartView(
         drawCenterText(canvas, left, top, right, bottom)
     }
 
-    private fun getSelectedOffset(colorState: PieChartState.ColorState) = when (colorState.id) {
-        mPieChartState.selected?.id -> mSelectedOffset
+    private fun getSelectedOffset(colorState: PieChartState.ColorState) = when {
+        colorState.id == mSelected?.id -> mSelectedOffset
+        colorState.id == mPreviousSelected?.id -> mMaxSelectedOffset - mSelectedOffset
         else -> 0
     }
 
@@ -224,9 +224,9 @@ class PieChartView(
         right: Float,
         bottom: Float
     ) {
-        val text = when (mPieChartState.selected) {
+        val text = when (mSelected) {
             null -> DEFAULT_CENTER_TEXT
-            else -> mPieChartState.selected?.value?.let {
+            else -> mSelected?.value?.let {
                 "${round(mPieChartState.getPart(it) * 1000) / 10}%"
             } ?: DEFAULT_CENTER_TEXT
         }
@@ -237,6 +237,17 @@ class PieChartView(
         canvas.drawText(text, centerX, centerY + mStrokeWidth / 2, mTextPaint)
         mPieChartCenter = PointF(centerX, centerY)
         mOutRadius = (right - left) / 2 + mStrokeWidth / 2
+    }
+
+    private fun animateSelection() {
+        ValueAnimator.ofInt(0, mMaxSelectedOffset).apply {
+            duration = 200
+            interpolator = AccelerateInterpolator()
+            addUpdateListener {
+                mSelectedOffset = it.animatedValue as Int
+                invalidate()
+            }
+        }.start()
     }
 
     companion object {
