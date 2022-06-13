@@ -49,6 +49,7 @@ class PieChartView(
     private var mOutRadius = 0f
     private var mSelectedOffset = 0
     private val mMaxSelectedOffset = resources.getDimensionPixelSize(R.dimen.pieChartSelectedOffset)
+    private var mCenterTextValue: Int? = null
 
     fun setValue(pieChartState: PieChartState) {
         if (mPieChartState == pieChartState) {
@@ -224,11 +225,9 @@ class PieChartView(
         right: Float,
         bottom: Float
     ) {
-        val text = when (mSelected) {
+        val text = when (mCenterTextValue) {
             null -> DEFAULT_CENTER_TEXT
-            else -> mSelected?.value?.let {
-                "${round(mPieChartState.getPart(it) * 1000) / 10}%"
-            } ?: DEFAULT_CENTER_TEXT
+            else -> "${round(mPieChartState.getPart(mCenterTextValue!!) * 1000) / 10}%"
         }
 
         val centerX = left + (right - left) / 2
@@ -240,11 +239,17 @@ class PieChartView(
     }
 
     private fun animateSelection() {
+        val animationDuration = 200L
         ValueAnimator.ofInt(0, mMaxSelectedOffset).apply {
-            duration = 200
+            duration = animationDuration
             interpolator = AccelerateInterpolator()
-            addUpdateListener {
-                mSelectedOffset = it.animatedValue as Int
+            addUpdateListener { valueAnimator ->
+                val animatedValue = valueAnimator.animatedValue as Int
+                mSelectedOffset = animatedValue
+                val value = mSelected?.value ?: 0
+                val previousValue = mPreviousSelected?.value ?: 0
+                mCenterTextValue = (previousValue + (animatedValue.toFloat() / mMaxSelectedOffset) *
+                        (value - previousValue)).toInt()
                 invalidate()
             }
         }.start()
