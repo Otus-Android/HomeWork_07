@@ -17,17 +17,18 @@ class MainActivity : AppCompatActivity() {
         val pieChartState = payload.map {
             PieChartState.ColorState(
                 value = it.amount,
-                color = generateHSVColor().toLong()
+                color = generateHSVColor().toLong(),
+                id = it.id.toString()
             )
         }.let {
-            PieChartState(it)
+            PieChartState(it, it[3])
         }
         findViewById<PieChartView>(R.id.pieChart).setValue(pieChartState)
     }
 
     private fun generateHSVColor(): Int {
         val hue = Random.nextDouble(0.0, 360.0).toFloat()
-        val saturation = Random.nextDouble(0.1, 0.5).toFloat()
+        val saturation = Random.nextDouble(0.1, 0.6).toFloat()
         val value = 0.9f
         return Color.HSVToColor(floatArrayOf(hue, saturation, value))
     }
