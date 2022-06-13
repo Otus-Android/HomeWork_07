@@ -1,5 +1,6 @@
 package otus.homework.customview
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -8,6 +9,7 @@ import android.graphics.PointF
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.AccelerateInterpolator
 import kotlin.math.*
 
 class PieChartView(
@@ -36,6 +38,7 @@ class PieChartView(
     private var mOnSectorSelectListener: (PieChartState.ColorState?) -> Unit = {}
     private var mPieChartCenter = PointF(0f, 0f)
     private var mOutRadius = 0f
+    private var mSelectedOffset = 0
 
     fun setValue(pieChartState: PieChartState) {
         if (mPieChartState == pieChartState) {
@@ -43,7 +46,15 @@ class PieChartView(
         }
 
         mPieChartState = pieChartState
-        invalidate()
+        val maxSelectedOffset = resources.getDimensionPixelSize(R.dimen.pieChartSelectedOffset)
+        ValueAnimator.ofInt(0, maxSelectedOffset).apply {
+            duration = 200
+            interpolator = AccelerateInterpolator()
+            addUpdateListener {
+                mSelectedOffset = it.animatedValue as Int
+                invalidate()
+            }
+        }.start()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -99,7 +110,7 @@ class PieChartView(
         val startSegmentY = mPieChartCenter.y - mOutRadius
         val vector1 = Pair(startSegmentX - mPieChartCenter.x, startSegmentY - mPieChartCenter.y)
         val vector2 = Pair(event.x - mPieChartCenter.x, event.y - mPieChartCenter.y)
-        val cos = (vector1.first * vector2.first + vector1.second * vector2.second) /
+        val cosBetweenVectors = (vector1.first * vector2.first + vector1.second * vector2.second) /
                 (sqrt(vector1.first.pow(2) + vector1.second.pow(2)) *
                         sqrt(vector2.first.pow(2) + vector2.second.pow(2)))
 
@@ -108,8 +119,8 @@ class PieChartView(
                 startAngle + 360 * mPieChartState.getPart(colorState.value) * PI.toFloat() / 180
 
             val clickedAngle = when (event.x < mPieChartCenter.x) {
-                true -> 6.28f - acos(cos)
-                false -> acos(cos)
+                true -> PI.toFloat() * 2 - acos(cosBetweenVectors)
+                false -> acos(cosBetweenVectors)
             }
             if (clickedAngle in startAngle..endAngle) {
                 mOnSectorSelectListener(colorState)
@@ -151,9 +162,7 @@ class PieChartView(
     }
 
     private fun getSelectedOffset(colorState: PieChartState.ColorState) = when (colorState.id) {
-        mPieChartState.selected?.id ->
-            // TODO: Перенести в атрибуты
-            resources.getDimensionPixelSize(R.dimen.pieChartSelectedOffset)
+        mPieChartState.selected?.id -> mSelectedOffset
         else -> 0
     }
 
