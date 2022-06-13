@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="pieChartStrokeWidth">28dp</dimen>
+    <dimen name="pieChartMinSize">200dp</dimen>
+</resources>
