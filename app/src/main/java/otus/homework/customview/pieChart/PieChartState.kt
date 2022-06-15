@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.pieChart
 
 import androidx.annotation.ColorInt
 

@@ -7,6 +7,11 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.serialization.json.DecodeSequenceMode
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeToSequence
+import otus.homework.customview.lineChart.LineChartState
+import otus.homework.customview.lineChart.LineChartView
+import otus.homework.customview.pieChart.PieChartState
+import otus.homework.customview.pieChart.PieChartView
+import java.util.*
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
@@ -17,12 +22,35 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val chart = findViewById<PieChartView>(R.id.pieChart)
+        val pieChart = findViewById<PieChartView>(R.id.pieChart)
+        val lineChart = findViewById<LineChartView>(R.id.lineChart)
         mState = createState()
-        chart.setValue(mState!!)
-        chart.setOnSectorSelectListener {
+        pieChart.setValue(mState!!)
+        pieChart.setOnSectorSelectListener {
             Log.d("MainActivity", "Select: $it")
         }
+
+        val lineChartState = LineChartState.Dates(
+            items = listOf(
+                LineChartState.LineChartItem(
+                    Calendar.getInstance().apply { set(2022, 10, 6) }, 40
+                ),
+                LineChartState.LineChartItem(
+                    Calendar.getInstance().apply { set(2022, 10, 7) }, 70
+                ),
+                LineChartState.LineChartItem(
+                    Calendar.getInstance().apply { set(2022, 10, 10) }, 20
+                ),
+                LineChartState.LineChartItem(
+                    Calendar.getInstance().apply { set(2022, 10, 4) }, 100
+                ),
+                LineChartState.LineChartItem(
+                    Calendar.getInstance().apply { set(2022, 10, 11) }, 35
+                )
+            ),
+            color = generateHSVColor()
+        )
+        lineChart.setValue(lineChartState)
     }
 
     private fun generateHSVColor(): Int {

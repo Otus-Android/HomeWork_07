@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.pieChart
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateInterpolator
+import otus.homework.customview.R
 import kotlin.math.*
 
 class PieChartView(
@@ -107,8 +108,10 @@ class PieChartView(
 
         val startSegmentX = mPieChartCenter.x
         val startSegmentY = mPieChartCenter.y - mOutRadius
+        // TODO: внести утилиту
         val vector1 = Pair(startSegmentX - mPieChartCenter.x, startSegmentY - mPieChartCenter.y)
         val vector2 = Pair(event.x - mPieChartCenter.x, event.y - mPieChartCenter.y)
+        // TODO: вынести утилиту
         val cosBetweenVectors = (vector1.first * vector2.first + vector1.second * vector2.second) /
                 (sqrt(vector1.first.pow(2) + vector1.second.pow(2)) *
                         sqrt(vector2.first.pow(2) + vector2.second.pow(2)))
