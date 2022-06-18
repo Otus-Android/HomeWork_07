@@ -2,7 +2,6 @@ package otus.homework.customview
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.serialization.json.DecodeSequenceMode
 import kotlinx.serialization.json.Json
@@ -26,9 +25,6 @@ class MainActivity : AppCompatActivity() {
         val lineChart = findViewById<LineChartView>(R.id.lineChart)
         mState = createState()
         pieChart.setValue(mState!!)
-        pieChart.setOnSectorSelectListener {
-            Log.d("MainActivity", "Select: $it")
-        }
 
         val lineChartState = LineChartState.Dates(
             items = listOf(
@@ -46,11 +42,20 @@ class MainActivity : AppCompatActivity() {
                 ),
                 LineChartState.LineChartItem(
                     Calendar.getInstance().apply { set(2022, 10, 11) }, 35
+                ),
+                LineChartState.LineChartItem(
+                    Calendar.getInstance().apply { set(2022, 10, 23) }, 40
+                ),
+                LineChartState.LineChartItem(
+                    Calendar.getInstance().apply { set(2022, 10, 16) }, 77
                 )
             ),
             color = generateHSVColor()
         )
-        lineChart.setValue(lineChartState)
+
+        pieChart.setOnSectorSelectListener {
+            lineChart.setValue(lineChartState.copy(color = it?.color?.toInt() ?: Color.TRANSPARENT))
+        }
     }
 
     private fun generateHSVColor(): Int {

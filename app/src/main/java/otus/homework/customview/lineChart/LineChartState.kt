@@ -12,8 +12,8 @@ sealed interface LineChartState {
 
         val sortedItems = items.sortedBy { it.x }
             .groupBy { it.x.get(Calendar.MONTH) }
-        val maxDate: Calendar? = items.minOfOrNull { it.x }
-        val minDate: Calendar? = items.maxOfOrNull { it.x }
+        val maxDate: Calendar? = items.maxOfOrNull { it.x }
+        val minDate: Calendar? = items.minOfOrNull { it.x }
         val minValue: Int = items.minOfOrNull { it.y } ?: 0
         val maxValue: Int = items.maxOfOrNull { it.y } ?: 0
 

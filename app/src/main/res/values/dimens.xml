@@ -4,4 +4,5 @@
     <dimen name="pieChartCenterTextSize">56dp</dimen>
     <dimen name="pieChartMinSize">200dp</dimen>
     <dimen name="pieChartSelectedOffset">4dp</dimen>
+    <dimen name="lineChartTextSize">12sp</dimen>
 </resources>
