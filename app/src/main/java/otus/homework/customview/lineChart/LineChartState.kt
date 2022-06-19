@@ -12,14 +12,23 @@ sealed interface LineChartState {
 
         val sortedItems = items.sortedBy { it.x }
             .groupBy { it.x.get(Calendar.MONTH) }
-        val maxDate: Calendar? = items.maxOfOrNull { it.x }
         val minDate: Calendar? = items.minOfOrNull { it.x }
-        val minValue: Int = items.minOfOrNull { it.y } ?: 0
-        val maxValue: Int = items.maxOfOrNull { it.y } ?: 0
 
         fun getDatesByMonth(month: Int): List<Pair<Int, Int>> {
             return sortedItems[month]?.map { Pair(it.x.get(Calendar.DAY_OF_MONTH), it.y) }
                 ?: emptyList()
+        }
+
+        fun getMaxDateByMonth(month: Int): Calendar? {
+            return sortedItems[month]?.maxOfOrNull { it.x }
+        }
+
+        fun getMinDateByMonth(month: Int): Calendar? {
+            return sortedItems[month]?.minOfOrNull { it.x }
+        }
+
+        fun getMaxValueByMonth(month: Int): Int {
+            return sortedItems[month]?.maxOfOrNull { it.y } ?: 0
         }
 
     }

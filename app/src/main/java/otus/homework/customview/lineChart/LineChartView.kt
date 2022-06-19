@@ -70,20 +70,33 @@ class LineChartView(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val offsetX = 100
+        val offsetY = 50f
         when (mState) {
             is LineChartState.Dates -> {
-                val firstMonth =
-                    (mState as LineChartState.Dates).minDate?.get(Calendar.MONTH) ?: return
-                val listValues = (mState as LineChartState.Dates).getDatesByMonth(firstMonth)
-                drawChart(canvas, listValues, mState.requireDates().color, offsetX)
-                drawAxisInfo(canvas, mState.requireDates(), offsetX)
+                val firstMonth = mState.requireDates().minDate?.get(Calendar.MONTH)
+                if (firstMonth != null) {
+                    val listValues = (mState as LineChartState.Dates).getDatesByMonth(firstMonth)
+                    drawChart(canvas, listValues, mState.requireDates().color, offsetX, firstMonth)
+                    drawAxisInfo(canvas, mState.requireDates(), offsetX, firstMonth, offsetY)
+                } else {
+                    drawEmpty(canvas)
+                }
             }
         }
-        drawCoordinateAxis(canvas, offsetX)
+        drawCoordinateAxis(canvas, offsetX, offsetY)
     }
 
-    private fun drawCoordinateAxis(canvas: Canvas, offsetX: Int) {
-        val offsetY = 50f
+    private fun drawEmpty(canvas: Canvas) {
+        mTextPaint.textAlign = Paint.Align.CENTER
+        canvas.drawText(
+            "No data",
+            (width.toFloat() / 2),
+            height.toFloat() / 2,
+            mTextPaint
+        )
+    }
+
+    private fun drawCoordinateAxis(canvas: Canvas, offsetX: Int, offsetY: Float) {
         canvas.drawLine(
             offsetX.toFloat(),
             0f,
@@ -103,11 +116,13 @@ class LineChartView(
     private fun drawAxisInfo(
         canvas: Canvas,
         state: LineChartState.Dates,
-        offsetX: Int
+        offsetX: Int,
+        month: Int,
+        offsetY: Float
     ) {
         val countY = 4
-        val intervalValue = round(state.maxValue * 10f) / 10 / countY
-        val intervalY = (height - intervalValue) / countY
+        val intervalValue = round(state.getMaxValueByMonth(month) * 10f) / 10 / countY
+        val intervalY = (height - offsetY) / countY
 
         mTextPaint.textAlign = Paint.Align.LEFT
 
@@ -115,13 +130,13 @@ class LineChartView(
             canvas.drawText(
                 (intervalValue * (it + 1)).toString(),
                 10f,
-                (height - offsetX) - intervalY * (it + 1),
+                height - intervalY * (it + 1),
                 mTextPaint
             )
         }
 
-        val minDate = state.minDate?.get(Calendar.DAY_OF_MONTH) ?: return
-        val maxDate = state.maxDate?.get(Calendar.DAY_OF_MONTH) ?: return
+        val minDate = state.getMinDateByMonth(month)?.get(Calendar.DAY_OF_MONTH) ?: return
+        val maxDate = state.getMaxDateByMonth(month)?.get(Calendar.DAY_OF_MONTH) ?: return
         val intervalDateX = maxDate - minDate
         val intervalX = (width - offsetX) / intervalDateX
 
@@ -141,17 +156,18 @@ class LineChartView(
         canvas: Canvas,
         values: List<Pair<Int, Int>>,
         @ColorInt color: Int,
-        offset: Int
+        offset: Int,
+        month: Int
     ) {
         if (values.isEmpty()) return
 
         val count = values.last().first - values.first().first
         val widthUnit = (width.toFloat() - offset) / count
 
-        val heightUnit = height.toFloat() / mState.requireDates().maxValue
+        val heightUnit = height.toFloat() / mState.requireDates().getMaxValueByMonth(month)
 
         var chartX = 0f + offset
-        mLinePath.moveTo(chartX, values.first().second.toFloat())
+        mLinePath.moveTo(chartX, height - values.first().second.toFloat() * heightUnit)
         values.forEachIndexed { index, value ->
             if (index != 0) {
                 chartX += (value.first - values[index - 1].first).toFloat() * widthUnit
@@ -171,11 +187,11 @@ class LineChartView(
             0f, 0f, 0f, height.toFloat(),
             color, Color.TRANSPARENT, Shader.TileMode.CLAMP
         )
-        mGradientPaint.alpha = 0x55
+        mGradientPaint.alpha = 0x22
 
         mClipRect.apply {
             left = offset.toFloat()
-            top = offset + 20f
+            top = 0f
             right = width.toFloat()
             bottom = height.toFloat()
         }
