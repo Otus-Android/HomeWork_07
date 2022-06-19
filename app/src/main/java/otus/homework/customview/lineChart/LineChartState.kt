@@ -7,7 +7,7 @@ sealed interface LineChartState {
 
     data class Dates(
         private val items: List<LineChartItem<Calendar>>,
-        @ColorInt val color: Int
+        @ColorInt val color: Long
     ) : LineChartState {
 
         val sortedItems = items.sortedBy { it.x }

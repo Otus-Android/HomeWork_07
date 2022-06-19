@@ -17,7 +17,6 @@ class LineChartView(
     attrs: AttributeSet
 ) : View(context, attrs) {
 
-    private var mStringDecorator = LineChartStringDecorator.default()
     private var mState: LineChartState = LineChartState.default()
 
     private val mLinePaint = Paint().apply {
@@ -25,7 +24,7 @@ class LineChartView(
         strokeWidth = 4f
         style = Paint.Style.STROKE
         flags = Paint.ANTI_ALIAS_FLAG
-        pathEffect = CornerPathEffect(80f)
+        pathEffect = CornerPathEffect(8f)
     }
     private val mTextPaint = Paint().apply {
         // TODO: Перенести в атрибуты
@@ -36,7 +35,7 @@ class LineChartView(
 
     private val mGradientPaint = Paint().apply {
         textAlign = Paint.Align.CENTER
-        pathEffect = CornerPathEffect(80f)
+        pathEffect = CornerPathEffect(8f)
     }
 
     private val mAxisPaint = Paint().apply {
@@ -47,10 +46,6 @@ class LineChartView(
 
     private val mLinePath = Path()
     private val mClipRect = RectF()
-
-    fun setDecorator(stringDecorator: LineChartStringDecorator) {
-        mStringDecorator = stringDecorator
-    }
 
     fun setValue(state: LineChartState) {
         if (state == mState) {
@@ -69,14 +64,20 @@ class LineChartView(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val offsetX = 100
+        val offsetX = 150
         val offsetY = 50f
         when (mState) {
             is LineChartState.Dates -> {
                 val firstMonth = mState.requireDates().minDate?.get(Calendar.MONTH)
                 if (firstMonth != null) {
                     val listValues = (mState as LineChartState.Dates).getDatesByMonth(firstMonth)
-                    drawChart(canvas, listValues, mState.requireDates().color, offsetX, firstMonth)
+                    drawChart(
+                        canvas = canvas,
+                        values = listValues,
+                        color = mState.requireDates().color.toInt(),
+                        offset = offsetX,
+                        month = firstMonth
+                    )
                     drawAxisInfo(canvas, mState.requireDates(), offsetX, firstMonth, offsetY)
                 } else {
                     drawEmpty(canvas)
@@ -138,14 +139,28 @@ class LineChartView(
         val minDate = state.getMinDateByMonth(month)?.get(Calendar.DAY_OF_MONTH) ?: return
         val maxDate = state.getMaxDateByMonth(month)?.get(Calendar.DAY_OF_MONTH) ?: return
         val intervalDateX = maxDate - minDate
-        val intervalX = (width - offsetX) / intervalDateX
 
-        mTextPaint.textAlign = Paint.Align.CENTER
+        if (intervalDateX > 0) {
+            val intervalX = (width - offsetX) / intervalDateX
 
-        repeat(intervalDateX / 2) {
+            mTextPaint.textAlign = Paint.Align.CENTER
+
+            repeat(intervalDateX) {
+                if (it == intervalDateX - 1) {
+                    mTextPaint.textAlign = Paint.Align.RIGHT
+                }
+
+                canvas.drawText(
+                    (minDate + (it + 1)).toString(),
+                    offsetX + (intervalX * (it + 1).toFloat()),
+                    height.toFloat(),
+                    mTextPaint
+                )
+            }
+        } else {
             canvas.drawText(
-                (minDate + 2 * (it + 1)).toString(),
-                offsetX + (intervalX * 2 * (it + 1).toFloat()),
+                minDate.toString(),
+                (width ).toFloat() / 2,
                 height.toFloat(),
                 mTextPaint
             )
@@ -160,6 +175,7 @@ class LineChartView(
         month: Int
     ) {
         if (values.isEmpty()) return
+        resetPaths()
 
         val count = values.last().first - values.first().first
         val widthUnit = (width.toFloat() - offset) / count
@@ -171,12 +187,12 @@ class LineChartView(
         values.forEachIndexed { index, value ->
             if (index != 0) {
                 chartX += (value.first - values[index - 1].first).toFloat() * widthUnit
-                mLinePath.lineTo(
-                    chartX,
-                    height - value.second.toFloat() * heightUnit
-                )
+                mLinePath.lineTo(chartX, height - value.second.toFloat() * heightUnit)
+            } else if (values.size == 1) {
+                mLinePath.lineTo(width.toFloat(), height - value.second.toFloat() * heightUnit)
             }
         }
+        mLinePath.lineTo(width.toFloat() + 80f, values.last().second.toFloat() * heightUnit)
         mLinePath.lineTo(width.toFloat() + 40f, height.toFloat() + 20f)
         mLinePath.lineTo(0f, height.toFloat() + 20f)
         mLinePath.close()
@@ -200,6 +216,10 @@ class LineChartView(
         canvas.drawPath(mLinePath, mGradientPaint)
         canvas.drawPath(mLinePath, mLinePaint)
         canvas.restore()
+    }
+
+    private fun resetPaths() {
+        mLinePath.reset()
     }
 
 }

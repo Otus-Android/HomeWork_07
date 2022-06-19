@@ -23,38 +23,11 @@ class MainActivity : AppCompatActivity() {
 
         val pieChart = findViewById<PieChartView>(R.id.pieChart)
         val lineChart = findViewById<LineChartView>(R.id.lineChart)
-        mState = createState()
+        mState = createPieChartState()
         pieChart.setValue(mState!!)
 
-        val lineChartState = LineChartState.Dates(
-            items = listOf(
-                LineChartState.LineChartItem(
-                    Calendar.getInstance().apply { set(2022, 10, 6) }, 40
-                ),
-                LineChartState.LineChartItem(
-                    Calendar.getInstance().apply { set(2022, 10, 7) }, 70
-                ),
-                LineChartState.LineChartItem(
-                    Calendar.getInstance().apply { set(2022, 10, 10) }, 20
-                ),
-                LineChartState.LineChartItem(
-                    Calendar.getInstance().apply { set(2022, 10, 4) }, 100
-                ),
-                LineChartState.LineChartItem(
-                    Calendar.getInstance().apply { set(2022, 10, 11) }, 35
-                ),
-                LineChartState.LineChartItem(
-                    Calendar.getInstance().apply { set(2022, 10, 23) }, 40
-                ),
-                LineChartState.LineChartItem(
-                    Calendar.getInstance().apply { set(2022, 10, 16) }, 77
-                )
-            ),
-            color = generateHSVColor()
-        )
-
-        pieChart.setOnSectorSelectListener {
-            lineChart.setValue(lineChartState.copy(color = it?.color?.toInt() ?: Color.TRANSPARENT))
+        pieChart.setOnSectorSelectListener { state ->
+            lineChart.setValue(state?.let { getAmountByDay(state) } ?: LineChartState.default())
         }
     }
 
@@ -66,21 +39,44 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getPayload() = resources.openRawResource(R.raw.payload)
-        .use {
+        .use { stream ->
             Json.decodeToSequence<Company>(
-                stream = it,
+                stream = stream,
                 format = DecodeSequenceMode.ARRAY_WRAPPED
             ).toList()
         }
 
-    private fun createState() = getPayload().map {
-        PieChartState.ColorState(
-            value = it.amount,
-            color = generateHSVColor().toLong(),
-            id = it.id.toString()
+    private fun createPieChartState() = getPayload()
+        .groupBy(Company::category)
+        .mapValues { entry -> entry.value.sumOf { it.amount } }
+        .map {
+            PieChartState.ColorState(
+                value = it.value,
+                color = generateHSVColor().toLong(),
+                id = it.key.id.toString()
+            )
+        }.let {
+            PieChartState(it)
+        }
+
+    private fun getAmountByDay(pieChartColorState: PieChartState.ColorState): LineChartState.Dates {
+        val items = getPayload().filter { it.category.id == pieChartColorState.id.toIntOrNull() }
+            .map {
+                val calendar = Calendar.getInstance()
+                calendar.timeInMillis = it.time * 1000
+                LineChartState.LineChartItem<Calendar>(
+                    x = calendar,
+                    y = it.amount
+                )
+            }.groupBy { it.x.get(Calendar.DAY_OF_MONTH) }
+            .mapValues { LineChartState.LineChartItem(
+                x = it.value.first().x,
+                y = it.value.sumOf { it.y }
+            ) }
+        return LineChartState.Dates(
+            items = items.values.toList(),
+            color = pieChartColorState.color
         )
-    }.let {
-        PieChartState(it)
     }
 
 }

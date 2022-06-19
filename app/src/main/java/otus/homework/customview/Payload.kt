@@ -14,23 +14,29 @@ data class Company(
     val name: String,
     val amount: Int,
     val category: Category,
-    val time: Int
+    val time: Long
 )
 
 @Serializable
-enum class Category {
+enum class Category(val id: Int) {
     @SerialName("Продукты")
-    PRODUCTS,
+    PRODUCTS(0),
+
     @SerialName("Здоровье")
-    HEALTH,
+    HEALTH(1),
+
     @SerialName("Кафе и рестораны")
-    CAFE,
+    CAFE(2),
+
     @SerialName("Алкоголь")
-    ALCOHOL,
+    ALCOHOL(3),
+
     @SerialName("Доставка еды")
-    FOOD_DELIVERY,
+    FOOD_DELIVERY(4),
+
     @SerialName("Транспорт")
-    TRANSPORT,
+    TRANSPORT(5),
+
     @SerialName("Спорт")
-    SPORT
+    SPORT(6)
 }

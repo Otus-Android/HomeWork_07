@@ -17,6 +17,7 @@
     <otus.homework.customview.lineChart.LineChartView
         android:id="@+id/lineChart"
         android:layout_width="match_parent"
+        android:layout_marginHorizontal="8dp"
         android:layout_height="400dp" />
 
 </LinearLayout>
