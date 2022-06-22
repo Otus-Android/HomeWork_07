@@ -1,9 +1,10 @@
 package otus.homework.customview.lineChart
 
 import androidx.annotation.ColorInt
+import java.io.Serializable
 import java.util.*
 
-sealed interface LineChartState {
+sealed interface LineChartState : Serializable {
 
     data class Dates(
         private val items: List<LineChartItem<Calendar>>,
@@ -36,7 +37,7 @@ sealed interface LineChartState {
     data class LineChartItem<T>(
         val x: T,
         val y: Int
-    )
+    ) : Serializable
 
     companion object {
         fun LineChartState.requireDates() = this as Dates

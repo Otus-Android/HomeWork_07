@@ -2,6 +2,8 @@ package otus.homework.customview.lineChart
 
 import android.content.Context
 import android.graphics.*
+import android.os.Bundle
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.ColorInt
@@ -20,14 +22,12 @@ class LineChartView(
     private var mState: LineChartState = LineChartState.default()
 
     private val mLinePaint = Paint().apply {
-        // TODO: Перенести в атрибуты
         strokeWidth = 4f
         style = Paint.Style.STROKE
         flags = Paint.ANTI_ALIAS_FLAG
         pathEffect = CornerPathEffect(8f)
     }
     private val mTextPaint = Paint().apply {
-        // TODO: Перенести в атрибуты
         textSize = resources.getDimensionPixelSize(R.dimen.lineChartTextSize).toFloat()
         color = ContextCompat.getColor(context, R.color.axis_info)
         flags = Paint.ANTI_ALIAS_FLAG
@@ -54,6 +54,26 @@ class LineChartView(
 
         mState = state
         invalidate()
+    }
+
+    private val SUPER_STATE = "super_state"
+    private val STATE = "state"
+
+    override fun onSaveInstanceState(): Parcelable {
+        val bundle = Bundle()
+        bundle.putParcelable(SUPER_STATE, super.onSaveInstanceState())
+        bundle.putSerializable(STATE, mState)
+        return bundle
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        var restoredState = state
+        if (state is Bundle) {
+            mState = state.getSerializable(STATE) as? LineChartState
+                ?: LineChartState.default()
+            restoredState = state.getParcelable(SUPER_STATE)
+        }
+        super.onRestoreInstanceState(restoredState)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -160,7 +180,7 @@ class LineChartView(
         } else {
             canvas.drawText(
                 minDate.toString(),
-                (width ).toFloat() / 2,
+                (width).toFloat() / 2,
                 height.toFloat(),
                 mTextPaint
             )

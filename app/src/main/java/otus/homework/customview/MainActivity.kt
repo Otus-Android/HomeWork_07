@@ -24,7 +24,9 @@ class MainActivity : AppCompatActivity() {
         val pieChart = findViewById<PieChartView>(R.id.pieChart)
         val lineChart = findViewById<LineChartView>(R.id.lineChart)
         mState = createPieChartState()
-        pieChart.setValue(mState!!)
+        if (savedInstanceState == null) {
+            pieChart.setValue(mState!!)
+        }
 
         pieChart.setOnSectorSelectListener { state ->
             lineChart.setValue(state?.let { getAmountByDay(state) } ?: LineChartState.default())
@@ -69,10 +71,12 @@ class MainActivity : AppCompatActivity() {
                     y = it.amount
                 )
             }.groupBy { it.x.get(Calendar.DAY_OF_MONTH) }
-            .mapValues { LineChartState.LineChartItem(
-                x = it.value.first().x,
-                y = it.value.sumOf { it.y }
-            ) }
+            .mapValues {
+                LineChartState.LineChartItem(
+                    x = it.value.first().x,
+                    y = it.value.sumOf { it.y }
+                )
+            }
         return LineChartState.Dates(
             items = items.values.toList(),
             color = pieChartColorState.color

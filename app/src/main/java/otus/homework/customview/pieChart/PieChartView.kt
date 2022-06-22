@@ -6,6 +6,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
+import android.os.Bundle
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -19,6 +21,7 @@ class PieChartView(
 ) : View(context, attrs) {
 
     private var mPieChartState: PieChartState = PieChartState.default()
+    private var mPreviousSelected: PieChartState.ColorState? = null
     private var mSelected: PieChartState.ColorState? = null
         set(value) {
             if (field != value) {
@@ -27,30 +30,43 @@ class PieChartView(
                 animateSelection()
             }
         }
-    private var mPreviousSelected: PieChartState.ColorState? = null
 
-    // TODO: Перенести в атрибуты
-    private val mStrokeWidth =
-        resources.getDimensionPixelSize(R.dimen.pieChartStrokeWidth).toFloat()
-    private val mPiePaint = Paint().apply {
-        strokeWidth = mStrokeWidth
-        style = Paint.Style.STROKE
-        flags = Paint.ANTI_ALIAS_FLAG
-    }
+    private val mMinSize = resources.getDimensionPixelSize(R.dimen.pieChartMinSize)
+    private val mMaxSelectedOffset = resources.getDimensionPixelSize(R.dimen.pieChartSelectedOffset)
+    private val mStrokeWidth: Float
+    private val mPiePaint = Paint()
     private val mTextPaint = Paint().apply {
-        // TODO: Перенести в атрибуты
         textSize = resources.getDimensionPixelSize(R.dimen.pieChartCenterTextSize).toFloat()
         textAlign = Paint.Align.CENTER
         flags = Paint.ANTI_ALIAS_FLAG
     }
-    private val mMinSize = resources.getDimensionPixelSize(R.dimen.pieChartMinSize)
-    private var mSize: Int? = null
+
     private var mOnSectorSelectListener: (PieChartState.ColorState?) -> Unit = {}
+
+    private var mSize: Int? = null
     private var mPieChartCenter = PointF(0f, 0f)
     private var mOutRadius = 0f
     private var mSelectedOffset = 0
-    private val mMaxSelectedOffset = resources.getDimensionPixelSize(R.dimen.pieChartSelectedOffset)
     private var mCenterTextValue: Int? = null
+
+    init {
+        val typedArray = context.theme.obtainStyledAttributes(
+            attrs, R.styleable.PieChartView, 0, 0
+        )
+
+        try {
+            mStrokeWidth = typedArray
+                .getDimensionPixelSize(R.styleable.PieChartView_chartWidth, 0).toFloat()
+        } finally {
+            typedArray.recycle()
+        }
+
+        mPiePaint.apply {
+            strokeWidth = mStrokeWidth
+            style = Paint.Style.STROKE
+            flags = Paint.ANTI_ALIAS_FLAG
+        }
+    }
 
     fun setValue(pieChartState: PieChartState) {
         if (mPieChartState == pieChartState) {
@@ -91,6 +107,28 @@ class PieChartView(
         }
 
         return true
+    }
+
+    override fun onSaveInstanceState(): Parcelable {
+        val bundle = Bundle()
+        bundle.putParcelable(SUPER_STATE, super.onSaveInstanceState())
+        bundle.putSerializable(STATE, mPieChartState)
+        bundle.putSerializable(PREVIOUS, mPreviousSelected)
+        bundle.putSerializable(SELECTED, mSelected)
+        return bundle
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        var restoredState = state
+        if (state is Bundle) {
+            mPieChartState = state.getSerializable(STATE) as? PieChartState
+                ?: PieChartState.default()
+            mPreviousSelected = state.getSerializable(PREVIOUS) as? PieChartState.ColorState
+            mSelected = state.getSerializable(SELECTED) as? PieChartState.ColorState
+
+            restoredState = state.getParcelable(SUPER_STATE)
+        }
+        super.onRestoreInstanceState(restoredState)
     }
 
     private fun findSector(event: MotionEvent) {
@@ -260,6 +298,10 @@ class PieChartView(
     companion object {
         private const val DEFAULT_CENTER_TEXT = "-"
         private const val START_ANGLE = -90f
+        private const val SUPER_STATE = "superState"
+        private const val STATE = "state"
+        private const val PREVIOUS = "previous"
+        private const val SELECTED = "selected"
     }
 
 }
