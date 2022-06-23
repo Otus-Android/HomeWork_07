@@ -17,15 +17,17 @@ class MainActivity : AppCompatActivity() {
             Item::class.java).type
         val items = Gson().fromJson<ArrayList<Item>>(result, type)
 
+        val graphView = findViewById<GraphView>(R.id.graphView)
+        graphView.setCoordinate(items)
+        graphView.setItems(items, null)
+
         val pieChartView = findViewById<PieChartView>(R.id.pieChartView)
         pieChartView.setItems(items)
         pieChartView.categoryClickedListener = object : PieChartView.Listener {
             override fun clickCategory(category: Category) {
+                graphView.setItems(category.items, category.color)
                 Log.d("MainActivity", "category ${category.toString()}")
             }
         }
-
-        val graphView = findViewById<GraphView>(R.id.graphView)
-        graphView.setItems(items)
     }
 }

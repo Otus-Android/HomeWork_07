@@ -3,6 +3,7 @@ package otus.homework.customview
 import android.os.Parcel
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import java.util.*
 
 data class Item (
     @SerializedName("id")
@@ -20,7 +21,7 @@ data class Item (
     @SerializedName("time")
     val time: Long
 
-    ): Parcelable {
+): Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
         parcel.readString(),
@@ -28,6 +29,19 @@ data class Item (
         parcel.readString(),
         parcel.readLong()
     ) {
+    }
+
+    val date: Date
+        get() = removeTime(Date(time * 1000L))
+
+    fun removeTime (date: Date): Date {
+        return Calendar.getInstance().apply {
+            time = date
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.time
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

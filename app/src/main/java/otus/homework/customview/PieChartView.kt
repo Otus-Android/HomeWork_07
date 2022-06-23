@@ -8,9 +8,18 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.LinkedHashMap
 
 
 class PieChartView(context: Context, attrs: AttributeSet) : View(context, attrs) {
+
+    companion object {
+        val colors = arrayListOf(Color.YELLOW, Color.CYAN, Color.GRAY, Color.GREEN, Color.MAGENTA,
+            Color.RED, Color.WHITE, Color.LTGRAY, Color.DKGRAY, Color.BLACK)
+    }
 
     private val widthDefault = (200 * context.resources.displayMetrics.density).toInt()
     private val heightDefault = (450 * context.resources.displayMetrics.density).toInt()
@@ -25,8 +34,6 @@ class PieChartView(context: Context, attrs: AttributeSet) : View(context, attrs)
     }
     private var totalWeight = 1
     private val rect = RectF()
-    private var colors = arrayListOf(Color.YELLOW, Color.CYAN, Color.GRAY, Color.GREEN, Color.MAGENTA,
-        Color.RED, Color.WHITE, Color.LTGRAY, Color.DKGRAY, Color.BLACK)
     private var categories: LinkedHashMap<String, Category> = LinkedHashMap()
     private var selectedCategory: Category? = null
 
@@ -35,7 +42,6 @@ class PieChartView(context: Context, attrs: AttributeSet) : View(context, attrs)
     interface Listener {
         fun clickCategory(category: Category)
     }
-
 
     fun setItems(items: ArrayList<Item>) {
         this.categories.clear()
@@ -193,17 +199,13 @@ class PieChartView(context: Context, attrs: AttributeSet) : View(context, attrs)
         }
     }
 
-//    override fun onSaveInstanceState(): Parcelable = bundleOf(
-//        "category" to selectedCategory,
-//        "superState" to super.onSaveInstanceState()
-//    )
     override fun onSaveInstanceState(): Parcelable =
-    Bundle().apply {
-        putParcelable("selectedCategory", selectedCategory)
-        putSerializable("categoryes", categories)
-        putInt("totalWeight", totalWeight)
-        putParcelable("superState", super.onSaveInstanceState())
-    }
+        Bundle().apply {
+            putParcelable("selectedCategory", selectedCategory)
+            putSerializable("categoryes", categories)
+            putInt("totalWeight", totalWeight)
+            putParcelable("superState", super.onSaveInstanceState())
+        }
 
 
     override fun onRestoreInstanceState(state: Parcelable?) = super.onRestoreInstanceState(

@@ -1,54 +1,77 @@
 package otus.homework.customview
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Path
+import android.graphics.*
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
-class GraphView(context: Context, attrs: AttributeSet): View(context, attrs) {
+class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     private val widthDefault = (200 * context.resources.displayMetrics.density).toInt()
     private val heightDefault = (450 * context.resources.displayMetrics.density).toInt()
 
     private var heightMax = 1
-    private var daysMoneySpent: ArrayList<DayMoneySpent>? = ArrayList()
+    private var categories: LinkedHashMap<String, Category> = LinkedHashMap()
+    var startDate: Int = 0
+    var endDate: Int = 1
+    var rangeDate = 1
+    val sdf = SimpleDateFormat("dd", Locale.getDefault())
+    var items: ArrayList<Item>? = null
+
     private var paint = Paint().apply {
         style = Paint.Style.STROKE
         flags = Paint.ANTI_ALIAS_FLAG
         color = Color.WHITE
         strokeWidth = 2 * context.resources.displayMetrics.density
     }
+
     private var path = Path()
 
-    fun setItems(items: ArrayList<Item>) {
-        this.daysMoneySpent!!.clear()
-        items.sortedBy { it.time }.forEach { item ->
-
-            var lastElement: DayMoneySpent? = null
-            daysMoneySpent!!.forEach {
-                if (it.date == item.time) {
-                    lastElement = it
-                    return@forEach
-                }
-            }
-            if (lastElement != null) {
-                lastElement!!.totalAmount = lastElement!!.totalAmount + item.amount
-            } else {
-                daysMoneySpent!!.add(DayMoneySpent(item.amount, item.time))
+    fun setCoordinate(items: ArrayList<Item>?) {
+        items?.let {
+            val dates = it.groupBy { it.date }
+            startDate = dates.keys.minOf { sdf.format(it).toInt() }
+            endDate = dates.keys.maxOf { sdf.format(it).toInt() }
+            rangeDate = (endDate - startDate)
+        }
+        val categories = items?.groupBy { it.category }
+        categories?.values?.forEach{
+            val sum = it.sumOf { it.amount }
+            if (heightMax < sum) {
+                heightMax = sum
             }
         }
+    }
 
-        heightMax = daysMoneySpent!!.maxOf { it.totalAmount}
-
+    fun setItems(items: ArrayList<Item>?, color: Int?) {
+        categories.clear()
+        this.items = items
+        items?.sortedBy { it.date }?.forEach {
+            if (categories.containsKey(it.category)) {
+                val category = categories.get(it.category)
+                category!!.items?.add(it)
+                category.totalAmount = category.totalAmount + it.amount
+            } else {
+                categories.put(
+                    it.category!!,
+                    Category(
+                        it.category,
+                        arrayListOf(it),
+                        it.amount,
+                        color ?: PieChartView.colors.get(categories.size)
+                    )
+                )
+            }
+        }
         requestLayout()
         invalidate()
-
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -61,21 +84,46 @@ class GraphView(context: Context, attrs: AttributeSet): View(context, attrs) {
         setMeasuredDimension(width, height)
     }
 
+    var dateByValue = TreeMap<Int, Int>()
+
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        val first = daysMoneySpent!!.first()
+        paint.color = Color.BLACK
+        canvas?.drawPaint(paint)
 
-        path.moveTo(0f, ((first.totalAmount.toDouble()/heightMax.toDouble()) * height).toFloat())
+        categories.values.forEach {
+            val date = it.items?.groupBy { it.date }
+            dateByValue.clear()
 
-        for (index in 0 until daysMoneySpent!!.size) {
-            val x = (index.toDouble()/daysMoneySpent!!.size.toDouble() * width).toFloat()
-            val y = ((daysMoneySpent!!.get(index).totalAmount.toDouble()/heightMax.toDouble()) * height).toFloat()
-            path.lineTo(x, y)
-            if (index+1 == daysMoneySpent!!.size) {
-                path.lineTo(width.toFloat(), y)
+            date?.forEach {
+                dateByValue.put(sdf.format(it.key).toInt(), it.value.sumOf { it.amount })
             }
+            path.reset()
+
+            path.moveTo(0f,
+                (((dateByValue.get(dateByValue.keys.minOf { it })?.toDouble()
+                    ?: 1.0) / heightMax.toDouble()) * height).toFloat())
+
+            var lastY = 0F
+            for (i in startDate until endDate) {
+                val x = (((i - startDate.toDouble()) / rangeDate.toDouble()) * width).toFloat()
+
+                var y = if (dateByValue.containsKey(i)) {
+                    Log.d("GraphViewcalculatey", "category ${it.name}dateByValue.get(i) ${dateByValue.get(i)}  heightMax.toDouble() ${heightMax.toDouble()} height $height")
+                    (((dateByValue.get(i) ?: 1).toDouble() / heightMax.toDouble()) * height).toFloat()
+                } else {
+                    0F
+                }
+                lastY += y
+                Log.d("GraphView", "GraphViewx $x  rangeDate $rangeDate width $width")
+                Log.d("GraphView", "GraphViewy ${height - lastY}  heightMax $heightMax height $height")
+                path.lineTo(x, (height - lastY))
+            }
+            path.lineTo(width.toFloat(), (height - lastY))
+
+            paint.color = it.color
+            canvas?.drawPath(path, paint)
         }
-        canvas?.drawPath(path, paint)
     }
 
     private fun measureSize(mode: Int, size: Int, sizeMax: Int) = when (mode) {
@@ -100,7 +148,10 @@ class GraphView(context: Context, attrs: AttributeSet): View(context, attrs) {
     override fun onSaveInstanceState(): Parcelable =
         Bundle().apply {
             putInt("heightMax", heightMax)
-            putParcelableArrayList("daysMoneySpent", daysMoneySpent)
+            putInt("startDate", startDate)
+            putInt("endDate", endDate)
+            putInt("rangeDate", rangeDate)
+            putParcelableArrayList("items", items)
             putParcelable("superState", super.onSaveInstanceState())
         }
 
@@ -108,7 +159,10 @@ class GraphView(context: Context, attrs: AttributeSet): View(context, attrs) {
     override fun onRestoreInstanceState(state: Parcelable?) = super.onRestoreInstanceState(
         if (state is Bundle) {
             heightMax = state.getInt("heightMax")
-            daysMoneySpent = state.getParcelableArrayList("daysMoneySpent")
+            startDate = state.getInt("startDate")
+            endDate = state.getInt("endDate")
+            rangeDate = state.getInt("rangeDate")
+            items = state.getParcelableArrayList("items")
             state.getParcelable("superState")
         } else {
             state
