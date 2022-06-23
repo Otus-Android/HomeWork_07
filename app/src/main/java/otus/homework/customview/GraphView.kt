@@ -100,9 +100,7 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
             }
             path.reset()
 
-            path.moveTo(0f,
-                (((dateByValue.get(dateByValue.keys.minOf { it })?.toDouble()
-                    ?: 1.0) / heightMax.toDouble()) * height).toFloat())
+            path.moveTo(0f, height.toFloat())
 
             var lastY = 0F
             for (i in startDate until endDate) {
@@ -168,5 +166,4 @@ class GraphView(context: Context, attrs: AttributeSet) : View(context, attrs) {
             state
         }
     )
-
 }

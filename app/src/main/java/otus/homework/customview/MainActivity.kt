@@ -1,8 +1,13 @@
 package otus.homework.customview
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.animation.LinearInterpolator
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.motion.widget.MotionLayout
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -28,6 +33,32 @@ class MainActivity : AppCompatActivity() {
                 graphView.setItems(category.items, category.color)
                 Log.d("MainActivity", "category ${category.toString()}")
             }
+        }
+
+        val motionLayout = findViewById<MotionLayout>(R.id.motion_layout)
+
+//        motionLayout.transitionToEnd()
+        animationAlpha(pieChartView)
+        animationScale(pieChartView)
+    }
+
+    fun animationAlpha(view: View) {
+        ObjectAnimator.ofFloat(view, View.ALPHA, 0.3F,  1F)
+            .setDuration(1000)
+            .apply {
+                start()
+            }
+    }
+
+    fun animationScale(view: View) {
+        ValueAnimator.ofFloat(0.2F, 1F).apply {
+            interpolator = LinearInterpolator()
+            duration = 1000
+            addUpdateListener {
+                view.scaleX = it.animatedValue as Float
+                view.scaleY = it.animatedValue as Float
+            }
+            start()
         }
     }
 }
