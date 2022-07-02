@@ -2,7 +2,7 @@
 <resources>
     <dimen name="pieChartStrokeWidth">28dp</dimen>
     <dimen name="pieChartCenterTextSize">56dp</dimen>
-    <dimen name="pieChartMinSize">200dp</dimen>
+    <dimen name="pieChartMinSize">400dp</dimen>
     <dimen name="pieChartSelectedOffset">4dp</dimen>
     <dimen name="lineChartTextSize">12sp</dimen>
 </resources>
