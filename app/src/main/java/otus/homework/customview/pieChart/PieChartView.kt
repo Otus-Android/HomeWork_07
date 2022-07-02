@@ -47,7 +47,7 @@ class PieChartView(
     private var mPieChartCenter = PointF(0f, 0f)
     private var mOutRadius = 0f
     private var mSelectedOffset = 0
-    private var mCenterTextValue: Int? = null
+    private var mCenterTextValue: Int? = 0
 
     init {
         val typedArray = context.theme.obtainStyledAttributes(
@@ -113,7 +113,6 @@ class PieChartView(
         val bundle = Bundle()
         bundle.putParcelable(SUPER_STATE, super.onSaveInstanceState())
         bundle.putSerializable(STATE, mPieChartState)
-        bundle.putSerializable(PREVIOUS, mPreviousSelected)
         bundle.putSerializable(SELECTED, mSelected)
         return bundle
     }
@@ -123,7 +122,6 @@ class PieChartView(
         if (state is Bundle) {
             mPieChartState = state.getSerializable(STATE) as? PieChartState
                 ?: PieChartState.default()
-            mPreviousSelected = state.getSerializable(PREVIOUS) as? PieChartState.ColorState
             mSelected = state.getSerializable(SELECTED) as? PieChartState.ColorState
 
             restoredState = state.getParcelable(SUPER_STATE)
@@ -300,7 +298,6 @@ class PieChartView(
         private const val START_ANGLE = -90f
         private const val SUPER_STATE = "superState"
         private const val STATE = "state"
-        private const val PREVIOUS = "previous"
         private const val SELECTED = "selected"
     }
 

@@ -1,25 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#fff"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <otus.homework.customview.pieChart.PieChartView
-        android:id="@+id/pieChart"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        app:chartWidth="@dimen/pieChartStrokeWidth"
-        android:padding="60dp" />
-
-    <otus.homework.customview.lineChart.LineChartView
-        android:id="@+id/lineChart"
+    <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_marginHorizontal="8dp"
-        android:layout_height="400dp" />
+        android:layout_height="match_parent"
+        android:background="#fff"
+        android:orientation="vertical"
+        tools:context=".MainActivity">
 
-</LinearLayout>
+        <otus.homework.customview.pieChart.PieChartView
+            android:id="@+id/pieChart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:padding="60dp"
+            app:chartWidth="@dimen/pieChartStrokeWidth" />
+
+        <otus.homework.customview.lineChart.LineChartView
+            android:id="@+id/lineChart"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:layout_marginHorizontal="8dp" />
+
+    </LinearLayout>
+
+</FrameLayout>

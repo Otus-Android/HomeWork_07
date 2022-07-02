@@ -36,12 +36,14 @@ class LineChartView(
     private val mGradientPaint = Paint().apply {
         textAlign = Paint.Align.CENTER
         pathEffect = CornerPathEffect(8f)
+        flags = Paint.ANTI_ALIAS_FLAG
     }
 
     private val mAxisPaint = Paint().apply {
         strokeWidth = 4f
         style = Paint.Style.STROKE
         color = ContextCompat.getColor(context, R.color.axis)
+        flags = Paint.ANTI_ALIAS_FLAG
     }
 
     private val mLinePath = Path()
@@ -55,9 +57,6 @@ class LineChartView(
         mState = state
         invalidate()
     }
-
-    private val SUPER_STATE = "super_state"
-    private val STATE = "state"
 
     override fun onSaveInstanceState(): Parcelable {
         val bundle = Bundle()
@@ -240,6 +239,11 @@ class LineChartView(
 
     private fun resetPaths() {
         mLinePath.reset()
+    }
+
+    companion object {
+        private const val SUPER_STATE = "super_state"
+        private const val STATE = "state"
     }
 
 }
