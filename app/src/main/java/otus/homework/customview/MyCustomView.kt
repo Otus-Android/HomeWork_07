@@ -12,8 +12,11 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.ColorInt
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import kotlin.math.atan2
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 
@@ -86,6 +89,28 @@ class MyCustomView @JvmOverloads constructor(
         strokeWidth = 10f
     }
 
+    private val circlePath = Path()
+
+    private val blurFilter = BlurMaskFilter(16f, BlurMaskFilter.Blur.SOLID)
+
+    private val circleColor = Color.argb(230, 255, 255, 255)
+
+    private val circleTextPaint = Paint().apply {
+        color = Color.BLACK
+        style = Paint.Style.FILL
+        flags = Paint.ANTI_ALIAS_FLAG
+        textSize = 40f
+        textAlign = Paint.Align.CENTER
+    }
+
+    private val circlePaint = Paint().apply {
+        color = circleColor
+        style = Paint.Style.FILL
+        flags = Paint.ANTI_ALIAS_FLAG
+        strokeWidth = 10f
+        maskFilter = blurFilter
+    }
+
     override fun onDraw(canvas: Canvas) {
         canvas.drawRGB(255, 0, 0)
 
@@ -98,6 +123,11 @@ class MyCustomView @JvmOverloads constructor(
                 canvas = canvas
             )
         }
+
+
+        circlePath.addCircle(x0, y0, smallRadius - 5f.toPx, Path.Direction.CW)
+        canvas.drawPath(circlePath, circlePaint)
+        canvas.drawText("20199$", x0, y0, circleTextPaint)
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -180,6 +210,7 @@ class MyCustomView @JvmOverloads constructor(
 
         eachCategoriesInPercents.map { it.value }.forEachIndexed { index, fl ->
             arrayOfSegments[index].segmentWidth = maxSegmentSize * (fl + 0.4f)
+            arrayOfSegments[index].percents = fl * 100f
         }
 
     }
@@ -189,10 +220,23 @@ data class Segment(
     private val startAngel: Float,
     private val endAngel: Float,
     var segmentWidth: Float,
-    @ColorInt var color: Int = generateRandomColor()
+    @ColorInt var color: Int = generateRandomColor(),
+    var percents: Float = 0f
 ) {
     private val path = Path()
     private val blurFilter = BlurMaskFilter(8f, BlurMaskFilter.Blur.SOLID)
+
+    private val textPaint = Paint().apply {
+        color = Color.WHITE
+        style = Paint.Style.FILL
+        flags = Paint.ANTI_ALIAS_FLAG
+        textSize = 20f
+        textAlign = Paint.Align.CENTER
+    }
+
+    private val df = DecimalFormat("#.##").apply {
+        roundingMode = RoundingMode.DOWN
+    }
 
     fun onDraw(
         x0: Float,
@@ -215,6 +259,7 @@ data class Segment(
         paint.maskFilter = blurFilter
 
         canvas.drawPath(path, paint)
+        canvas.drawTextOnPath("${df.format(percents)}%", path, 0f, - segmentWidth / 2 - 30f, textPaint);
     }
 
     fun isTouchInSegment1(
