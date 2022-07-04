@@ -2,6 +2,7 @@ package otus.homework.customview
 
 import android.content.Context
 import android.content.res.Resources
+import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -66,9 +67,9 @@ class MyCustomView @JvmOverloads constructor(
         setMeasuredDimension(minSideValue, minSideValue)
     }
 
-    private val maxSegmentSize = 50f.toPx
+    private val maxSegmentSize = 80f.toPx
 
-    private val smallRadius = 100f.toPx
+    private val smallRadius = 80f.toPx
 
     private val x0
         get() = min(measuredHeight, measuredWidth).toFloat() / 2
@@ -76,31 +77,7 @@ class MyCustomView @JvmOverloads constructor(
     private val y0
         get() = min(measuredHeight, measuredWidth).toFloat() / 2
 
-    private val segment1 = Segment(
-        startAngel = 0f,
-        endAngel = 30f,
-        segmentWidth = 10f.toPx
-    )
-
-    private val segment2 = Segment(
-        startAngel = 35f,
-        endAngel = 65f,
-        segmentWidth = 25f.toPx
-    )
-
-    private val segment3 = Segment(
-        startAngel = 75f,
-        endAngel = 135f,
-        segmentWidth = 20f.toPx
-    )
-
-    private val segment4 = Segment(
-        startAngel = 140f,
-        endAngel = 355f,
-        segmentWidth = 50f.toPx
-    )
-
-    private val arrayOfSegments = arrayListOf<Segment>(segment1, segment2, segment3, segment4)
+    private val arrayOfSegments = mutableListOf<Segment>()
 
     private val linePaint = Paint().apply {
         color = Color.GREEN
@@ -154,15 +131,68 @@ class MyCustomView @JvmOverloads constructor(
         }
         return true
     }
+
+    fun setData(dataEntity: SegmentsDataEntity) {
+        Log.i("myDebug", "onCreate: dataEntity -> $dataEntity")
+
+        val sumOfAllCategories = dataEntity.data.sumOf { it.amount }
+        val groupOfCategories = dataEntity.data.groupBy { it.category }
+        val countOfDelimiters = groupOfCategories.size
+        val sizeOfDelimitersInPercents = 1f
+        val allSegmentSize = 100
+        Log.i("myDebug", "setData: sumOfAllCategories -> $sumOfAllCategories")
+        Log.i("myDebug", "setData: groupOfCategories -> $groupOfCategories")
+        Log.i("myDebug", "setData: countOfGroups -> $countOfDelimiters")
+        Log.i("myDebug", "setData: sizeOfDelimitersInPercents -> $sizeOfDelimitersInPercents")
+        Log.i("myDebug", "setData: allSegmentSize -> $allSegmentSize")
+        val sumOfEachCategories = groupOfCategories.mapValues {
+            it.value.sumOf { items -> items.amount }
+        }
+        val eachCategoriesInPercents =
+            sumOfEachCategories.mapValues { it.value * allSegmentSize / 100f * 1 / sumOfAllCategories }
+        val sumOfCategories2 = eachCategoriesInPercents.map { it.value }.sum()
+
+        Log.i("myDebug", "setData: sumOfEachCategories -> $sumOfEachCategories")
+        Log.i("myDebug", "setData: eachCategoriesInPercents -> $eachCategoriesInPercents")
+        Log.i("myDebug", "setData: sumOfCategories2 -> $sumOfCategories2")
+
+
+        val eachCategoriesInDegrees = eachCategoriesInPercents.mapValues { it.value * 360 }
+        val eachCategoriesInDegreesSum = eachCategoriesInPercents.map { it.value }.sum()
+        Log.i("myDebug", "setData: eachCategoriesInDegrees -> $eachCategoriesInDegrees")
+        Log.i("myDebug", "setData: eachCategoriesInDegreesSum -> $eachCategoriesInDegreesSum")
+
+        eachCategoriesInDegrees.map { it.value }.fold(0f) { acc, fl ->
+            Log.i("myDebug", "setData: acc -> $acc, fl -> $fl")
+            val result = acc + fl
+
+            val segmentUIEntity = Segment(
+                startAngel = acc,
+                endAngel = result - 3.6f * sizeOfDelimitersInPercents,
+                segmentWidth = 0f.toPx
+            )
+
+            Log.i("myDebug", "setData: segmentUIEntity -> $segmentUIEntity")
+            arrayOfSegments.add(segmentUIEntity)
+
+            result
+        }
+
+        eachCategoriesInPercents.map { it.value }.forEachIndexed { index, fl ->
+            arrayOfSegments[index].segmentWidth = maxSegmentSize * (fl + 0.4f)
+        }
+
+    }
 }
 
-class Segment(
+data class Segment(
     private val startAngel: Float,
     private val endAngel: Float,
-    val segmentWidth: Float,
+    var segmentWidth: Float,
     @ColorInt var color: Int = generateRandomColor()
 ) {
     private val path = Path()
+    private val blurFilter = BlurMaskFilter(8f, BlurMaskFilter.Blur.SOLID)
 
     fun onDraw(
         x0: Float,
@@ -182,6 +212,7 @@ class Segment(
 
         paint.color = color
         paint.strokeWidth = segmentWidth
+        paint.maskFilter = blurFilter
 
         canvas.drawPath(path, paint)
     }
