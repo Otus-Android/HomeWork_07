@@ -1,27 +1,17 @@
 package otus.homework.customview
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
+import android.graphics.*
 import android.icu.text.SimpleDateFormat
-import android.icu.util.Calendar
 import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.google.gson.Gson
-import java.lang.Integer.min
 import java.time.*
+import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.math.PI
-import kotlin.math.atan2
-import kotlin.math.sqrt
-import kotlin.random.Random
 
 
 @RequiresApi(Build.VERSION_CODES.N)
@@ -38,7 +28,7 @@ class CustomView2: View {
         dataPayLoad = gson.fromJson(buffer, Array<PayLoad>::class.java)
     }
 
-    val sdf = SimpleDateFormat("yyyy-MM-dd", Locale("ru", "RU"))
+    private val sdf = SimpleDateFormat("yyyy-MM-dd")
     private var resultDraw = dataPayLoad
         .groupBy { sdf.format(Date(it.time*1000)) }
         .mapValues { it -> it.value.sumBy { it.amount } }
@@ -49,19 +39,27 @@ class CustomView2: View {
     private val maxValues = resultDraw.maxOf { it.value } * 1.1
 
     //fill empty dates
-//    init {
-//        var date: LocalDate = minDate
-//        do {
-//            date = date.plusDays(1)
-//            val str = sdf.format(date)
-//            //if (!resultDraw.containsKey(str)) resultDraw.plus(Pair(sdf.format(date),0))
-//        } while (date < maxDate)
-//    }
+    init {
+        var date: LocalDate = minDate
+        do {
+            val str = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            if (!resultDraw.containsKey(str)){
+                resultDraw.plus(Pair(str,0))
+            }
+            date = date.plusDays(1)
+        } while (date < maxDate)
+    }
 
+    private val paintFill = Paint().apply {
+        color = Color.rgb(255, 126,126)
+        style = Paint.Style.FILL
+    }
+
+    var pathFill =  Path()
     private val paintLine = Paint().apply {
         color = Color.RED
-        strokeWidth = 5f
-        style = Paint.Style.FILL
+        strokeWidth = 10f
+        style = Paint.Style.FILL_AND_STROKE
     }
     private val paintAxis = Paint().apply {
         color = Color.GRAY
@@ -77,7 +75,6 @@ class CustomView2: View {
         textSize = 50f
         textAlign = Paint.Align.CENTER
     }
-
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
@@ -102,7 +99,11 @@ class CustomView2: View {
         var count = 0f
         var oldX = 0f
         var oldY = 0f
-        if( countValues > 1  ) wColumn = ((width-2*margin) / (countValues-1)).toFloat()
+        pathFill.reset()
+        if( countValues > 1  ){
+            wColumn = ((width-2*margin) / (countValues-1)).toFloat()
+            pathFill.moveTo( margin, height - margin)
+        }
         for (data in resultDraw){
             if(count != 0f) {
                 canvas.drawLine(
@@ -115,7 +116,13 @@ class CustomView2: View {
             //vertical line
             canvas.drawLine( oldX , margin, oldX, height- margin, paintAxis)
             canvas.drawText(data.key.substring(8), oldX, height - margin/2, paintTextDate)
+            pathFill.lineTo( oldX, oldY)
             count++
+        }
+        if(oldX != 0f){
+            pathFill.lineTo( oldX, oldY)
+            pathFill.lineTo( width - margin, height - margin)
+            canvas.drawPath(pathFill, paintFill)
         }
 
         //horizontal lines and text
