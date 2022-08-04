@@ -18,12 +18,14 @@ import org.json.JSONException
 
 class MainActivity : AppCompatActivity() {
     lateinit var pieChartView: PieChartView
+    lateinit var plotView: PlotView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         pieChartView = findViewById(R.id.pie_chart)
+        plotView = findViewById(R.id.plot)
 
         val jsonString = resources.openRawResource(R.raw.payload).bufferedReader().use {
             it.readText()
@@ -44,7 +46,8 @@ class MainActivity : AppCompatActivity() {
                             amount = obj.getInt("amount"),
                             name = obj.getString("name"),
                             id = obj.getInt("id"),
-                            category = obj.getString("category")
+                            category = obj.getString("category"),
+                            time = obj.getLong("time")
                         )
                     )
                 }
@@ -54,7 +57,8 @@ class MainActivity : AppCompatActivity() {
             list
         }
         chartData?.let {
-            pieChartView.setData(it)
+            plotView.setData(it)
+//            pieChartView.setData(it)
         }
 
         val seekBar = findViewById<SeekBar>(R.id.seek)

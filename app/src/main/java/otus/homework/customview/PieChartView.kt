@@ -26,6 +26,7 @@ data class ChartData(
     val name: String,
     val id: Int,
     val category: String,
+    val time: Long
 )
 
 open class PieChartView @JvmOverloads constructor(
@@ -54,8 +55,8 @@ open class PieChartView @JvmOverloads constructor(
     var sectorClickListener: SectorClickListener? = null
 
     // cache drawing related variables
-    private var cacheDisplayHeight = context.resources.displayMetrics.run { heightPixels }
-    private var cacheDisplayWidth = context.resources.displayMetrics.run { widthPixels }
+    private var cacheDisplayHeight = context.resources.displayMetrics.heightPixels
+    private var cacheDisplayWidth = context.resources.displayMetrics.widthPixels
     private var cacheGraphCenterY: Int = 0
     private var cacheGraphCenterX: Int = 0
 
@@ -116,6 +117,7 @@ open class PieChartView @JvmOverloads constructor(
                 left + right.amount
             }
         )
+        cacheDataAmounts.clear()
     }
 
     fun setGroupByCategories(boolean: Boolean) {
@@ -126,7 +128,6 @@ open class PieChartView @JvmOverloads constructor(
     fun getGroupByCategories(): Boolean {
         return this.groupByCategories
     }
-
 
     private fun convertRadialToA(out: RectF, ro: Float, phi: Float) {
         val x = ro * cos(phi)
@@ -142,8 +143,6 @@ open class PieChartView @JvmOverloads constructor(
     private fun RectF.y() = top
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-
         val widthMode = View.MeasureSpec.getMode(widthMeasureSpec);
         val heightMode = MeasureSpec.getMode(heightMeasureSpec);
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
