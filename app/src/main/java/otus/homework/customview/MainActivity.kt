@@ -1,5 +1,6 @@
 package otus.homework.customview
 
+import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -12,106 +13,62 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 import org.json.JSONArray
 import org.json.JSONException
+import otus.homework.customview.databinding.ActivityMainBinding
+import java.util.Collections.emptyList
 
 
 class MainActivity : AppCompatActivity() {
-    lateinit var pieChartView: PieChartView
-    lateinit var plotView: PlotView
+    private lateinit var binding : ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        pieChartView = findViewById(R.id.pie_chart)
-        plotView = findViewById(R.id.plot)
+        val navHostFragment = binding.fragmentNavhost.getFragment<NavHostFragment>()
+        val navController = navHostFragment.navController
 
-        val jsonString = resources.openRawResource(R.raw.payload).bufferedReader().use {
-            it.readText()
-        }
-        val jsonArray = try {
-            JSONArray(jsonString)
-        } catch (e: JSONException) {
-            Toast.makeText(this, "Couldn't read resources json", Toast.LENGTH_SHORT).show()
-            null
-        }
-        val chartData = jsonArray?.let {
-            val list = mutableListOf<ChartData>()
-            try {
-                for (i in 0 until it.length()) {
-                    val obj = it.getJSONObject(i)
-                    list.add(
-                        ChartData(
-                            amount = obj.getInt("amount"),
-                            name = obj.getString("name"),
-                            id = obj.getInt("id"),
-                            category = obj.getString("category"),
-                            time = obj.getLong("time")
-                        )
-                    )
-                }
+        val bottomNav = binding.bottombar
+        bottomNav.setupWithNavController(navController)
+    }
+
+    companion object {
+        fun getChartData(context: Context) : List<ChartData> {
+            val jsonString = context.resources.openRawResource(R.raw.payload).bufferedReader().use {
+                it.readText()
+            }
+            val jsonArray = try {
+                JSONArray(jsonString)
             } catch (e: JSONException) {
-                Toast.makeText(this, "Error when parsing", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Couldn't read resources json", Toast.LENGTH_SHORT).show()
+                null
             }
-            list
-        }
-        chartData?.let {
-            plotView.setData(it)
-//            pieChartView.setData(it)
-        }
-
-        val seekBar = findViewById<SeekBar>(R.id.seek)
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                pieChartView.setOffset(progress * 3.6f)
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-
-        pieChartView.sectorClickListener = object  : PieChartView.SectorClickListener {
-            override fun onSectorClick(sectorName: String) {
-            }
-        }
-    }
-
-    fun onSelectInterpolator(type: InterpolatorEnum) {
-        pieChartView.interpolator = when (type) {
-            InterpolatorEnum.LINEAR -> LinearInterpolator()
-            InterpolatorEnum.ACCELERATE_DEC -> AccelerateDecelerateInterpolator()
-            InterpolatorEnum.ACCELERATE -> AccelerateInterpolator()
-            InterpolatorEnum.LINEAR_OUT_SLOW_IN -> LinearOutSlowInInterpolator()
-            InterpolatorEnum.FAST_OUT_LINEAR_IN -> FastOutLinearInInterpolator()
-            InterpolatorEnum.FAST_OUT_SLOW_IN -> FastOutSlowInInterpolator()
-        }
-    }
-
-    fun onGroupByCategories(boolean: Boolean) {
-        pieChartView.setGroupByCategories(boolean)
-    }
-
-    public enum class Items { GROUP_BY_CATEGORIES }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if (item.itemId == R.id.settings) {
-            val bottomSheetFragmentDialog = BottomSheetFragment().apply {
-                arguments = Bundle().apply {
-                    putBoolean(Items.GROUP_BY_CATEGORIES.name, pieChartView.getGroupByCategories())
+            return jsonArray?.let {
+                val list = mutableListOf<ChartData>()
+                try {
+                    for (i in 0 until it.length()) {
+                        val obj = it.getJSONObject(i)
+                        list.add(
+                            ChartData(
+                                amount = obj.getInt("amount"),
+                                name = obj.getString("name"),
+                                id = obj.getInt("id"),
+                                category = obj.getString("category"),
+                                time = obj.getLong("time")
+                            )
+                        )
+                    }
+                } catch (e: JSONException) {
+                    Toast.makeText(context, "Error when parsing", Toast.LENGTH_SHORT).show()
                 }
-            }
-            bottomSheetFragmentDialog.show(supportFragmentManager, "OPTIONS")
-            return true
-        } else {
-            super.onOptionsItemSelected(item)
+                list
+            } ?: emptyList()
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        val inflater = menuInflater
-        inflater.inflate(R.menu.menu, menu)
-        return true;
     }
 }
 
