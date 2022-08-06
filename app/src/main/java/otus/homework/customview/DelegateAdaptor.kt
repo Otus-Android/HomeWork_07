@@ -12,7 +12,7 @@ interface IDataDelegator {
 
 
     interface IHoldarCreator {
-        fun createViewHolder(parent: ViewGroup): DelegateAdaptor.Holdar
+        fun createViewHolder(parent: ViewGroup): DelegateAdaptor.Holder
     }
 }
 
@@ -34,25 +34,25 @@ class DataDelegator(
     }
 }
 
-class HoldarCreator(val lambda: (parent: ViewGroup) -> DelegateAdaptor.Holdar) :
+class HolderCreator(val lambda: (parent: ViewGroup) -> DelegateAdaptor.Holder) :
     IDataDelegator.IHoldarCreator {
-    override fun createViewHolder(parent: ViewGroup): DelegateAdaptor.Holdar {
+    override fun createViewHolder(parent: ViewGroup): DelegateAdaptor.Holder {
         return lambda(parent)
     }
 }
 
 class DelegateAdaptor(private val dataDelegator: IDataDelegator) :
-    RecyclerView.Adapter<DelegateAdaptor.Holdar>() {
+    RecyclerView.Adapter<DelegateAdaptor.Holder>() {
 
-    abstract class Holdar(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    abstract class Holder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         abstract fun bind(position: Int)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holdar {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         return dataDelegator.getHolderCreator(viewType).createViewHolder(parent)
     }
 
-    override fun onBindViewHolder(holder: Holdar, position: Int) {
+    override fun onBindViewHolder(holder: Holder, position: Int) {
         holder.bind(position)
     }
 
@@ -68,15 +68,15 @@ class DelegateAdaptor(private val dataDelegator: IDataDelegator) :
 fun createHoldar(
     itemView: View,
     binder: (position: Int) -> Unit,
-): DelegateAdaptor.Holdar {
-    return object : DelegateAdaptor.Holdar(itemView) {
+): DelegateAdaptor.Holder {
+    return object : DelegateAdaptor.Holder(itemView) {
         override fun bind(position: Int) {
             return binder(position)
         }
     }
 }
 
-class DelegateAdaptorBuildor {
+class TypedDelegateAdapterBuilder {
     interface CellProvider<T : Any> {
         fun getItem(position: Int): T
         fun updateMapping(map: MutableList<T>)
@@ -99,7 +99,7 @@ class DelegateAdaptorBuildor {
                 // just run through types and fill each list
                 val provider : MutableList<Any> = positionToCellsMap.getMapping() as MutableList<Any>
                 val currentSize = provider.size
-                niggasIndicesList.add(currentSize)
+                indicesList.add(currentSize)
                 provider.add(value)
             }
         }
@@ -117,10 +117,10 @@ class DelegateAdaptorBuildor {
     private var cells: List<Any>? = null
     var currentCellsMapping: MutableMap<KClass<*>, CellProvider<*>> = mutableMapOf()
     var klassToViewType: MutableMap<KClass<*>, Int> = mutableMapOf()
-    var viewTypeToHoldar: MutableMap<Int, HoldarCreator> = mutableMapOf()
+    var viewTypeToHoldar: MutableMap<Int, HolderCreator> = mutableMapOf()
     var cellTypes: MutableList<Int> = mutableListOf()
 
-    val niggasIndicesList  : MutableList<Int> = mutableListOf()
+    val indicesList  : MutableList<Int> = mutableListOf()
 
     private fun getCellViewTypes(): List<Int> {
         val cells = cells ?: return emptyList()
@@ -129,7 +129,7 @@ class DelegateAdaptorBuildor {
         return cellTypes
     }
 
-    private fun getViewTypeToHolderMapping(): MutableMap<Int, HoldarCreator> {
+    private fun getViewTypeToHolderMapping(): MutableMap<Int, HolderCreator> {
         return viewTypeToHoldar
     }
 
@@ -146,7 +146,7 @@ class DelegateAdaptorBuildor {
                 object : CellProvider<T> {
                     val map = mutableListOf<T>()
                     override fun getItem(position: Int): T {
-                        return niggasIndicesList[position].let { map[it] }
+                        return indicesList[position].let { map[it] }
                     }
 
                     override fun updateMapping(map: MutableList<T>) {
@@ -169,17 +169,17 @@ class DelegateAdaptorBuildor {
         inline fun <reified T : Any> registerAndObtainHolder(
             kClass: KClass<T>,
             cellProvider: CellProvider<T>,
-            holdarCreator: (CellProvider<T>) -> HoldarCreator,
-        ): HoldarCreator {
+            holderCreator: (CellProvider<T>) -> HolderCreator,
+        ): HolderCreator {
             val viewType = klassToViewType[kClass]
                 ?: throw IllegalStateException("by moment of creating view holder view type must be registered for class, $kClass")
             return viewTypeToHoldar[viewType]
-                ?: holdarCreator(cellProvider).also { viewTypeToHoldar[viewType] = it }
+                ?: holderCreator(cellProvider).also { viewTypeToHoldar[viewType] = it }
         }
 
         inline fun <reified T : Any> registerTypeAndHoldar(
             kClass: KClass<T>,
-            holdarCreator: (CellProvider<T>) -> HoldarCreator,
+            holdarCreator: (CellProvider<T>) -> HolderCreator,
         ) {
             val provider = registerTypeAndObtainProvider(kClass)
             registerAndObtainHolder(kClass, provider, holdarCreator)
@@ -187,17 +187,16 @@ class DelegateAdaptorBuildor {
 
         inline fun <reified T : Any> registerTypeAndHoldarCreator(
             kClass: KClass<T>,
-            crossinline holdarCreatorLambda: (viewGroup: ViewGroup, CellProvider<T>) -> DelegateAdaptor.Holdar,
+            crossinline holdarCreatorLambda: (viewGroup: ViewGroup, CellProvider<T>) -> DelegateAdaptor.Holder,
         ) {
 
             val provider = registerTypeAndObtainProvider(kClass)
             val holdarCreationLambda = { cellProvider : CellProvider<T> ->
-                HoldarCreator { parent ->
+                HolderCreator { parent ->
                     holdarCreatorLambda(parent, provider)
                 }
             }
             registerAndObtainHolder(kClass, provider, holdarCreationLambda)
         }
-
     }
 }

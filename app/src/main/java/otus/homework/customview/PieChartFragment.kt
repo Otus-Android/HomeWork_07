@@ -8,6 +8,7 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.widget.SeekBar
 import androidx.core.view.MenuProvider
+import androidx.fragment.app.setFragmentResultListener
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
@@ -22,6 +23,40 @@ class PieChartFragment : Fragment() {
     ): View {
         binding = FragmentPieChartBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    private val menuProvider = object : MenuProvider {
+        override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+            menuInflater.inflate(R.menu.menu, menu)
+        }
+
+        override fun onMenuClosed(menu: Menu) {
+            menu.removeItem(R.id.settings)
+        }
+
+        override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+            return if (menuItem.itemId == R.id.settings) {
+                val bottomSheetFragmentDialog = BottomSheetFragment().apply {
+                    arguments = Bundle().apply {
+                        putBoolean(Items.GROUP_BY_CATEGORIES.name, this@PieChartFragment.binding.pieChart.getGroupByCategories())
+                    }
+                }
+                bottomSheetFragmentDialog.show(childFragmentManager, "OPTIONS")
+                bottomSheetFragmentDialog.setFragmentResultListener(BottomSheetFragment.RESULT) { requestKey: String, bundle: Bundle ->
+                    if (bundle.containsKey("group_by_categories")) {
+                        val group = bundle.getBoolean("group_by_categories")
+                        onGroupByCategories(group)
+                    }
+                    if (bundle.containsKey("interpolator")){
+                        val interpolator = bundle.getSerializable("interpolator") as InterpolatorEnum
+                        onSelectInterpolator(interpolator)
+                    }
+                }
+                true
+            } else {
+                false
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,25 +82,16 @@ class PieChartFragment : Fragment() {
             override fun onSectorClick(sectorName: String) {
             }
         }
-        activity?.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu, menu)
-            }
+    }
 
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return if (menuItem.itemId == R.id.settings) {
-                    val bottomSheetFragmentDialog = BottomSheetFragment().apply {
-                        arguments = Bundle().apply {
-                            putBoolean(Items.GROUP_BY_CATEGORIES.name, this@PieChartFragment.binding.pieChart.getGroupByCategories())
-                        }
-                    }
-                    bottomSheetFragmentDialog.show(childFragmentManager, "OPTIONS")
-                    true
-                } else {
-                    false
-                }
-            }
-        })
+    override fun onStart() {
+        super.onStart()
+        activity?.addMenuProvider(menuProvider)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        activity?.removeMenuProvider(menuProvider)
     }
 
     fun onGroupByCategories(boolean: Boolean) {
@@ -85,3 +111,10 @@ class PieChartFragment : Fragment() {
         }
     }
 }
+
+data class InterpolatorDelegateCell(
+    val type: InterpolatorEnum,
+    val name: String,
+)
+data class SomeOtherCell(val index: Int)
+enum class InterpolatorEnum { LINEAR, ACCELERATE_DEC, ACCELERATE, LINEAR_OUT_SLOW_IN, FAST_OUT_LINEAR_IN, FAST_OUT_SLOW_IN}

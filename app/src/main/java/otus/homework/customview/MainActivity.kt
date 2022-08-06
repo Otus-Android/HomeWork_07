@@ -72,9 +72,3 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-data class InterpolatorDelegateCell(
-    val type: InterpolatorEnum,
-    val name: String,
-)
-data class SomeOtherCell(val index: Int)
-enum class InterpolatorEnum { LINEAR, ACCELERATE_DEC, ACCELERATE, LINEAR_OUT_SLOW_IN, FAST_OUT_LINEAR_IN, FAST_OUT_SLOW_IN}
