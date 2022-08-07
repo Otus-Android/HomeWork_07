@@ -6,7 +6,10 @@ import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Paint.FontMetricsInt
 import android.graphics.Path
+import android.graphics.Rect
+import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -15,8 +18,9 @@ import androidx.annotation.ColorInt
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.min
-import kotlin.math.roundToInt
+import kotlin.math.sin
 import kotlin.random.Random
 
 
@@ -125,9 +129,9 @@ class MyCustomView @JvmOverloads constructor(
         }
 
 
-        circlePath.addCircle(x0, y0, smallRadius - 5f.toPx, Path.Direction.CW)
-        canvas.drawPath(circlePath, circlePaint)
-        canvas.drawText("20199$", x0, y0, circleTextPaint)
+//        circlePath.addCircle(x0, y0, smallRadius - 5f.toPx, Path.Direction.CW)
+//        canvas.drawPath(circlePath, circlePaint)
+//        canvas.drawText("20199$", x0, y0, circleTextPaint)
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -224,14 +228,22 @@ data class Segment(
     var percents: Float = 0f
 ) {
     private val path = Path()
-    private val blurFilter = BlurMaskFilter(8f, BlurMaskFilter.Blur.SOLID)
+    private val blurFilter = BlurMaskFilter(8f.toDp, BlurMaskFilter.Blur.SOLID)
 
     private val textPaint = Paint().apply {
-        color = Color.WHITE
+        color = Color.LTGRAY
         style = Paint.Style.FILL
         flags = Paint.ANTI_ALIAS_FLAG
         textSize = 20f
         textAlign = Paint.Align.CENTER
+    }
+
+    private val rectPaint = Paint().apply {
+        color = Color.LTGRAY
+        style = Paint.Style.STROKE
+        flags = Paint.ANTI_ALIAS_FLAG
+        strokeWidth = 2f
+        maskFilter = blurFilter
     }
 
     private val df = DecimalFormat("#.##").apply {
@@ -251,7 +263,8 @@ data class Segment(
             y0 - smallRadius - segmentWidth / 2,
             x0 + smallRadius + segmentWidth / 2,
             y0 + smallRadius + segmentWidth / 2,
-            startAngel, endAngel - startAngel
+            startAngel,
+            endAngel - startAngel
         )
 
         paint.color = color
@@ -259,7 +272,54 @@ data class Segment(
         paint.maskFilter = blurFilter
 
         canvas.drawPath(path, paint)
-        canvas.drawTextOnPath("${df.format(percents)}%", path, 0f, - segmentWidth / 2 - 30f, textPaint);
+        calculatePoint(
+            canvas = canvas,
+            smallRadius = smallRadius,
+            x0 = x0,
+            y0 = y0,
+            paint = paint,
+            offset = 50f
+        )
+    }
+
+    private val rectRoundOfText = RectF()
+
+    private fun calculatePoint(
+        canvas: Canvas,
+        smallRadius: Float,
+        x0: Float,
+        y0: Float,
+        paint: Paint,
+        offset: Float
+    ) {
+        val centerOfSegment = startAngel + (endAngel - startAngel) / 2
+        val alfa = centerOfSegment * Math.PI / 180
+
+        canvas.drawCircle(x0, y0, smallRadius, textPaint)
+
+
+        val x = x0 + (smallRadius + segmentWidth + offset) * cos(alfa).toFloat()
+        val y = y0 + (smallRadius + segmentWidth + offset) * sin(alfa).toFloat()
+
+
+        val text = "${df.format(percents)}%"
+        val measureText = textPaint.measureText(text)
+        val textSize = textPaint.textSize
+
+        val offset = 8f
+        val leftRect = x - measureText / 2 - offset
+        val topRect = y - textSize / 2 - offset
+        val rightRect = x + measureText / 2 + offset
+        val bottomRect = y + textSize / 2 + offset
+
+        rectRoundOfText.set(leftRect, topRect, rightRect, bottomRect)
+
+        val fontMetricsInt: FontMetricsInt = textPaint.fontMetricsInt
+        canvas.drawRoundRect(rectRoundOfText, 8f, 8f, rectPaint)
+
+        val centYText: Float =
+            rectRoundOfText.centerY() - (fontMetricsInt.top + fontMetricsInt.bottom) / 2
+        canvas.drawText(text, x, centYText, textPaint)
     }
 
     fun isTouchInSegment1(
