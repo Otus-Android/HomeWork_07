@@ -1,9 +1,9 @@
 # Custom View
 
 ## Screenshots
-<img src="static/piechart.png" width="300px"/>
-<img src="static/piechart_selected.png" width="300px"/>
-<img src="static/plot.png" width="300px"/>
+<img src="static/piechart.png" width="300px" style="inline-block"/>
+<img src="static/piechart_selected.png" width="300px" style="inline-block"/>
+<img src="static/plot.png" width="300px" style="inline-block"/>
 
 ## Задание 1. Реализовать кастом View - график Pie Chart, на котором будем визуализировать траты по категориям:
 
