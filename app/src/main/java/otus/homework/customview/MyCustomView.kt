@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import kotlin.math.min
@@ -22,8 +21,7 @@ class MyCustomView @JvmOverloads constructor(
 
     private val arrayOfSegments = mutableListOf<Segment>()
     private var amountOfAllCategoriesText = ""
-    private var currentMonthText =
-        "In september" // Специально оставил тут без выноса в ресурсы или через получение через json
+    private var currentMonthText = ""
 
     private val maxSegmentSize
         get() = min(measuredWidth, measuredHeight) / 6f
@@ -50,6 +48,7 @@ class MyCustomView @JvmOverloads constructor(
         style = Paint.Style.FILL
         flags = Paint.ANTI_ALIAS_FLAG
     }
+    private val circleOffset = 5f.toPx
 
     private val amountTextPaint = Paint().apply {
         color = Color.GRAY
@@ -160,6 +159,8 @@ class MyCustomView @JvmOverloads constructor(
         val allSegmentSize = 100
         val degreesInCircle = 360f
 
+        currentMonthText = "In ${dataEntity.month}"
+
         val amountOfAllCategories = dataEntity.data.sumOf { it.amount }
         amountOfAllCategoriesText = "$ $amountOfAllCategories"
 
@@ -196,7 +197,7 @@ class MyCustomView @JvmOverloads constructor(
     }
 
     private fun drawCentralCircle(canvas: Canvas) {
-        circlePath.addCircle(x0, y0, smallRadius - 5f.toPx, Path.Direction.CW)
+        circlePath.addCircle(x0, y0, smallRadius - circleOffset, Path.Direction.CW)
         canvas.drawPath(circlePath, circlePaint)
         canvas.drawText(amountOfAllCategoriesText, x0, y0, amountTextPaint)
         canvas.drawText(currentMonthText, x0, y0 + 18f.toPx, monthTextPaint)

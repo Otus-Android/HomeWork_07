@@ -1,6 +1,7 @@
 package otus.homework.customview
 
 data class SegmentsDataEntity(
+    val month: String,
     val data: List<SegmentUIEntity>
 )
 
