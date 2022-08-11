@@ -2,6 +2,7 @@ package otus.homework.customview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import com.google.gson.Gson
 
 class MainActivity : AppCompatActivity() {
@@ -16,9 +17,14 @@ class MainActivity : AppCompatActivity() {
 
         val uiData = Gson().fromJson(jsonData, SegmentsDataEntity::class.java)
 
-        val myCustomView = findViewById<CustomPieChart>(R.id.myView)
+        val customPieChart = findViewById<CustomPieChart>(R.id.customPieChartView)
+
+        customPieChart.setOnSegmentClickListener { segment ->
+            Toast.makeText(applicationContext, segment.category, Toast.LENGTH_SHORT).show()
+        }
+
         if (savedInstanceState == null) {
-            myCustomView.setData(uiData)
+            customPieChart.setData(uiData)
         }
     }
 }

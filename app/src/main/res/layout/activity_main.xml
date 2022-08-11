@@ -6,7 +6,7 @@
     tools:context=".MainActivity">
 
     <otus.homework.customview.CustomPieChart
-        android:id="@+id/myView"
+        android:id="@+id/customPieChartView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

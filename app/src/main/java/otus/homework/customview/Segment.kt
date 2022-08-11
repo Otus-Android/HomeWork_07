@@ -19,6 +19,7 @@ import kotlin.math.sin
 data class Segment(
     private val startAngel: Float,
     private val endAngel: Float,
+    var category: String = "",
     @ColorInt var color: Int = generateRandomColor(),
     var percents: Float = 0f
 ) : Parcelable {

@@ -1,5 +1,6 @@
 package otus.homework.customview
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Canvas
@@ -21,6 +22,8 @@ class CustomPieChart @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     private var currentState: CustomPieChartState = CustomPieChartState.NOT_INIZIALIZED
+
+    private var onSegmentClick: ((Segment) -> Unit)? = null
 
     private val maxSegmentSize
         get() = min(measuredWidth, measuredHeight) / 6f
@@ -140,8 +143,7 @@ class CustomPieChart @JvmOverloads constructor(
                                 y0Point = y0
                             )
                         if (isTouchInCurrentSegment) {
-                            segment.color = generateRandomColor()
-                            invalidate()
+                            onSegmentClick(segment = segment)
                         }
                     }
                 }
@@ -192,12 +194,16 @@ class CustomPieChart @JvmOverloads constructor(
 
             val segmentUIEntity = Segment(
                 startAngel = acc,
-                endAngel = result - (degreesInCircle * sizeOfDelimitersInPercents / 100)
+                endAngel = result - (degreesInCircle * sizeOfDelimitersInPercents / 100),
             )
 
             segments.add(segmentUIEntity)
 
             result
+        }
+
+        groupOfCategories.keys.forEachIndexed { index, value ->
+            segments[index].category = value
         }
 
         eachCategoriesInPercents.map { it.value }.forEachIndexed { index, fl ->
@@ -209,6 +215,22 @@ class CustomPieChart @JvmOverloads constructor(
             amountOfAllCategoriesText = amountOfAllCategoriesText,
             currentMonthText = currentMonthText
         )
+    }
+
+    fun setOnSegmentClickListener(callBack: (Segment) -> Unit) {
+        onSegmentClick = callBack
+    }
+
+    private fun onSegmentClick(segment: Segment) {
+        val animator = ValueAnimator.ofArgb(segment.color, generateRandomColor())
+        animator.addUpdateListener {
+            val color = it.animatedValue
+            segment.color = color as Int
+            invalidate()
+        }
+        animator.duration = 200
+        animator.start()
+        onSegmentClick?.invoke(segment)
     }
 
     private fun drawCentralCircle(canvas: Canvas) {
