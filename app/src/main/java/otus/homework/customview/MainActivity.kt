@@ -9,12 +9,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val jsonData = applicationContext.resources.openRawResource(R.raw.payload)
-        .bufferedReader().use { it.readText() }
+        val jsonData = applicationContext.resources
+            .openRawResource(R.raw.payload)
+            .bufferedReader()
+            .use { it.readText() }
 
         val uiData = Gson().fromJson(jsonData, SegmentsDataEntity::class.java)
 
-        val myCustomView = findViewById<MyCustomView>(R.id.myView)
-        myCustomView.setData(uiData)
+        val myCustomView = findViewById<CustomPieChart>(R.id.myView)
+        if (savedInstanceState == null) {
+            myCustomView.setData(uiData)
+        }
     }
 }

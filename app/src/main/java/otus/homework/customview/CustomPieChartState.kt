@@ -6,22 +6,21 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import kotlinx.parcelize.Parcelize
 import kotlin.math.min
 import kotlin.random.Random
 
-
-class MyCustomView @JvmOverloads constructor(
+class CustomPieChart @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    private val arrayOfSegments = mutableListOf<Segment>()
-    private var amountOfAllCategoriesText = ""
-    private var currentMonthText = ""
+    private var currentState: CustomPieChartState = CustomPieChartState.NOT_INIZIALIZED
 
     private val maxSegmentSize
         get() = min(measuredWidth, measuredHeight) / 6f
@@ -48,13 +47,13 @@ class MyCustomView @JvmOverloads constructor(
         style = Paint.Style.FILL
         flags = Paint.ANTI_ALIAS_FLAG
     }
-    private val circleOffset = 5f.toPx
+    private val circleOffset = 5f.dp
 
     private val amountTextPaint = Paint().apply {
         color = Color.GRAY
         style = Paint.Style.FILL
         flags = Paint.ANTI_ALIAS_FLAG
-        textSize = 24f.toPx
+        textSize = 24f.dp
         isFakeBoldText = true
         textAlign = Paint.Align.CENTER
     }
@@ -63,7 +62,7 @@ class MyCustomView @JvmOverloads constructor(
         color = Color.LTGRAY
         style = Paint.Style.FILL
         flags = Paint.ANTI_ALIAS_FLAG
-        textSize = 14f.toPx
+        textSize = 14f.dp
         isFakeBoldText = true
         textAlign = Paint.Align.CENTER
     }
@@ -105,7 +104,7 @@ class MyCustomView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        arrayOfSegments.forEach {
+        currentState.segments.forEach {
             it.onDraw(
                 x0 = x0,
                 y0 = y0,
@@ -123,8 +122,8 @@ class MyCustomView @JvmOverloads constructor(
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
 
-                arrayOfSegments.forEach { segment ->
-                    val isTouchInSegment = segment.isTouchInSegmentRange(
+                currentState.segments.forEach { segment ->
+                    val isTouchInSegmentRange = segment.isTouchInSegmentRange(
                         xPoint = event.x,
                         yPoint = event.y,
                         smallRadius = smallRadius,
@@ -132,15 +131,15 @@ class MyCustomView @JvmOverloads constructor(
                         y0 = y0
                     )
 
-                    if (isTouchInSegment) {
-                        val touchPointAngel =
+                    if (isTouchInSegmentRange) {
+                        val isTouchInCurrentSegment =
                             segment.isTouchInCurrentSegment(
                                 xPoint = event.x,
                                 yPoint = event.y,
                                 x0Point = x0,
                                 y0Point = y0
                             )
-                        if (touchPointAngel) {
+                        if (isTouchInCurrentSegment) {
                             segment.color = generateRandomColor()
                             invalidate()
                         }
@@ -154,15 +153,25 @@ class MyCustomView @JvmOverloads constructor(
         return true
     }
 
+    override fun onSaveInstanceState(): Parcelable? {
+        super.onSaveInstanceState()
+        return BaseSavedState(currentState)
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        currentState = (state as BaseSavedState).superState as CustomPieChartState
+        super.onRestoreInstanceState(state)
+    }
+
     fun setData(dataEntity: SegmentsDataEntity) {
         val sizeOfDelimitersInPercents = 1f
         val allSegmentSize = 100
         val degreesInCircle = 360f
 
-        currentMonthText = "In ${dataEntity.month}"
-
+        val segments = mutableListOf<Segment>()
+        val currentMonthText = "In ${dataEntity.month}"
         val amountOfAllCategories = dataEntity.data.sumOf { it.amount }
-        amountOfAllCategoriesText = "$ $amountOfAllCategories"
+        val amountOfAllCategoriesText = "$ $amountOfAllCategories"
 
         val groupOfCategories = dataEntity.data.groupBy { it.category }
 
@@ -186,21 +195,45 @@ class MyCustomView @JvmOverloads constructor(
                 endAngel = result - (degreesInCircle * sizeOfDelimitersInPercents / 100)
             )
 
-            arrayOfSegments.add(segmentUIEntity)
+            segments.add(segmentUIEntity)
 
             result
         }
 
         eachCategoriesInPercents.map { it.value }.forEachIndexed { index, fl ->
-            arrayOfSegments[index].percents = fl * 100f
+            segments[index].percents = fl * 100f
         }
+
+        currentState = CustomPieChartState.INIZIALIZED(
+            segments = segments,
+            amountOfAllCategoriesText = amountOfAllCategoriesText,
+            currentMonthText = currentMonthText
+        )
     }
 
     private fun drawCentralCircle(canvas: Canvas) {
         circlePath.addCircle(x0, y0, smallRadius - circleOffset, Path.Direction.CW)
         canvas.drawPath(circlePath, circlePaint)
-        canvas.drawText(amountOfAllCategoriesText, x0, y0, amountTextPaint)
-        canvas.drawText(currentMonthText, x0, y0 + 18f.toPx, monthTextPaint)
+        canvas.drawText(currentState.amountOfAllCategoriesText, x0, y0, amountTextPaint)
+        canvas.drawText(currentState.currentMonthText, x0, y0 + 18f.dp, monthTextPaint)
+    }
+
+    private sealed class CustomPieChartState(
+        open val segments: List<Segment>,
+        open val amountOfAllCategoriesText: String,
+        open val currentMonthText: String,
+    ) : Parcelable {
+
+        @Parcelize
+        object NOT_INIZIALIZED :
+            CustomPieChartState(mutableListOf(), "", "")
+
+        @Parcelize
+        class INIZIALIZED(
+            override val segments: List<Segment>,
+            override val amountOfAllCategoriesText: String,
+            override val currentMonthText: String,
+        ) : CustomPieChartState(segments, amountOfAllCategoriesText, currentMonthText)
     }
 }
 
@@ -212,6 +245,6 @@ fun generateRandomColor(): Int =
         Random.nextInt(256)
     )
 
-val Float.toPx get() = this * Resources.getSystem().displayMetrics.density
+val Float.dp get() = this * Resources.getSystem().displayMetrics.density
 
-val Float.toDp get() = this / Resources.getSystem().displayMetrics.density
+val Float.px get() = this / Resources.getSystem().displayMetrics.density

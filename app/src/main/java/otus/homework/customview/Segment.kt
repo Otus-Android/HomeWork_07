@@ -6,19 +6,22 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.os.Parcelable
 import androidx.annotation.ColorInt
+import kotlinx.android.parcel.Parcelize
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 
+@Parcelize
 data class Segment(
     private val startAngel: Float,
     private val endAngel: Float,
     @ColorInt var color: Int = generateRandomColor(),
     var percents: Float = 0f
-) {
+) : Parcelable {
     var segmentWidth: Float = 0f
         get() = field * (percents / 100f + 0.4f)
 
@@ -26,20 +29,20 @@ data class Segment(
         roundingMode = RoundingMode.DOWN
     }
 
-    private val offsetOfPercentTextRect = 3f.toPx
-    private val offsetOfPercentText = 24f.toPx
+    private val offsetOfPercentTextRect = 3f.dp
+    private val offsetOfPercentText = 24f.dp
     private val roundRectOfPercentText = RectF()
     private val valueOfPercentText by lazy { "${df.format(percents)} %" }
 
     private val arcPath = Path()
 
-    private val blurFilter = BlurMaskFilter(3f.toPx, BlurMaskFilter.Blur.SOLID)
+    private val blurFilter = BlurMaskFilter(3f.dp, BlurMaskFilter.Blur.SOLID)
 
     private val textPaint = Paint().apply {
         color = Color.LTGRAY
         style = Paint.Style.FILL
         flags = Paint.ANTI_ALIAS_FLAG
-        textSize = 10f.toPx
+        textSize = 10f.dp
         textAlign = Paint.Align.CENTER
     }
 
@@ -47,7 +50,7 @@ data class Segment(
         color = Color.LTGRAY
         style = Paint.Style.STROKE
         flags = Paint.ANTI_ALIAS_FLAG
-        strokeWidth = 1f.toPx
+        strokeWidth = 1f.dp
         maskFilter = blurFilter
     }
 
