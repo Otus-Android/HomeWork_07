@@ -247,4 +247,4 @@ fun generateRandomColor(): Int =
 
 val Float.dp get() = this * Resources.getSystem().displayMetrics.density
 
-val Float.px get() = this / Resources.getSystem().displayMetrics.density
+val Float.toPx get() = this / Resources.getSystem().displayMetrics.density
