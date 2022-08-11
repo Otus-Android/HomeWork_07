@@ -8,7 +8,7 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.os.Parcelable
 import androidx.annotation.ColorInt
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import kotlin.math.atan2
