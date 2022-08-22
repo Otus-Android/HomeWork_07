@@ -44,7 +44,7 @@
   {
     "id": 7,
     "name": "Uber",
-    "amount": 369,
+    "amount": 329,
     "category": "Транспорт",
     "time": 1623416031
   },
@@ -82,5 +82,12 @@
     "amount": 389,
     "category": "Транспорт",
     "time": 1623419934
+  },
+  {
+    "id": 12,
+    "name": "Yandex.Go",
+    "amount": 500,
+    "category": "Транспорт",
+    "time": 1623459936
   }
 ]
