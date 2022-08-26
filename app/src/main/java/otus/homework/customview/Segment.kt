@@ -8,6 +8,7 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.os.Parcelable
 import androidx.annotation.ColorInt
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -16,29 +17,42 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Parcelize
-data class Segment(
+class Segment(
     private val startAngel: Float,
     private val endAngel: Float,
     var category: String = "",
     @ColorInt var color: Int = generateRandomColor(),
     var percents: Float = 0f
 ) : Parcelable {
+
+    @IgnoredOnParcel
     var segmentWidth: Float = 0f
         get() = field * (percents / 100f + 0.4f)
 
+    @IgnoredOnParcel
     private val df = DecimalFormat("#.##").apply {
         roundingMode = RoundingMode.DOWN
     }
 
+    @IgnoredOnParcel
     private val offsetOfPercentTextRect = 3f.dp
+
+    @IgnoredOnParcel
     private val offsetOfPercentText = 24f.dp
+
+    @IgnoredOnParcel
     private val roundRectOfPercentText = RectF()
+
+    @IgnoredOnParcel
     private val valueOfPercentText by lazy { "${df.format(percents)} %" }
 
+    @IgnoredOnParcel
     private val arcPath = Path()
 
+    @IgnoredOnParcel
     private val blurFilter = BlurMaskFilter(3f.dp, BlurMaskFilter.Blur.SOLID)
 
+    @IgnoredOnParcel
     private val textPaint = Paint().apply {
         color = Color.LTGRAY
         style = Paint.Style.FILL
@@ -47,6 +61,7 @@ data class Segment(
         textAlign = Paint.Align.CENTER
     }
 
+    @IgnoredOnParcel
     private val rectPaint = Paint().apply {
         color = Color.LTGRAY
         style = Paint.Style.STROKE

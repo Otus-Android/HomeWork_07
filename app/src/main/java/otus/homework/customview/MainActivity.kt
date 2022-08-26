@@ -6,6 +6,7 @@ import android.widget.Toast
 import com.google.gson.Gson
 
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -26,5 +27,11 @@ class MainActivity : AppCompatActivity() {
 //        if (savedInstanceState == null) {
 //            customPieChart.setData(uiData)
 //        }
+
+        val statisticView = findViewById<StatisticsView>(R.id.statisticView)
+
+        if (savedInstanceState == null) {
+            statisticView.setData(uiData)
+        }
     }
 }

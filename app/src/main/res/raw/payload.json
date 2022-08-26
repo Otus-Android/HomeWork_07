@@ -1,5 +1,5 @@
 {
-  "month": "September",
+  "month": "June",
   "data": [
     {
       "id": 1,
@@ -83,7 +83,49 @@
       "name": "Uber",
       "amount": 389,
       "category": "Транспорт",
-      "time": 1623419934
+      "time": 1624123558
+    },
+    {
+      "id": 13,
+      "name": "Азбука Вкуса",
+      "amount": 700,
+      "category": "Продукты",
+      "time": 1622654758
+    },
+    {
+      "id": 14,
+      "name": "Азбука Вкуса",
+      "amount": 5000,
+      "category": "Продукты",
+      "time": 1623777958
+    },
+    {
+      "id": 15,
+      "name": "Азбука Вкуса",
+      "amount": 3000,
+      "category": "Продукты",
+      "time": 1624555558
+    },
+    {
+      "id": 16,
+      "name": "Uber",
+      "amount": 500,
+      "category": "Транспорт",
+      "time": 1624037158
+    },
+    {
+      "id": 17,
+      "name": "Uber",
+      "amount": 990,
+      "category": "Транспорт",
+      "time": 1623173158
+    },
+    {
+      "id": 18,
+      "name": "Метро",
+      "amount": 400,
+      "category": "Транспорт",
+      "time": 1623605158
     }
   ]
 }
