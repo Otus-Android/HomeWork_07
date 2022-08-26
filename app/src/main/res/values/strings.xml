@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Custom View</string>
+    <string name="piechart_screen">PieChart Screen</string>
+    <string name="statistics_screen">Statistics Screen</string>
 </resources>

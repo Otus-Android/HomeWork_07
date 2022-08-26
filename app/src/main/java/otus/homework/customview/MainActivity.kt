@@ -1,8 +1,11 @@
 package otus.homework.customview
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
+import com.google.android.material.button.MaterialButton
 import com.google.gson.Gson
 
 class MainActivity : AppCompatActivity() {
@@ -11,27 +14,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val jsonData = applicationContext.resources
-            .openRawResource(R.raw.payload)
-            .bufferedReader()
-            .use { it.readText() }
+        val pieChartButton = findViewById<MaterialButton>(R.id.pieChartButton)
+        val statisticsButton = findViewById<MaterialButton>(R.id.statisticsButton)
 
-        val uiData = Gson().fromJson(jsonData, SegmentsDataEntity::class.java)
+        pieChartButton.setOnClickListener {
+            startActivity(Intent(this, PieChartActivity::class.java))
+        }
 
-//        val customPieChart = findViewById<CustomPieChart>(R.id.customPieChartView)
-
-//        customPieChart.setOnSegmentClickListener { segment ->
-//            Toast.makeText(applicationContext, segment.category, Toast.LENGTH_SHORT).show()
-//        }
-//
-//        if (savedInstanceState == null) {
-//            customPieChart.setData(uiData)
-//        }
-
-        val statisticView = findViewById<StatisticsView>(R.id.statisticView)
-
-        if (savedInstanceState == null) {
-            statisticView.setData(uiData)
+        statisticsButton.setOnClickListener {
+            startActivity(Intent(this, StatisticsViewActivity::class.java))
         }
     }
 }
