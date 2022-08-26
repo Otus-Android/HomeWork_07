@@ -17,14 +17,14 @@ class MainActivity : AppCompatActivity() {
 
         val uiData = Gson().fromJson(jsonData, SegmentsDataEntity::class.java)
 
-        val customPieChart = findViewById<CustomPieChart>(R.id.customPieChartView)
+//        val customPieChart = findViewById<CustomPieChart>(R.id.customPieChartView)
 
-        customPieChart.setOnSegmentClickListener { segment ->
-            Toast.makeText(applicationContext, segment.category, Toast.LENGTH_SHORT).show()
-        }
-
-        if (savedInstanceState == null) {
-            customPieChart.setData(uiData)
-        }
+//        customPieChart.setOnSegmentClickListener { segment ->
+//            Toast.makeText(applicationContext, segment.category, Toast.LENGTH_SHORT).show()
+//        }
+//
+//        if (savedInstanceState == null) {
+//            customPieChart.setData(uiData)
+//        }
     }
 }

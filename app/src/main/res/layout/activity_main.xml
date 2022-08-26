@@ -5,9 +5,14 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <otus.homework.customview.CustomPieChart
-        android:id="@+id/customPieChartView"
+<!--    <otus.homework.customview.CustomPieChart-->
+<!--        android:id="@+id/customPieChartView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent" />-->
+
+    <otus.homework.customview.StatisticsView
+        android:id="@+id/statisticView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
 </FrameLayout>
