@@ -258,15 +258,3 @@ class CustomPieChart @JvmOverloads constructor(
         ) : CustomPieChartState(segments, amountOfAllCategoriesText, currentMonthText)
     }
 }
-
-fun generateRandomColor(): Int =
-    Color.argb(
-        255,
-        Random.nextInt(256),
-        Random.nextInt(256),
-        Random.nextInt(256)
-    )
-
-val Float.dp get() = this * Resources.getSystem().displayMetrics.density
-
-val Float.toPx get() = this / Resources.getSystem().displayMetrics.density
