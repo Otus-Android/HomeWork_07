@@ -7,7 +7,6 @@ import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
-import kotlin.math.roundToInt
 
 
 class StatisticsView @JvmOverloads constructor(
@@ -18,9 +17,18 @@ class StatisticsView @JvmOverloads constructor(
 
     private var countOfDays: Int = 31
 
-    private var maxSum: Int = 100_000
+    private var maxAmount: Int = 100_000
 
-    private var countOfYChildAxes: Int = 10
+    private var countOfYAxes: Int = 10
+
+    private val xInterval: Float
+        get() = (measuredWidth - 2 * axeOffset) / (countOfDays - 1)
+
+    private val yInterval: Float
+        get() = (measuredHeight - 2 * axeOffset) / (countOfYAxes - 1)
+
+    private val amountInterval: Float
+        get() = maxAmount / (countOfYAxes - 1f)
 
     private val sizeOfInterval = 2f.dp
     private val sizeOff = 2f.dp
@@ -30,7 +38,6 @@ class StatisticsView @JvmOverloads constructor(
         style = Paint.Style.FILL
         flags = Paint.ANTI_ALIAS_FLAG
         pathEffect = DashPathEffect(floatArrayOf(sizeOfInterval, sizeOff), 0f)
-
     }
     private val axeOffset = 50f.dp
 
@@ -41,8 +48,7 @@ class StatisticsView @JvmOverloads constructor(
         textSize = 5f.dp
         textAlign = Paint.Align.CENTER
     }
-    private val daysTextTopMargin = 8f.dp
-
+    private val daysTopMargin = 8f.dp
 
     private val sumPaint = Paint().apply {
         color = Color.RED
@@ -51,7 +57,7 @@ class StatisticsView @JvmOverloads constructor(
         textSize = 5f.dp
         textAlign = Paint.Align.LEFT
     }
-    private val sumTextLeftMargin = 4f.dp
+    private val amountLeftMargin = 4f.dp
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
 
@@ -90,105 +96,59 @@ class StatisticsView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        drawChildXAxes(canvas, countOfChildAxes = countOfDays)
-
-        drawMainYAxe(canvas, countOfChildAxes = countOfYChildAxes)
-        drawMainXAxe(canvas, countOfDays = countOfDays)
-        drawChildYAxes(canvas, countOfChildAxes = countOfYChildAxes)
+        drawGrid(canvas)
     }
 
-    private fun drawMainXAxe(canvas: Canvas, countOfDays: Int) {
-        canvas.drawLine(
-            0f + axeOffset,
-            measuredHeight - axeOffset,
-            measuredWidth.toFloat() - axeOffset,
-            measuredHeight - axeOffset,
-            axePaint
-        )
+    private fun drawGrid(canvas: Canvas) {
+        drawXAxes(canvas)
+        drawXAxeInfo(canvas)
+        drawYAxes(canvas)
+        drawYAxeInfo(canvas)
+    }
 
-        val interval = (measuredWidth - 2 * axeOffset) / (countOfDays - 1)
-
+    private fun drawXAxes(canvas: Canvas) {
         for (i in 0 until countOfDays) {
-            val x = 0f + axeOffset + interval * i
-            val y = measuredHeight - axeOffset
+            canvas.drawLine(
+                0f + axeOffset + (xInterval * i).toInt(),
+                measuredHeight - axeOffset,
+                0f + axeOffset + (xInterval * i).toInt(),
+                0f + axeOffset,
+                axePaint
+            )
+        }
+    }
+
+    private fun drawXAxeInfo(canvas: Canvas) {
+        for (i in 0 until countOfDays) {
             canvas.drawText(
-                (i+1).toString().padStart(2, '0'),
-                x,
-                y + daysTextTopMargin,
+                "${i + 1}".padStart(2, '0'),
+                0f + axeOffset + (xInterval * i).toInt(),
+                measuredHeight - axeOffset + daysTopMargin,
                 daysPaint
             )
         }
 
     }
 
-    private fun drawMainYAxe(canvas: Canvas, countOfChildAxes: Int) {
-        canvas.drawLine(
-            0f + axeOffset,
-            measuredHeight - axeOffset,
-            0f + axeOffset,
-            0f + axeOffset,
-            axePaint
-        )
+    private fun drawYAxes(canvas: Canvas) {
+        for (i in 0 until countOfYAxes) {
+            canvas.drawLine(
+                0f + axeOffset,
+                measuredHeight - axeOffset - (yInterval * i).toInt(),
+                measuredWidth - axeOffset,
+                measuredHeight - axeOffset - (yInterval * i).toInt(),
+                axePaint
+            )
+        }
+    }
 
-        val interval = (measuredHeight - 2 * axeOffset) / (countOfChildAxes - 1)
-
-        val sumInterval = maxSum.toFloat() / (countOfChildAxes - 1)
-
-        for (i in 0 until countOfChildAxes) {
-            val x = measuredWidth - axeOffset + sumTextLeftMargin
-            val y = measuredHeight - axeOffset - interval * i
-
+    private fun drawYAxeInfo(canvas: Canvas) {
+        for (i in 0 until countOfYAxes) {
             canvas.drawText(
-                (sumInterval * i).toInt().toString(),
-                x,
-                y,
+                (amountInterval * i).toInt().toString(),
+                measuredWidth - axeOffset + amountLeftMargin,
+                measuredHeight - axeOffset - (yInterval * i).toInt(),
                 sumPaint
-            )
-        }
-    }
-
-    private fun drawChildYAxes(canvas: Canvas, countOfChildAxes: Int) {
-
-        canvas.drawLine(
-            0f + axeOffset,
-            0f + axeOffset,
-            measuredWidth.toFloat() - axeOffset,
-            0f + axeOffset,
-            axePaint
-        )
-
-        val interval = (measuredHeight - 2 * axeOffset) / (countOfChildAxes - 1)
-
-        for (i in 1 until  countOfChildAxes) {
-            canvas.drawLine(
-                0f + axeOffset,
-                measuredHeight - axeOffset - (interval * i),
-                measuredWidth.toFloat() - axeOffset,
-                measuredHeight - axeOffset - (interval * i),
-                axePaint
-            )
-        }
-    }
-
-    private fun drawChildXAxes(canvas: Canvas, countOfChildAxes: Int) {
-
-        canvas.drawLine(
-            measuredWidth - axeOffset,
-            measuredHeight - axeOffset,
-            measuredWidth - axeOffset,
-            0f + axeOffset,
-            axePaint
-        )
-
-        val interval = (measuredWidth - 2 * axeOffset) / (countOfChildAxes - 1)
-
-        for (i in 1 until countOfChildAxes) {
-            canvas.drawLine(
-                0f + axeOffset + interval * i,
-                measuredHeight - axeOffset,
-                0f + axeOffset + interval * i,
-                0f + axeOffset,
-                axePaint
             )
         }
     }
