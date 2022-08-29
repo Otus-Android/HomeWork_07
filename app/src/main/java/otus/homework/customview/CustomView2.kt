@@ -2,6 +2,7 @@ package otus.homework.customview
 
 import android.content.Context
 import android.graphics.*
+import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.icu.text.SimpleDateFormat
 import android.os.Build
 import android.util.AttributeSet
@@ -14,7 +15,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 
-@RequiresApi(Build.VERSION_CODES.N)
+//@RequiresApi(Build.VERSION_CODES.N)
 class CustomView2: View {
 
     constructor(context: Context?) : super(context)
@@ -55,8 +56,8 @@ class CustomView2: View {
         style = Paint.Style.FILL
     }
 
-    var pathFill =  Path()
-    private val paintLine = Paint().apply {
+    private var pathFill =  Path()
+    private val paintLine = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.RED
         strokeWidth = 10f
         style = Paint.Style.FILL_AND_STROKE
@@ -83,7 +84,7 @@ class CustomView2: View {
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
         when (widthMode) {
-            MeasureSpec.UNSPECIFIED -> Log.d(TAG, "onMeasure UNSPECIFIED")
+            MeasureSpec.UNSPECIFIED,
             MeasureSpec.AT_MOST,
             MeasureSpec.EXACTLY -> {
                 Log.d(TAG, "onMeasure EXACTLY")
@@ -127,15 +128,16 @@ class CustomView2: View {
 
         //horizontal lines and text
         canvas.drawLine( margin, margin, width - margin, margin, paintAxis)
-        canvas.drawText(maxValues.toString(), margin+10, margin-10, paintText)
+        canvas.drawText(maxValues.toString(), margin+marginView, margin-marginView, paintText)
         canvas.drawLine( margin,
             (height/2).toFloat(), width - margin, (height/2).toFloat(), paintAxis)
-        canvas.drawText((maxValues/2).toString(), margin+10, (height/2-10).toFloat(), paintText)
+        canvas.drawText((maxValues/2).toString(), margin+marginView, (height/2-marginView).toFloat(), paintText)
         canvas.drawLine( margin, height - margin, width - margin, height -margin, paintAxis)
     }
 
     companion object {
         const val TAG = "CustomView"
+        const val marginView = 10f
     }
 
 }

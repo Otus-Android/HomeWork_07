@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Bundle
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -17,11 +19,7 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 
-class CustomView1: View {
-
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+class CustomView1 @JvmOverloads constructor (context: Context?, attrs: AttributeSet? = null, defStyleAttr: Int = 0): View(context, attrs, defStyleAttr) {
 
     private val dataPayLoad: Array<PayLoad>
     init {
@@ -34,6 +32,10 @@ class CustomView1: View {
     private var dataPayLoadDraw = ArrayList<PayLoadDraw>()
     private var radius: Float = 1.0f
     private val rndColor = Random
+    private val paintArc: Paint = Paint().apply{
+        strokeWidth = 0f
+        style = Paint.Style.FILL
+    }
 
     init {
         var sumAngle: Float = 0f
@@ -45,6 +47,25 @@ class CustomView1: View {
         }
     }
 
+    override fun onSaveInstanceState(): Parcelable? {
+        super.onSaveInstanceState()
+        val bundle = Bundle()
+        bundle.putParcelable("superState", super.onSaveInstanceState())
+        //bundle.putParcelableArrayList("dataPayLoadDraw", this.dataPayLoadDraw) // ... save stuff
+        return bundle
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        var state = state
+        if (state is Bundle) // implicit null check
+        {
+            val bundle = state
+            //this.stuff = bundle.getInt("stuff") // ... load stuff
+            state = bundle.getParcelable("superState")
+        }
+        super.onRestoreInstanceState(state)
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
@@ -52,7 +73,7 @@ class CustomView1: View {
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
         when (widthMode) {
-            MeasureSpec.UNSPECIFIED -> Log.d(TAG, "onMeasure UNSPECIFIED")
+            MeasureSpec.UNSPECIFIED,
             MeasureSpec.AT_MOST,
             MeasureSpec.EXACTLY -> {
                 Log.d(TAG, "onMeasure EXACTLY")
@@ -68,14 +89,11 @@ class CustomView1: View {
         for (data in dataPayLoadDraw){
             canvas.drawArc(width/2-radius, height/2-radius, width/2+radius,
                 height/2+radius, data.startAngle, data.fillAngle, true,
-                Paint().apply {
+                paintArc.apply {
                     color = Color.argb(255, rndColor.nextInt(256), rndColor.nextInt(256) , rndColor.nextInt(256))
-                    strokeWidth = 0f
-                    style = Paint.Style.FILL
                 }
             )
         }
-        //canvas.drawArc((width-radius)/2, (height-radius)/2, (width+radius)/2, (height+radius)/2, 90f, 270f, true, redFillPaint)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -109,6 +127,10 @@ class CustomView1: View {
     companion object {
         const val TAG = "CustomView"
     }
+
+}
+
+private fun Parcelable.putParcelableArrayList(s: String, dataPayLoadDraw: ArrayList<PayLoadDraw>) {
 
 }
 
