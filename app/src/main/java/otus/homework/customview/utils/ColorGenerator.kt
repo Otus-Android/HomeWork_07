@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.utils
 
 import android.graphics.Color
 import androidx.annotation.ColorInt

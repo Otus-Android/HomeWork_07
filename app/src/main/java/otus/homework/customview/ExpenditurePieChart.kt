@@ -11,7 +11,7 @@ import android.view.View
 import androidx.core.graphics.ColorUtils
 import kotlin.math.*
 
-class ExpenditurePieChartView : View {
+class ExpenditurePieChart : View {
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
@@ -58,7 +58,7 @@ class ExpenditurePieChartView : View {
         strokeWidth = 2f
     }
 
-    private lateinit var segments: MutableList<ChartSegment>
+    private lateinit var segments: List<PieChartSegment>
     private var callback: ((String) -> Unit)? = null
 
     private val generalGestureDetector =
@@ -80,8 +80,7 @@ class ExpenditurePieChartView : View {
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         if (state is SavedState) {
-            segments.clear()
-            segments.addAll(state.segments)
+            segments = state.segments
             super.onRestoreInstanceState(state.superState)
         } else {
             super.onRestoreInstanceState(state)
@@ -147,7 +146,7 @@ class ExpenditurePieChartView : View {
         drawCentralSignature(canvas)
     }
 
-    fun setupData(segments: MutableList<ChartSegment>, callback: (String) -> Unit) {
+    fun setupData(segments: List<PieChartSegment>, callback: (String) -> Unit) {
         this.segments = segments
         this.callback = callback
     }
@@ -208,7 +207,7 @@ class ExpenditurePieChartView : View {
         }
     }
 
-    private fun calculatePieChartPath(segments: ChartSegment) {
+    private fun calculatePieChartPath(segments: PieChartSegment) {
         with(segments) {
             pieChartPath.apply {
                 moveTo(startPoint.x, startPoint.y)
@@ -220,7 +219,7 @@ class ExpenditurePieChartView : View {
         }
     }
 
-    private fun calculateNextStartPoint(segment: ChartSegment) {
+    private fun calculateNextStartPoint(segment: PieChartSegment) {
         nextStartPointPath.apply {
             moveTo(startPoint.x, startPoint.y)
             arcTo(innerRectF, segment.startAngle, segment.segmentAngle)
@@ -249,7 +248,7 @@ class ExpenditurePieChartView : View {
 
     private fun drawPercentageItem(
         canvas: Canvas,
-        segment: ChartSegment
+        segment: PieChartSegment
     ) {
         val value = segment.segmentAngle * 100 / 360
         if (value < 3) return
@@ -287,13 +286,10 @@ class ExpenditurePieChartView : View {
 
     internal class SavedState : BaseSavedState {
 
-        val segments: List<ChartSegment>
+        val segments: List<PieChartSegment>
 
-        constructor(segments: List<ChartSegment>, superState: Parcelable?) : super(superState) {
-            this.segments = mutableListOf<ChartSegment>().also {
-                it.clear()
-                it.addAll(segments)
-            }
+        constructor(segments: List<PieChartSegment>, superState: Parcelable?) : super(superState) {
+            this.segments = segments
         }
 
         private constructor(input: Parcel) : super(input) {
@@ -303,7 +299,7 @@ class ExpenditurePieChartView : View {
 
         override fun writeToParcel(out: Parcel, flags: Int) {
             super.writeToParcel(out, flags)
-            out.readList(segments, List::class.java.classLoader)
+            out.writeList(segments)
         }
 
         override fun describeContents(): Int {
