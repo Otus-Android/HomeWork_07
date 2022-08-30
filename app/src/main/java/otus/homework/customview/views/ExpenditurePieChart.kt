@@ -1,5 +1,9 @@
 package otus.homework.customview.views
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.os.Parcel
@@ -8,6 +12,7 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.OvershootInterpolator
 import androidx.core.graphics.ColorUtils
 import otus.homework.customview.models.PieChartSegment
 import otus.homework.customview.R
@@ -22,9 +27,16 @@ class ExpenditurePieChart : View {
 
     private val minPieChartSize = resources.getDimension(R.dimen.pie_chart_min_size).toInt()
 
+    private var rotationAngle = 0f
+    private var increasingDelta = 0f
+    private var decreasingAlpha = 0
+    private var decreasingDelta = 0f
+    private var increasingAlpha = 0
+
     private val globalRect = Rect()
     private val outerRectF = RectF()
     private val innerRectF = RectF()
+    private val animationDelta: Float by lazy { (outerRectF.width() - innerRectF.width()) / 2f / DEFAULT_COEFFICIENT }
     private val percentageRectF = RectF()
 
     private val pieChartPath = Path()
@@ -56,11 +68,14 @@ class ExpenditurePieChart : View {
     }
     private val cornerPaint = Paint().apply {
         style = Paint.Style.STROKE
-        color = ColorUtils.setAlphaComponent(Color.GRAY, 50)
+        color = Color.GRAY
         strokeWidth = 2f
+        alpha = 50
     }
 
     private lateinit var segments: List<PieChartSegment>
+    private var increasingSegment: PieChartSegment? = null
+    private var decreasingSegment: PieChartSegment? = null
     private var callback: ((String) -> Unit)? = null
 
     private val generalGestureDetector =
@@ -110,11 +125,23 @@ class ExpenditurePieChart : View {
 
         segments.forEach { segment ->
             /*
-                * Adjustment of the segment width according to the ratio with the highest value of the diagram
-                * */
-            val coefficient = 1 - segment.percentageOfMaximum / 100f
-            val dx = (outerRectF.width() - innerRectF.width()).times(coefficient).div(3.66f)
-            val dy = (outerRectF.height() - innerRectF.height()).times(coefficient).div(3.66f)
+            * Adjustment of the segment width according to the ratio with the highest value of the diagram
+            * */
+            val ratio = (1 - segment.percentageOfMaximum / 100f)
+            val realCoefficient = ratio / DEFAULT_COEFFICIENT
+            var dx = (outerRectF.width() - innerRectF.width()).div(2).times(realCoefficient)
+            var dy = (outerRectF.height() - innerRectF.height()).div(2).times(realCoefficient)
+
+            when (segment.id) {
+                increasingSegment?.id -> {
+                    dx += increasingDelta
+                    dy += increasingDelta
+                }
+                decreasingSegment?.id -> {
+                    dx += decreasingDelta
+                    dy += decreasingDelta
+                }
+            }
             outerRectF.inset(dx, dy)
 
             calculatePieChartPath(segment)
@@ -153,6 +180,68 @@ class ExpenditurePieChart : View {
         this.callback = callback
     }
 
+    fun startAnimation() {
+        ValueAnimator.ofFloat(0f, 145f).apply {
+            setDuration(1500)
+            setInterpolator(OvershootInterpolator())
+            addUpdateListener {
+                rotationAngle = animatedValue as Float
+                invalidate()
+            }
+            start()
+        }
+    }
+
+    private fun startSegmentIncreaseAnim(segment: PieChartSegment) {
+        increasingSegment = segment
+        val increaseAnimator = ValueAnimator.ofFloat(0f, animationDelta.unaryMinus()).apply {
+            setDuration(1000)
+            setInterpolator(OvershootInterpolator())
+            addUpdateListener {
+                increasingDelta = animatedValue as Float
+                invalidate()
+            }
+        }
+        val alphaAnimator = ValueAnimator.ofInt(255, 0).apply {
+            setDuration(1000)
+            addUpdateListener {
+                decreasingAlpha = it.animatedValue as Int
+            }
+        }
+        AnimatorSet().apply {
+            playTogether(increaseAnimator, alphaAnimator)
+            start()
+        }
+    }
+
+    private fun startSegmentDecreaseAnim(segment: PieChartSegment) {
+        decreasingSegment = segment
+        val decreaseAnimator = ValueAnimator.ofFloat(animationDelta.unaryMinus(), 0f).apply {
+            setDuration(1000)
+            setInterpolator(OvershootInterpolator())
+            addUpdateListener {
+                decreasingDelta = animatedValue as Float
+                invalidate()
+            }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    super.onAnimationEnd(animation)
+                    decreasingSegment = null
+                }
+            })
+        }
+        val alphaAnimator = ValueAnimator.ofInt(0, 255).apply {
+            setDuration(1000)
+            addUpdateListener {
+                increasingAlpha = it.animatedValue as Int
+            }
+        }
+        AnimatorSet().apply {
+            playTogether(decreaseAnimator, alphaAnimator)
+            start()
+        }
+    }
+
     private fun handleOnSingleTapUp(event: MotionEvent): Boolean {
         val clickInsideOuterRect = outerRectF.contains(event.x, event.y)
         val clickInsideInnerRect = innerRectF.contains(event.x, event.y)
@@ -172,10 +261,19 @@ class ExpenditurePieChart : View {
 
                 val inDegrees = Math.toDegrees(inRad)
                 val trueAngle =
-                    if (inDegrees >= ROTATION_ANGLE) inDegrees - ROTATION_ANGLE else 360 + inDegrees - ROTATION_ANGLE
+                    if (inDegrees >= rotationAngle) inDegrees - rotationAngle else 360 + inDegrees - rotationAngle
                 segments.find { segment -> (segment.startAngle..segment.endAngle).contains(trueAngle) }
                     ?.let {
                         callback?.invoke(it.category)
+                        if (it.id == increasingSegment?.id) {
+                            increasingSegment = null
+                            startSegmentDecreaseAnim(it)
+                        } else {
+                            increasingSegment
+                                ?.let { startSegmentDecreaseAnim(it) }
+                                .also { increasingSegment = null }
+                            startSegmentIncreaseAnim(it)
+                        }
                         true
                     } ?: false
             }
@@ -242,7 +340,7 @@ class ExpenditurePieChart : View {
 
     private fun drawSegmentItem(canvas: Canvas) {
         canvas.save()
-        canvas.rotate(ROTATION_ANGLE, innerRectF.centerX(), innerRectF.centerY())
+        canvas.rotate(rotationAngle, innerRectF.centerX(), innerRectF.centerY())
         canvas.drawPath(pieChartPath, mainPaint)
         canvas.drawPath(pieChartPath, whitePaint)
         canvas.restore()
@@ -255,7 +353,7 @@ class ExpenditurePieChart : View {
         val value = segment.segmentAngle * 100 / 360
         if (value < 3) return
         val angleInRadian =
-            ((segment.endAngle + segment.startAngle) / 2 + ROTATION_ANGLE) * PI / 180
+            ((segment.endAngle + segment.startAngle) / 2 + rotationAngle) * PI / 180
         val distance = outerRectF.width() / 2 + 100
         val x = distance * cos(angleInRadian).toFloat() + outerRectF.centerX()
         val y = distance * sin(angleInRadian).toFloat() + outerRectF.centerY()
@@ -265,10 +363,25 @@ class ExpenditurePieChart : View {
             x + PERCENTAGE_HALF_WIDTH,
             y + PERCENTAGE_HALF_HEIGHT
         )
+        val defaultCornerAlpha = cornerPaint.alpha
+        val defaultSignatureAlpha = signaturePaint.alpha
+        cornerPaint.alpha = when (segment.id) {
+            increasingSegment?.id -> decreasingAlpha / 5
+            decreasingSegment?.id -> increasingAlpha / 5
+            else -> defaultCornerAlpha
+        }
+        signaturePaint.alpha = when (segment.id) {
+            increasingSegment?.id -> decreasingAlpha
+            decreasingSegment?.id -> increasingAlpha
+            else -> defaultSignatureAlpha
+        }
 
         canvas.drawRect(percentageRectF, cornerPaint)
         val stringValue = value.toString().substringBefore(".")
         canvas.drawText("$stringValue%", x, y + 12, signaturePaint)
+
+        cornerPaint.alpha = defaultCornerAlpha
+        signaturePaint.alpha = defaultSignatureAlpha
     }
 
     private fun drawCentralSignature(canvas: Canvas) {
@@ -321,7 +434,7 @@ class ExpenditurePieChart : View {
 
 
     companion object {
-        private const val ROTATION_ANGLE = 145f
+        private const val DEFAULT_COEFFICIENT = 1.66f
         private const val ALPHA_CHANNEL_FOR_THE_GRADIENT = 200
         private const val PERCENTAGE_HALF_WIDTH = 44
         private const val PERCENTAGE_HALF_HEIGHT = 32

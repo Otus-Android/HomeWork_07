@@ -28,11 +28,13 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private lateinit var pieChart: ExpenditurePieChart
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        findViewById<ExpenditurePieChart>(R.id.expenditure_pie_chart).apply {
+        pieChart = findViewById<ExpenditurePieChart>(R.id.expenditure_pie_chart).apply {
             val expenditures = readExpenditures(Chart.PIE)
             val pieChartSegments = getPieChartSegments(expenditures)
             setupData(pieChartSegments) { category: String ->
@@ -44,6 +46,11 @@ class MainActivity : AppCompatActivity() {
             val categories = getCategoriesMap(expenditures)
             setupData(categories, 20000)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        pieChart.startAnimation()
     }
 
     private fun readExpenditures(
