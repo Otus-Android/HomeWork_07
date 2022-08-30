@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".views.MainActivity">
 
-    <otus.homework.customview.ExpenditurePieChart
+    <otus.homework.customview.views.ExpenditurePieChart
         android:id="@+id/expenditure_pie_chart"
         android:layout_width="wrap_content"
         android:layout_height="292dp"
@@ -15,7 +15,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <otus.homework.customview.ExpenditureLinearChart
+    <otus.homework.customview.views.ExpenditureLinearChart
         android:id="@+id/expenditure_linear_chart"
         android:layout_width="match_parent"
         android:layout_height="216dp"

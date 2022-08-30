@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.views
 
 import android.graphics.Color
 import android.os.Bundle
@@ -13,6 +13,8 @@ import org.threeten.bp.format.DateTimeFormatterBuilder
 import org.threeten.bp.format.ResolverStyle
 import org.threeten.bp.format.SignStyle
 import org.threeten.bp.temporal.ChronoField
+import otus.homework.customview.*
+import otus.homework.customview.models.*
 import otus.homework.customview.utils.ColorGenerator
 import kotlin.math.roundToInt
 

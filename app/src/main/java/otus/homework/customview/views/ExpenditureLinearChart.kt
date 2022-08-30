@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.views
 
 import android.content.Context
 import android.graphics.*
@@ -7,6 +7,9 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.graphics.ColorUtils
+import otus.homework.customview.models.ExpenditureCategory
+import otus.homework.customview.models.LinearChartPoint
+import otus.homework.customview.R
 import otus.homework.customview.utils.toPx
 import kotlin.math.max
 import kotlin.properties.Delegates
@@ -188,12 +191,12 @@ class ExpenditureLinearChart(context: Context?, attrs: AttributeSet) :
     private fun drawLinearChart(canvas: Canvas) {
         categories.forEach { entry ->
             chartPath.reset()
-            entry.value.first().let {
+            entry.value.firstOrNull()?.let {
                 val dx = chartRect.left.toFloat()
                 val dy = chartRect.top + chartRect.height()
                     .toFloat() * (1 - it.amount / maxValue)
                 chartPath.moveTo(dx, dy)
-            }
+            } ?: chartPath.moveTo(chartRect.left.toFloat(), chartRect.left.toFloat())
             mainPaint.color = entry.key.getChartColor()
             entry.value
                 .sortedWith { o1, o2 -> o1.dayInMonth - o2.dayInMonth }

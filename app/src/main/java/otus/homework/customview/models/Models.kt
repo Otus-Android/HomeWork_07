@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.models
 
 import android.graphics.Color
 import android.os.Parcelable

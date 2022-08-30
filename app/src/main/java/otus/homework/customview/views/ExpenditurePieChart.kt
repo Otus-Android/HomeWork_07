@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.views
 
 import android.content.Context
 import android.graphics.*
@@ -9,6 +9,8 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.graphics.ColorUtils
+import otus.homework.customview.models.PieChartSegment
+import otus.homework.customview.R
 import kotlin.math.*
 
 class ExpenditurePieChart : View {
