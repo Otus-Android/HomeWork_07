@@ -10,14 +10,11 @@ import android.view.View
 import kotlin.math.cos
 import kotlin.math.sin
 
-
 class PieChartView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
     private var data: PieViewData? = null
-
-    private var initialHeight: Int? = null
 
     private val borderPaint = Paint()
     private var indicatorCircleRadius = 0f
@@ -77,8 +74,8 @@ class PieChartView @JvmOverloads constructor(
 
     private fun setCircleBounds(
         top: Float = 0f, bottom: Float = layoutParams.height.toFloat(),
-        left: Float = (width / 2) - (layoutParams.height / 2).toFloat(),
-        right: Float = (width / 2) + (layoutParams.height / 2).toFloat()
+        left: Float = (width / 2) - layoutParams.height.toFloat() / 2,
+        right: Float = (width / 2) + layoutParams.height.toFloat() / 2
     ) {
         oval.top = top
         oval.bottom = bottom
@@ -164,8 +161,18 @@ class PieChartView @JvmOverloads constructor(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        if (initialHeight == null) initialHeight = layoutParams.height
+        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+        val heightSize = MeasureSpec.getMode(heightMeasureSpec)
+
+        when (widthMode) {
+            MeasureSpec.UNSPECIFIED,
+            MeasureSpec.AT_MOST,
+            MeasureSpec.EXACTLY -> {
+                super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            }
+        }
     }
 
     @SuppressLint("DrawAllocation")

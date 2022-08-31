@@ -10,11 +10,19 @@
 
     <otus.homework.customview.PieChartView
         android:id="@+id/pieChart"
-        android:layout_marginTop="32dp"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="200dp"
+        android:layout_marginTop="32dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <otus.homework.customview.GraphView
+        android:id="@+id/graph"
+        android:layout_width="match_parent"
+        android:layout_marginTop="64dp"
+        android:layout_height="200dp"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/pieChart" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

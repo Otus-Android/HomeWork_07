@@ -1,8 +1,8 @@
 package otus.homework.customview
 
+import android.graphics.Point
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.annotation.RawRes
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken
 import com.google.gson.GsonBuilder
@@ -17,14 +17,16 @@ class MainActivity : AppCompatActivity() {
 
         val marketData = getMarketData()
         marketData.forEach { data.add(it.category, it.amount.toDouble()) }
+        val pointList = mapPurchasesToPoints(marketData)
+        val pieChart = findViewById<PieChartView>(R.id.pieChart)
+        val graph = findViewById<GraphView>(R.id.graph)
 
         val pieChartClickListener = object : PieChartClickListener {
             override fun onClick(category: String) {
-                Log.d("CLICKLISTENER", category)
+                graph.setData(pointList[category]!!)
             }
         }
 
-        val pieChart = findViewById<PieChartView>(R.id.pieChart)
         pieChart.setData(data)
         pieChart.pieChartClickListener = pieChartClickListener
     }
@@ -36,4 +38,14 @@ class MainActivity : AppCompatActivity() {
             return gson.fromJson<T>(it, object: TypeToken<T>() {}.type)
         }
     }
+
+    private fun mapPurchasesToPoints(payments: List<MarketData>?) =
+        mutableMapOf<String, List<Point>>().apply {
+            payments?.groupBy { it.category }?.onEach { entry ->
+                put(
+                    entry.key,
+                    entry.value.map { Point(it.time.toInt(), it.amount) }
+                )
+            }
+        }
 }
