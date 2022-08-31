@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.piechart
 
 data class SegmentsDataEntity(
     val month: String,

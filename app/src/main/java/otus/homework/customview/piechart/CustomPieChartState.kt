@@ -1,6 +1,7 @@
-package otus.homework.customview
+package otus.homework.customview.piechart
 
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -11,7 +12,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import kotlinx.parcelize.Parcelize
-import otus.homework.customview.piechart.Segment
+import otus.homework.customview.dp
+import otus.homework.customview.generateRandomColor
 import kotlin.math.min
 
 class CustomPieChart @JvmOverloads constructor(
@@ -120,6 +122,7 @@ class CustomPieChart @JvmOverloads constructor(
         drawCentralCircle(canvas)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -154,7 +157,7 @@ class CustomPieChart @JvmOverloads constructor(
         return true
     }
 
-    override fun onSaveInstanceState(): Parcelable? {
+    override fun onSaveInstanceState(): Parcelable {
         super.onSaveInstanceState()
         return BaseSavedState(currentState)
     }

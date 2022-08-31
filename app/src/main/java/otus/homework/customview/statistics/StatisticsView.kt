@@ -14,9 +14,9 @@ import android.view.View
 import androidx.annotation.ColorRes
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
-import otus.homework.customview.SegmentsDataEntity
 import otus.homework.customview.dp
 import otus.homework.customview.generateRandomColor
+import otus.homework.customview.piechart.SegmentsDataEntity
 import java.util.*
 
 
@@ -146,7 +146,7 @@ class StatisticsView @JvmOverloads constructor(
         }
     }
 
-    override fun onSaveInstanceState(): Parcelable? {
+    override fun onSaveInstanceState(): Parcelable {
         super.onSaveInstanceState()
         return BaseSavedState(currentState)
     }

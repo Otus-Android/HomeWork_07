@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
 import otus.homework.customview.R
-import otus.homework.customview.SegmentsDataEntity
 import otus.homework.customview.databinding.FragmentPieChartBinding
 
 class PieChartFragment : Fragment() {

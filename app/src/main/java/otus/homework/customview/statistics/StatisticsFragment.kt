@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.google.gson.Gson
 import otus.homework.customview.R
-import otus.homework.customview.SegmentsDataEntity
+import otus.homework.customview.piechart.SegmentsDataEntity
 import otus.homework.customview.databinding.FragmentStatisticsBinding
 
 class StatisticsFragment : Fragment() {
