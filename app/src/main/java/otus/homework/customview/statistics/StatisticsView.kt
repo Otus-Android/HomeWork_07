@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.statistics
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -8,13 +8,15 @@ import android.graphics.CornerPathEffect
 import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.PointF
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.ColorRes
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import otus.homework.customview.SegmentsDataEntity
+import otus.homework.customview.dp
+import otus.homework.customview.generateRandomColor
 import java.util.*
 
 

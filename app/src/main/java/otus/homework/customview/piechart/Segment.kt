@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.piechart
 
 import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
@@ -10,6 +10,8 @@ import android.os.Parcelable
 import androidx.annotation.ColorInt
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import otus.homework.customview.dp
+import otus.homework.customview.generateRandomColor
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import kotlin.math.atan2
@@ -87,7 +89,6 @@ class Segment(
             smallRadius = smallRadius,
             x0 = x0,
             y0 = y0,
-            paint = paint,
             offset = offsetOfPercentText
         )
     }
@@ -122,7 +123,6 @@ class Segment(
         smallRadius: Float,
         x0: Float,
         y0: Float,
-        paint: Paint,
         offset: Float
     ) {
         val centerOfSegment = startAngel + (endAngel - startAngel) / 2

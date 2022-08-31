@@ -2,7 +2,6 @@ package otus.homework.customview
 
 import android.animation.ValueAnimator
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -12,8 +11,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import kotlinx.parcelize.Parcelize
+import otus.homework.customview.piechart.Segment
 import kotlin.math.min
-import kotlin.random.Random
 
 class CustomPieChart @JvmOverloads constructor(
     context: Context,
@@ -176,8 +175,6 @@ class CustomPieChart @JvmOverloads constructor(
         val amountOfAllCategoriesText = "$ $amountOfAllCategories"
 
         val groupOfCategories = dataEntity.data.groupBy { it.category }
-
-        val countOfDelimiters = groupOfCategories.size
 
         val amountOfEachCategories = groupOfCategories.mapValues {
             it.value.sumOf { items -> items.amount }
