@@ -3,9 +3,10 @@
 
     <item
         android:id="@id/pie_chart_fragment"
+        android:icon="@drawable/ic_bottom_bar_pie_chart"
         android:title="Pie chart" />
-
     <item
         android:id="@id/statistics_fragment"
+        android:icon="@drawable/ic_bottom_bar_statistics"
         android:title="Statistics view" />
 </menu>

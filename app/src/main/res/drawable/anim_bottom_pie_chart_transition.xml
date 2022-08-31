@@ -1,0 +1,29 @@
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:name="vector"
+            android:width="48dp"
+            android:height="48dp"
+            android:viewportWidth="48"
+            android:viewportHeight="48">
+            <path
+                android:name="path"
+                android:pathData="M 6 44 L 6 41 L 42 41 L 42 44 Z M 6 31.65 L 6 28.65 L 42 28.65 L 42 31.65 Z M 6 19.35 L 6 16.35 L 42 16.35 L 42 19.35 Z M 6 7 L 6 4 L 42 4 L 42 7 Z"
+                android:fillColor="#000"
+                android:strokeWidth="1"/>
+        </vector>
+    </aapt:attr>
+    <target android:name="path">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="pathData"
+                android:duration="650"
+                android:valueFrom="M 24 41 L 15 41 L 6 41 L 6 42.5 L 6 44 L 42 44 L 42 41 L 33 41 L 24 41 M 11.143 31.65 Q 13.714 31.65 16.286 31.65 Q 18.857 31.65 21.429 31.65 L 26.571 31.65 Q 29.143 31.65 31.714 31.65 Q 34.286 31.65 36.857 31.65 L 42 31.65 Q 42 30.15 42 28.65 Q 36 28.65 30 28.65 L 18 28.65 Q 12 28.65 6 28.65 Q 6 30.15 6 31.65 L 11.143 31.65 M 6 19.35 L 6 16.35 L 42 16.35 L 42 19.35 L 24 19.35 L 6 19.35 M 6 7 L 42 7 L 42 4 L 6 4 L 6 7 M 24 40.5 Q 24 40.5 24 40.5 Q 24 40.5 24 40.5 Q 24 40.5 24 40.5 Q 24 40.5 24 40.5 L 24 40.5 Q 24 40.5 24 40.5 Q 24 40.5 24 40.5 Q 24 40.5 24 40.5 Q 24 40.5 24 40.5 L 24 40.5"
+                android:valueTo="M 24 28.8 L 21.55 23.45 L 16.2 21 L 21.55 18.55 L 24 13.2 L 26.45 18.55 L 31.8 21 L 26.45 23.45 L 24 28.8 M 4 33 Q 4 34.2 4.9 35.1 Q 5.8 36 7 36 L 41 36 Q 42.2 36 43.1 35.1 Q 44 34.2 44 33 L 44 9 Q 44 7.8 43.1 6.9 Q 42.2 6 41 6 L 7 6 Q 5.8 6 4.9 6.9 Q 4 7.8 4 9 L 4 33 M 7 33 L 7 9 L 41 9 L 41 33 L 7 33 L 7 33 M 7 33 L 7 9 L 7 33 L 7 33 L 7 33 M 3.5 42 Q 2.85 42 2.425 41.575 Q 2 41.15 2 40.5 Q 2 39.85 2.425 39.425 Q 2.85 39 3.5 39 L 44.5 39 Q 45.15 39 45.575 39.425 Q 46 39.85 46 40.5 Q 46 41.15 45.575 41.575 Q 45.15 42 44.5 42 L 3.5 42"
+                android:valueType="pathType"
+                android:interpolator="@android:anim/overshoot_interpolator"/>
+        </aapt:attr>
+    </target>
+</animated-vector>
