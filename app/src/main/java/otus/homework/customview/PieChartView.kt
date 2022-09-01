@@ -1,12 +1,16 @@
 package otus.homework.customview
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.OvershootInterpolator
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -22,6 +26,12 @@ class PieChartView @JvmOverloads constructor(
     private val oval = RectF()
     private val indicatorCirclePaint = Paint()
     private var bitmap: Bitmap? = null
+
+    private var sliceAnimator: ValueAnimator = ValueAnimator.ofFloat()
+    private val animateExpansion = AnimatorSet()
+    private var selectedSlice: PieSlice? = null
+    private var sliceWidth = 0F
+    private fun getSliceWidthExpanded() = sliceWidth * 1.5F
 
     var pieChartClickListener: PieChartClickListener? = null
 
@@ -49,11 +59,12 @@ class PieChartView @JvmOverloads constructor(
     }
 
     private fun setPieSliceDimensions() {
+        sliceWidth = layoutParams.height / 6F
         var lastAngle = 0f
         data?.pieSlices?.forEach {
             it.value.startAngle = lastAngle
             it.value.rotationAngle = (((it.value.value / data?.totalValue!!)) * 360f).toFloat()
-            it.value.paint.strokeWidth = layoutParams.height / 6F
+            it.value.paint.strokeWidth = sliceWidth
             lastAngle += it.value.rotationAngle
             setIndicatorLocation(it.key)
         }
@@ -87,6 +98,7 @@ class PieChartView @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldw, oldh)
         setCircleBounds()
         setGraphicSizes()
+        setupAnimations()
         data?.pieSlices?.forEach {
             setIndicatorLocation(it.key)
         }
@@ -145,21 +157,6 @@ class PieChartView @JvmOverloads constructor(
         )
     }
 
-    private fun expandPieSlice(slice: PieSlice) {
-        pieChartClickListener?.onClick(slice.category)
-        slice.paint.strokeWidth *= 1.5F
-        slice.state = PieState.EXPANDED
-        requestLayout()
-        invalidate()
-    }
-
-    private fun collapsePieSlice(slice: PieSlice) {
-        slice.paint.strokeWidth = layoutParams.height / 6F
-        slice.state = PieState.MINIMIZED
-        requestLayout()
-        invalidate()
-    }
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
@@ -206,20 +203,43 @@ class PieChartView @JvmOverloads constructor(
         val color = event?.let { bitmap?.getPixel(event.x.toInt(), event.y.toInt()) }
         if (event?.action == MotionEvent.ACTION_DOWN) return true
         if (event?.action == MotionEvent.ACTION_UP) {
-            Log.d("CLICKED", "CLICKED")
-            Log.d("CLICKED", color.toString())
             data?.pieSlices?.forEach {
                 if (it.value.paint.color == color) {
-                    when (it.value.state) {
-                        PieState.MINIMIZED -> expandPieSlice(it.value)
-                        PieState.EXPANDED -> collapsePieSlice(it.value)
-                    }
-                } else {
-                    collapsePieSlice(it.value)
+                    selectedSlice = it.value
+                    pieChartClickListener?.onClick(it.value.category)
+                    animateExpansion.start()
                 }
             }
         }
         return super.onTouchEvent(event)
+    }
+
+    private fun setupAnimations() {
+        sliceAnimator = ValueAnimator.ofFloat(sliceWidth, getSliceWidthExpanded())
+        sliceAnimator.duration = 200
+        sliceAnimator.interpolator = OvershootInterpolator()
+        sliceAnimator.addUpdateListener {
+            selectedSlice?.let { selectedSlice ->
+                data?.pieSlices?.forEach { (_, value) -> value.paint.strokeWidth = when (value.state) {
+                    PieState.MINIMIZED -> if (value.category == selectedSlice.category) it.animatedValue as Float else sliceWidth
+                    PieState.EXPANDED -> getSliceWidthExpanded() - (it.animatedValue as Float - sliceWidth)
+                }}
+            }
+            requestLayout()
+            invalidate()
+        }
+
+        sliceAnimator.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                super.onAnimationEnd(animation)
+                selectedSlice?.let { selectedSlice ->
+                    data?.pieSlices?.forEach { (_, value) ->
+                        value.state = if (value.category == selectedSlice.category ) PieState.EXPANDED else PieState.MINIMIZED
+                    }
+                }
+            }
+        })
+        animateExpansion.play(sliceAnimator)
     }
 
     enum class IndicatorAlignment {
