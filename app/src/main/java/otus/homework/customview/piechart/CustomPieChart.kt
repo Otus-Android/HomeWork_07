@@ -11,6 +11,7 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.LinearInterpolator
 import kotlinx.parcelize.Parcelize
 import otus.homework.customview.dp
 import otus.homework.customview.generateRandomColor
@@ -194,7 +195,7 @@ class CustomPieChart @JvmOverloads constructor(
 
             val segmentUIEntity = Segment(
                 startAngel = acc,
-                endAngel = result - (degreesInCircle * sizeOfDelimitersInPercents / 100),
+                endAngel = result - (degreesInCircle * sizeOfDelimitersInPercents / 100)
             )
 
             segments.add(segmentUIEntity)
@@ -222,14 +223,36 @@ class CustomPieChart @JvmOverloads constructor(
     }
 
     private fun onSegmentClick(segment: Segment) {
-        val animator = ValueAnimator.ofArgb(segment.color, generateRandomColor())
-        animator.addUpdateListener {
-            val color = it.animatedValue
-            segment.color = color as Int
-            invalidate()
-        }
-        animator.duration = 200
-        animator.start()
+        ValueAnimator
+            .ofArgb(segment.color, generateRandomColor())
+            .apply {
+                addUpdateListener {
+                    val color = it.animatedValue as Int
+                    segment.color = color
+                    invalidate()
+                }
+                duration = 200
+            }
+            .start()
+
+        ValueAnimator
+            .ofFloat(
+                segment.offsetOfPercentText,
+                segment.offsetOfPercentText + 20f.dp
+            )
+            .apply {
+                interpolator = LinearInterpolator()
+                duration = 200
+                repeatCount = 1
+                repeatMode = ValueAnimator.REVERSE
+                addUpdateListener {
+                    val value = it.animatedValue as Float
+                    segment.offsetOfPercentText = value
+                    invalidate()
+                }
+            }
+            .start()
+
         onSegmentClick?.invoke(segment)
     }
 

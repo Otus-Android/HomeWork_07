@@ -37,10 +37,10 @@ class Segment(
     }
 
     @IgnoredOnParcel
-    private val offsetOfPercentTextRect = 3f.dp
+    var offsetOfPercentTextRect = 3f.dp
 
     @IgnoredOnParcel
-    private val offsetOfPercentText = 24f.dp
+    var offsetOfPercentText = 24f.dp
 
     @IgnoredOnParcel
     private val roundRectOfPercentText = RectF()
