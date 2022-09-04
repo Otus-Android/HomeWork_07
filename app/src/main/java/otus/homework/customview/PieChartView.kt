@@ -3,10 +3,12 @@ package otus.homework.customview
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import kotlinx.parcelize.Parcelize
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -22,6 +24,7 @@ class PieChartView @JvmOverloads constructor(
     private val oval = RectF()
     private val indicatorCirclePaint = Paint()
     private var bitmap: Bitmap? = null
+    private var currentPieSlice: PieSlice? = null
 
     var pieChartClickListener: PieChartClickListener? = null
 
@@ -208,19 +211,40 @@ class PieChartView @JvmOverloads constructor(
         if (event?.action == MotionEvent.ACTION_UP) {
             Log.d("CLICKED", "CLICKED")
             Log.d("CLICKED", color.toString())
-            data?.pieSlices?.forEach {
-                if (it.value.paint.color == color) {
-                    when (it.value.state) {
-                        PieState.MINIMIZED -> expandPieSlice(it.value)
-                        PieState.EXPANDED -> collapsePieSlice(it.value)
+            data?.pieSlices?.forEach { pieSlice ->
+                if (pieSlice.value.paint.color == color) {
+                    currentPieSlice = pieSlice.value
+                    currentPieSlice?.let {
+                        when (it.state) {
+                            PieState.MINIMIZED -> expandPieSlice(it)
+                            PieState.EXPANDED -> collapsePieSlice(it)
+                        }
                     }
                 } else {
-                    collapsePieSlice(it.value)
+                    collapsePieSlice(pieSlice.value)
                 }
             }
         }
         return super.onTouchEvent(event)
     }
+
+    override fun onSaveInstanceState(): Parcelable {
+        val superState = super.onSaveInstanceState()
+        return PieChartState(superState, currentPieSlice)
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        (state as? PieChartState)?.let { pieChartState ->
+            super.onRestoreInstanceState(pieChartState.superSavedState ?: state)
+            currentPieSlice = pieChartState.selectedPieSlice
+        }
+    }
+
+    @Parcelize
+    class PieChartState(
+        val superSavedState: Parcelable?,
+        val selectedPieSlice: PieSlice?
+    ) : View.BaseSavedState(superSavedState), Parcelable
 
     enum class IndicatorAlignment {
         LEFT, RIGHT, TOP, BOTTOM

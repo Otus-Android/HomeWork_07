@@ -2,6 +2,7 @@ package otus.homework.customview
 
 import android.content.Context
 import android.graphics.*
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 
@@ -35,22 +36,24 @@ class GraphView @JvmOverloads constructor(
         }
         axisPaint.apply {
             color = Color.BLACK
+            isAntiAlias = true
             strokeWidth = 4f
         }
         gridPaint.apply {
             color = Color.LTGRAY
+            isAntiAlias = true
             strokeWidth = 2f
         }
         graphPaint.apply {
             color = Color.RED
-            isAntiAlias = true
+            flags = Paint.ANTI_ALIAS_FLAG
             strokeCap = Paint.Cap.ROUND
             style = Paint.Style.STROKE
             strokeWidth = 8f
         }
         pointPaint.apply {
             color = Color.BLUE
-            isAntiAlias = true
+            flags = Paint.ANTI_ALIAS_FLAG
             strokeCap = Paint.Cap.ROUND
             style = Paint.Style.STROKE
             strokeWidth = 8f
@@ -200,5 +203,13 @@ class GraphView @JvmOverloads constructor(
             xScaleDivisionLength = calculateXScaleDivisionLength()
             yScaleDivisionLength = calculateYScaleDivisionLength()
         }
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        return super.onSaveInstanceState()
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
     }
 }
