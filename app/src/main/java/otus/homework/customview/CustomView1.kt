@@ -21,7 +21,7 @@ import kotlin.random.Random
 
 class CustomView1 @JvmOverloads constructor (context: Context?, attrs: AttributeSet? = null, defStyleAttr: Int = 0): View(context, attrs, defStyleAttr) {
 
-    private val dataPayLoad: Array<PayLoad>
+    private var dataPayLoad: Array<PayLoad>
     init {
         val gson = Gson()
         val buffer: String = resources.openRawResource(R.raw.payload).bufferedReader().use { it.readText() }
@@ -48,20 +48,19 @@ class CustomView1 @JvmOverloads constructor (context: Context?, attrs: Attribute
     }
 
     override fun onSaveInstanceState(): Parcelable? {
-        super.onSaveInstanceState()
         val bundle = Bundle()
         bundle.putParcelable("superState", super.onSaveInstanceState())
-        //bundle.putParcelableArrayList("dataPayLoadDraw", this.dataPayLoadDraw) // ... save stuff
+        bundle.putParcelableArray("data", this.dataPayLoad)
         return bundle
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
-        var state = state
         if (state is Bundle) // implicit null check
         {
-            val bundle = state
-            //this.stuff = bundle.getInt("stuff") // ... load stuff
-            state = bundle.getParcelable("superState")
+            val data = state.getParcelableArray("data")
+            if (data is Array<*> && data.isArrayOf<PayLoad>()) {
+                this.dataPayLoad = data as Array<PayLoad>
+            }
         }
         super.onRestoreInstanceState(state)
     }

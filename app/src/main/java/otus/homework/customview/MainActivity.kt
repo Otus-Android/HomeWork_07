@@ -8,9 +8,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val gson = Gson()
-        val buffer: String = resources.openRawResource(R.raw.payload).bufferedReader().use { it.readText() }
-        val dataPayLoad: Array<PayLoad> = gson.fromJson(buffer, Array<PayLoad>::class.java)
+//        val gson = Gson()
+//        val buffer: String = resources.openRawResource(R.raw.payload).bufferedReader().use { it.readText() }
+//        val dataPayLoad: Array<PayLoad> = gson.fromJson(buffer, Array<PayLoad>::class.java)
 
         setContentView(R.layout.activity_main)
     }

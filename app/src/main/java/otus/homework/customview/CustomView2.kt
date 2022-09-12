@@ -2,13 +2,12 @@ package otus.homework.customview
 
 import android.content.Context
 import android.graphics.*
-import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.icu.text.SimpleDateFormat
-import android.os.Build
+import android.os.Bundle
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
-import androidx.annotation.RequiresApi
 import com.google.gson.Gson
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -16,22 +15,24 @@ import java.util.*
 
 
 //@RequiresApi(Build.VERSION_CODES.N)
-class CustomView2: View {
+class CustomView2 @JvmOverloads constructor (context: Context?, attrs: AttributeSet? = null, defStyleAttr: Int = 0): View(context, attrs, defStyleAttr) {
 
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
-
-    private val dataPayLoad: Array<PayLoad>
+    private var dataPayLoad: Array<PayLoad>
     init {
         val gson = Gson()
         val buffer: String = resources.openRawResource(R.raw.payload).bufferedReader().use { it.readText() }
         dataPayLoad = gson.fromJson(buffer, Array<PayLoad>::class.java)
+
+        for (elem in dataPayLoad){
+            elem.date = Date(elem.time*1000)
+            elem.date.time = 0
+        }
     }
 
     private val sdf = SimpleDateFormat("yyyy-MM-dd")
     private var resultDraw = dataPayLoad
-        .groupBy { sdf.format(Date(it.time*1000)) }
+        .groupBy { sdf.format(Date(it.time*1000))}
+        //.groupBy { Pair(sdf.format(Date(it.time*1000)), it.category)}
         .mapValues { it -> it.value.sumBy { it.amount } }
         .toSortedMap()
     private val minDate = LocalDate.parse(resultDraw.minOf { it.key } ?: "2001-01-01")
@@ -39,17 +40,24 @@ class CustomView2: View {
     private val countValues = Period.between(minDate, maxDate).days+1 //resultDraw.count()
     private val maxValues = resultDraw.maxOf { it.value } * 1.1
 
+    private var resultDraw2 = dataPayLoad
+        .groupingBy { Pair(it.category, it.date) }
+        .reduce { _, acc, element ->
+            acc.copy(amount = acc.amount + element.amount)
+        }
+        .values.toList()
+
     //fill empty dates
-    init {
-        var date: LocalDate = minDate
-        do {
-            val str = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-            if (!resultDraw.containsKey(str)){
-                resultDraw.plus(Pair(str,0))
-            }
-            date = date.plusDays(1)
-        } while (date < maxDate)
-    }
+//    init {
+//        var date: LocalDate = minDate
+//        do {
+//            val str = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+//            if (!resultDraw.containsKey(str)){
+//                resultDraw.plus(Pair(str,0))
+//            }
+//            date = date.plusDays(1)
+//        } while (date <= maxDate)
+//    }
 
     private val paintFill = Paint().apply {
         color = Color.rgb(255, 126,126)
@@ -77,10 +85,29 @@ class CustomView2: View {
         textAlign = Paint.Align.CENTER
     }
 
+    override fun onSaveInstanceState(): Parcelable? {
+        val bundle = Bundle()
+        bundle.putParcelable("superState", super.onSaveInstanceState())
+        bundle.putParcelableArray("data", this.dataPayLoad)
+        return bundle
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is Bundle) // implicit null check
+        {
+            val data = state.getParcelableArray("data")
+            if (data is Array<*> && data.isArrayOf<PayLoad>()) {
+                this.dataPayLoad = data as Array<PayLoad>
+            }
+        }
+        super.onRestoreInstanceState(state)
+    }
+
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
-        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+        //val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
         when (widthMode) {
@@ -93,18 +120,44 @@ class CustomView2: View {
         }
     }
 
+    fun DrawHorizontalLinesText(canvas: Canvas){
+        //top
+        canvas.drawLine( marginPlot, marginPlot, width - marginPlot, marginPlot, paintAxis)
+        canvas.drawText(maxValues.toString(), marginPlot+marginView, marginPlot-marginView, paintText)
+        //middle
+        canvas.drawLine( marginPlot,
+            (height/2).toFloat(), width - marginPlot, (height/2).toFloat(), paintAxis)
+        canvas.drawText((maxValues/2).toString(), marginPlot+marginView, (height/2-marginView), paintText)
+        //down
+        canvas.drawLine( marginPlot, height - marginPlot, width - marginPlot, height -marginPlot, paintAxis)
+    }
+    
+    fun DrawVerticalLineText(canvas: Canvas, x:Float, text: String) {
+        canvas.drawLine( x , marginPlot, x, height- marginPlot, paintAxis)
+        canvas.drawText(text, x, height - marginPlot/2, paintTextDate)
+    }
+    
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         var wColumn = 0f;
-        val margin = 100f
         var count = 0f
         var oldX = 0f
         var oldY = 0f
         pathFill.reset()
         if( countValues > 1  ){
-            wColumn = ((width-2*margin) / (countValues-1)).toFloat()
-            pathFill.moveTo( margin, height - margin)
+            wColumn = ((width-2*marginPlot) / (countValues-1))
+            pathFill.moveTo( marginPlot, height - marginPlot)
         }
+
+//        var date: LocalDate = minDate
+//        do {
+//            val str = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+//            if (!resultDraw.containsKey(str)){
+//                resultDraw.plus(Pair(str,0))
+//            }
+//            date = date.plusDays(1)
+//        } while (date <= maxDate)
+
         for (data in resultDraw){
             if(count != 0f) {
                 canvas.drawLine(
@@ -112,38 +165,33 @@ class CustomView2: View {
                     (height * (1 - data.value / maxValues)).toFloat(), paintLine
                 )
             }
-            oldX = margin+wColumn*count
+            oldX = marginPlot+wColumn*count
             oldY = (height*(1-data.value/maxValues)).toFloat()
             //vertical line
-            canvas.drawLine( oldX , margin, oldX, height- margin, paintAxis)
-            canvas.drawText(data.key.substring(8), oldX, height - margin/2, paintTextDate)
+            DrawVerticalLineText( canvas, oldX, data.key.substring(8))
+            
             pathFill.lineTo( oldX, oldY)
             count++
         }
+        
+        //fill plot
         if(oldX != 0f){
             pathFill.lineTo( oldX, oldY)
-            pathFill.lineTo( width - margin, height - margin)
+            pathFill.lineTo( width - marginPlot, height - marginPlot)
             canvas.drawPath(pathFill, paintFill)
         }
 
         //horizontal lines and text
-        canvas.drawLine( margin, margin, width - margin, margin, paintAxis)
-        canvas.drawText(maxValues.toString(), margin+marginView, margin-marginView, paintText)
-        canvas.drawLine( margin,
-            (height/2).toFloat(), width - margin, (height/2).toFloat(), paintAxis)
-        canvas.drawText((maxValues/2).toString(), margin+marginView, (height/2-marginView).toFloat(), paintText)
-        canvas.drawLine( margin, height - margin, width - margin, height -margin, paintAxis)
+        DrawHorizontalLinesText(canvas)
     }
 
     companion object {
         const val TAG = "CustomView"
         const val marginView = 10f
+        const val marginPlot = 100f
     }
 
 }
 
-data class PayLoadDraw2(
-    val amount: Int,
-    val date: String
-)
+
 
