@@ -11,5 +11,5 @@ data class PayLoad(
     val amount: Int,
     val category: String,
     val time: Long,
-    var date: Date
+    var strDate: String
 ): Parcelable

@@ -12,40 +12,51 @@ import com.google.gson.Gson
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.random.Random
 
 
 //@RequiresApi(Build.VERSION_CODES.N)
 class CustomView2 @JvmOverloads constructor (context: Context?, attrs: AttributeSet? = null, defStyleAttr: Int = 0): View(context, attrs, defStyleAttr) {
 
     private var dataPayLoad: Array<PayLoad>
+    private val rndColor = Random
+
+    private val sdf = SimpleDateFormat("yyyy-MM-dd")
     init {
         val gson = Gson()
         val buffer: String = resources.openRawResource(R.raw.payload).bufferedReader().use { it.readText() }
         dataPayLoad = gson.fromJson(buffer, Array<PayLoad>::class.java)
 
         for (elem in dataPayLoad){
-            elem.date = Date(elem.time*1000)
-            elem.date.time = 0
+            sdf.format(Date(elem.time*1000)).also { elem.strDate = it }
         }
     }
 
-    private val sdf = SimpleDateFormat("yyyy-MM-dd")
-    private var resultDraw = dataPayLoad
-        .groupBy { sdf.format(Date(it.time*1000))}
-        //.groupBy { Pair(sdf.format(Date(it.time*1000)), it.category)}
-        .mapValues { it -> it.value.sumBy { it.amount } }
-        .toSortedMap()
-    private val minDate = LocalDate.parse(resultDraw.minOf { it.key } ?: "2001-01-01")
-    private val maxDate = LocalDate.parse(resultDraw.maxOf { it.key } ?: "2001-01-01")
-    private val countValues = Period.between(minDate, maxDate).days+1 //resultDraw.count()
-    private val maxValues = resultDraw.maxOf { it.value } * 1.1
+
+//    private var resultDraw = dataPayLoad
+//        .groupBy { sdf.format(Date(it.time*1000))}
+//        //.groupBy { Pair(sdf.format(Date(it.time*1000)), it.category)}
+//        .mapValues { it -> it.value.sumBy { it.amount } }
+//        .toSortedMap()
+//    private val minDate = LocalDate.parse(resultDraw.minOf { it.key } ?: "2001-01-01")
+//    private val maxDate = LocalDate.parse(resultDraw.maxOf { it.key } ?: "2001-01-01")
+//    private val countValues = Period.between(minDate, maxDate).days+1 //resultDraw.count()
+//    private val maxValues = resultDraw.maxOf { it.value } * 1.1
 
     private var resultDraw2 = dataPayLoad
-        .groupingBy { Pair(it.category, it.date) }
+        .groupingBy { Pair(it.category, it.strDate) }
         .reduce { _, acc, element ->
             acc.copy(amount = acc.amount + element.amount)
         }
         .values.toList()
+        .sortedBy { it.category + it.strDate }
+
+    private val minDate = LocalDate.parse(dataPayLoad.minOf { it.strDate } ?: "2001-01-01")
+    private val maxDate = LocalDate.parse(dataPayLoad.maxOf { it.strDate } ?: "2001-01-01")
+    private val countValues = Period.between(minDate, maxDate).days+1 //resultDraw.count()
+    private val maxValues = resultDraw2.maxOf { it.amount }
+
+    val resultDraw3 = resultDraw2.groupBy { it.category }
 
     //fill empty dates
 //    init {
@@ -149,37 +160,55 @@ class CustomView2 @JvmOverloads constructor (context: Context?, attrs: Attribute
             pathFill.moveTo( marginPlot, height - marginPlot)
         }
 
-//        var date: LocalDate = minDate
-//        do {
-//            val str = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-//            if (!resultDraw.containsKey(str)){
-//                resultDraw.plus(Pair(str,0))
-//            }
-//            date = date.plusDays(1)
-//        } while (date <= maxDate)
+        for (data in resultDraw3){
+            var count = 0f
+            var oldX = 0f
+            var newX = 0f
+            var oldY = 0f
+            var newY = 0f
+            paintLine.color =  Color.argb(255, rndColor.nextInt(256), rndColor.nextInt(256) , rndColor.nextInt(256))
 
-        for (data in resultDraw){
-            if(count != 0f) {
-                canvas.drawLine(
-                    oldX, oldY, oldX + wColumn * count,
-                    (height * (1 - data.value / maxValues)).toFloat(), paintLine
-                )
-            }
-            oldX = marginPlot+wColumn*count
-            oldY = (height*(1-data.value/maxValues)).toFloat()
-            //vertical line
-            DrawVerticalLineText( canvas, oldX, data.key.substring(8))
-            
-            pathFill.lineTo( oldX, oldY)
-            count++
+            var date: LocalDate = minDate
+            do {
+                val strDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                val amount = data.value.firstOrNull { it.strDate == strDate }?.amount ?: 0
+                newX = marginPlot+wColumn*count
+                newY = marginPlot+ ((height-2*marginPlot)*(1-amount/maxValues)).toFloat()
+                if(count != 0f) {
+                    canvas.drawLine( oldX, oldY, newX, newY, paintLine )
+                }
+                oldX = newX
+                oldY = newY
+                //vertical line
+                DrawVerticalLineText( canvas, oldX, strDate)
+                date = date.plusDays(1)
+                count++
+            } while (date <= maxDate)
+
         }
-        
-        //fill plot
-        if(oldX != 0f){
-            pathFill.lineTo( oldX, oldY)
-            pathFill.lineTo( width - marginPlot, height - marginPlot)
-            canvas.drawPath(pathFill, paintFill)
-        }
+
+//        for (data in resultDraw){
+//            if(count != 0f) {
+//                canvas.drawLine(
+//                    oldX, oldY, oldX + wColumn * count,
+//                    (height * (1 - data.value / maxValues)).toFloat(), paintLine
+//                )
+//            }
+//            oldX = marginPlot+wColumn*count
+//            oldY = (height*(1-data.value/maxValues)).toFloat()
+//            //vertical line
+//            DrawVerticalLineText( canvas, oldX, data.key.substring(8))
+//
+//            pathFill.lineTo( oldX, oldY)
+//            count++
+//        }
+//
+//        //fill plot
+//        if(oldX != 0f){
+//            pathFill.lineTo( oldX, oldY)
+//            pathFill.lineTo( width - marginPlot, height - marginPlot)
+//            canvas.drawPath(pathFill, paintFill)
+//        }
 
         //horizontal lines and text
         DrawHorizontalLinesText(canvas)
