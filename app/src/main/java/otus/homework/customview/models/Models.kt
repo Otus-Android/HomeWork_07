@@ -3,6 +3,7 @@ package otus.homework.customview.models
 import android.graphics.Color
 import android.os.Parcelable
 import androidx.annotation.ColorInt
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import otus.homework.customview.utils.ColorGenerator
 
@@ -14,6 +15,7 @@ data class Expenditure(
     val time: Long
 )
 
+@Parcelize
 data class PieChartSegment(
     val id: Int,
     val name: String,
@@ -23,7 +25,9 @@ data class PieChartSegment(
     val endAngle: Float,
     val percentageOfMaximum: Float,
     @ColorInt val color: Int
-) {
+): Parcelable {
+
+    @IgnoredOnParcel
     val segmentAngle = endAngle - startAngle
 }
 
