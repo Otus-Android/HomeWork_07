@@ -5,10 +5,16 @@ import android.graphics.Color
 import android.graphics.Paint
 
 class ChartPart(
-    private val startAngle: Float,
-    private val sweepAngle: Float,
-    private val color: Int
+    val id: Int,
+    val name: String,
+    val amount: Int,
+    val category: String,
+    val time: Long
 ) {
+
+    var startAngle: Float = 0f
+    var sweepAngle: Float = 0f
+    var color: Int = Color.TRANSPARENT
 
     fun draw(canvas: Canvas, paint: Paint, parentSize: Float) {
 

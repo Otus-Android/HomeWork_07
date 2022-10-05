@@ -24,29 +24,9 @@ class PieChart @JvmOverloads constructor(
     private val chartParts = mutableListOf<ChartPart>()
 
     /** Метод установки значений из json*/
-    fun setModels(modelItems: List<ChartItemModel>) {
+    fun drawChartParts(data: List<ChartPart>) {
         chartParts.clear()
-
-        // считаем общую сумму. Для точности переводим в Float
-        val totalAmount = modelItems.sumOf { it.amount }.toFloat()
-        // считаем какая сумма соответствует одному проценту
-        val oneAmountDegree = totalAmount / 360
-
-
-        // начальное значение с которого будет строиться график
-        var startChartDegreePoint = 0f
-        modelItems.forEach {
-            // считаем сколько градусов занимает значение
-            val partDegree = it.amount / oneAmountDegree
-            val chartPart = ChartPart(
-                startAngle = startChartDegreePoint,
-                sweepAngle = partDegree,
-                color = generateColor()
-            )
-            chartParts.add(chartPart)
-            startChartDegreePoint += partDegree
-        }
-
+        chartParts.addAll(data)
         invalidate()
     }
 
@@ -98,11 +78,6 @@ class PieChart @JvmOverloads constructor(
 
         paint.strokeWidth = strokeWidth
         chartParts.forEach { it.draw(canvas, paint, viewSize) }
-    }
-
-    private fun generateColor(): Int {
-        val rnd = Random()
-        return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
     }
 
 }
