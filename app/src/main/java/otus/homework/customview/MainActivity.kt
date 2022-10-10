@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import otus.homework.customview.pieChart.ChartPart
-import otus.homework.customview.pieChart.PieChart
+import otus.homework.customview.pieChart.PieChartView
 import java.io.InputStreamReader
 import java.io.Reader
 import java.lang.reflect.Type
@@ -14,20 +14,20 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var chart: PieChart
+    private lateinit var chartView: PieChartView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        chart = findViewById(R.id.chart)
-
+        chartView = findViewById(R.id.chart)
 
         val chartParts = readJsonFile()
 
         setUpChartParts(chartParts)
 
-        chart.drawChartParts(chartParts)
+        chartView.drawChartParts(chartParts)
     }
 
     private fun setUpChartParts(chartParts: List<ChartPart>) {
