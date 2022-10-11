@@ -4,15 +4,12 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import kotlin.math.atan2
 import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 class PieChartView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -25,6 +22,7 @@ class PieChartView @JvmOverloads constructor(
     private var viewSize: Float = 0f
     private var strokeWidth: Float = 0f
 
+    private var motionEvent: MotionEvent? = null
     private var tapAngle = 0.0
 
     private val paint = Paint().apply {
@@ -68,38 +66,22 @@ class PieChartView @JvmOverloads constructor(
 
         viewSize = min(viewWidth, viewHeight).toFloat() - 2 * chartPadding
         strokeWidth = viewSize / 5
+        chartParts.forEach {
+            it.setParentViewSize(viewSize, widthSize, heightSize)
+        }
 
         setMeasuredDimension(widthSize, heightSize)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        return if (isTouchOnChart(event)) {
+        return if (MotionEvent.ACTION_DOWN == event.action) {
+            motionEvent = event
             tapAngle = convertTouchEventToAngle(event)
             performClick()
             true
         } else {
             false
         }
-    }
-
-    private fun isTouchOnChart(event: MotionEvent): Boolean {
-        if (MotionEvent.ACTION_DOWN == event.action) {
-            val xTouch = event.x
-            val yTouch = event.y
-
-            val xCenter = width * 0.5f
-            val yCenter = height * 0.5f
-
-            val distanceToCenter = sqrt(
-                (xTouch - xCenter).toDouble().pow(2.0) + (yTouch - yCenter).toDouble().pow(2.0)
-            )
-
-            val bigRadius = viewSize / 2 - chartPadding
-            val smallRadius = bigRadius - strokeWidth
-
-            return distanceToCenter in smallRadius..bigRadius
-        }
-        return false
     }
 
     private fun convertTouchEventToAngle(event: MotionEvent): Double {
@@ -115,11 +97,10 @@ class PieChartView @JvmOverloads constructor(
     override fun performClick(): Boolean {
         super.performClick()
         val chartPart = chartParts.firstOrNull { it.isChartPartTap(tapAngle) }
-        /*chartPart?.animate() {
-            invalidate()
-        }*/
-        Log.i(TAG, "performClick: $tapAngle")
-        Toast.makeText(context, "${chartPart?.name}", Toast.LENGTH_SHORT).show()
+        if (chartPart?.isTouchOnChart(motionEvent) == true) {
+            Toast.makeText(context, chartPart.name, Toast.LENGTH_SHORT).show()
+            chartPart.animate { invalidate() }
+        }
         return true
     }
 
@@ -132,7 +113,7 @@ class PieChartView @JvmOverloads constructor(
         paint.strokeWidth = strokeWidth
         chartParts.forEach {
             it.setCenterCoordinates(cX, cY)
-            it.draw(canvas, paint, viewSize, chartPadding)
+            it.draw(canvas, paint, chartPadding)
         }
     }
 
