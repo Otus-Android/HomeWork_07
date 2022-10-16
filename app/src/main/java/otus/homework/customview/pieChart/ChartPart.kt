@@ -5,8 +5,10 @@ import android.animation.ValueAnimator
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
+import android.util.Log
 import android.view.MotionEvent
 import android.view.animation.LinearInterpolator
+import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -27,9 +29,7 @@ class ChartPart(
     // отступ между частями графика
     private val chartPartsMargin = 3f
 
-    private val angleStartValue = 0f
-    private val angleEndValue = chartPartsMargin * 3
-    private var angleAnimValue = angleStartValue
+    private var angleAnimValue = 0f
 
     // центр родителя
     private var cX = 0
@@ -43,19 +43,13 @@ class ChartPart(
     private var halfStrokeWidth: Float = 0f
 
     // пределы в которых рисуется график
-    private var left: Float = 0f
-    private var right: Float = 0f
-    private var top: Float = 0f
-    private var bottom: Float = 0f
+    private var bigRadius: Float = 0f
+    private var smallRadius: Float = 0f
 
     // ключ указываюший выбран график или нет
     private var isSelected = false
 
-    private val strokeStartAnimValue = 0.2f
-    private val strokeEndAnimValue = 0.25f
-    private var strokeAnimValue = strokeStartAnimValue
-
-    private var valueAnimator: ValueAnimator? = null
+    private var strokeAnimValue = 0.2f
 
     /** Функция простановки размеров графика*/
     fun setViewSize(w: Int, h: Int) {
@@ -74,10 +68,13 @@ class ChartPart(
 
         paint.strokeWidth = strokeWidth
 
-        left = cX - halfViewSize + halfStrokeWidth
-        right = cX + halfViewSize - halfStrokeWidth
-        top = cY - halfViewSize + halfStrokeWidth
-        bottom = cY + halfViewSize - halfStrokeWidth
+        val left = cX - halfViewSize + halfStrokeWidth
+        val right = cX + halfViewSize - halfStrokeWidth
+        val top = cY - halfViewSize + halfStrokeWidth
+        val bottom = cY + halfViewSize - halfStrokeWidth
+
+        bigRadius = (right - left) / 2 + halfStrokeWidth
+        smallRadius = bigRadius - strokeWidth
 
         paint.color = color
 
@@ -85,17 +82,39 @@ class ChartPart(
         val startAngle = startAngle + chartPartsMargin - angleAnimValue
         val sweepAngle = sweepAngle - chartPartsMargin + (2 * angleAnimValue)
 
+        Log.i(TAG, "draw: $angleAnimValue")
+
         canvas.drawArc(oval, startAngle, sweepAngle, false, paint)
     }
 
     /** функция которая проверяет входит ли угол клика в диапозон углов этой части графика */
-    fun isChartPartTap(tapAngle: Double): Boolean {
-        val endAngle = startAngle + sweepAngle - chartPartsMargin
-        return (startAngle - chartPartsMargin) <= tapAngle && tapAngle <= endAngle
+    fun chartTap(event: MotionEvent?): Boolean {
+        return event?.let {
+            val tapAngle = convertTouchEventToAngle(it)
+            val endAngle = startAngle + sweepAngle - chartPartsMargin
+
+            // проверить принадлежит ли угол данному сектору
+            val isTapInThisAngleSector =
+                (startAngle - chartPartsMargin) <= tapAngle && tapAngle <= endAngle
+            return if (isTapInThisAngleSector) {
+                isTouchOnChart(it)
+            } else false
+        } ?: false
     }
 
-    /** функция которая проверит кликнул или пользователь на эту часть */
-    fun isTouchOnChart(event: MotionEvent?): Boolean {
+    /** Функция, которая определяет угол по координатам качания */
+    private fun convertTouchEventToAngle(event: MotionEvent): Double {
+        val x: Float = event.x - cX
+        val y: Float = event.y - cY
+
+        var angle = Math.toDegrees(atan2(y, x) + Math.PI / 2) - 90
+        angle = if (angle < 0) angle + 360 else angle
+
+        return angle
+    }
+
+    /** функция которая проверит кликнул или пользователь на визульную часть данного сектора */
+    private fun isTouchOnChart(event: MotionEvent?): Boolean {
         return if (event == null) {
             false
         } else {
@@ -107,48 +126,13 @@ class ChartPart(
                 (xTouch - cX).toDouble().pow(2.0) + (yTouch - cY).toDouble().pow(2.0)
             )
 
-            val bigRadius = (right - left) / 2 + halfStrokeWidth
-            val smallRadius = bigRadius - strokeWidth
-
-
-            if (valueAnimator?.isRunning != true) {
-                val isSectorClick = distanceToCenter in smallRadius..bigRadius
-                if (isSectorClick) {
-                    isSelected = !isSelected
-                    true
-                } else {
-                    false
-                }
-            } else {
-                false
-            }
+            distanceToCenter in smallRadius..bigRadius
         }
     }
 
-    fun animate(callback: () -> Unit) {
-
-        val startStrokeValue = if (isSelected) strokeStartAnimValue else strokeEndAnimValue
-        val endStrokeValue = if (isSelected) strokeEndAnimValue else strokeStartAnimValue
-        val strokeKey = "stroke"
-        val strokeHolder = PropertyValuesHolder.ofFloat(strokeKey, startStrokeValue, endStrokeValue)
-
-        val startAngleValue = if (isSelected) angleStartValue else angleEndValue
-        val endAngleValue = if (isSelected) angleEndValue else angleStartValue
-        val angleKey = "angle"
-        val angleHolder = PropertyValuesHolder.ofFloat(angleKey, startAngleValue, endAngleValue)
-
-        if (valueAnimator?.isRunning != true) {
-            valueAnimator = ValueAnimator.ofPropertyValuesHolder(strokeHolder, angleHolder).apply {
-                interpolator = LinearInterpolator()
-                duration = 500
-                addUpdateListener {
-                    angleAnimValue = it.getAnimatedValue(angleKey) as Float
-                    strokeAnimValue = it.getAnimatedValue(strokeKey) as Float
-                    callback.invoke()
-                }
-            }
-            valueAnimator?.start()
-        }
+    fun animate(animAngle: Float, animStroke: Float) {
+        angleAnimValue = animAngle
+        strokeAnimValue = animStroke
     }
 }
 

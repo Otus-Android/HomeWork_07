@@ -7,22 +7,41 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
-import kotlin.math.atan2
 import kotlin.math.min
 
 class PieChartView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    companion object {
-        private const val TAG = "PIE_CHART_TAG"
-    }
+    /*
+    * 1. Добавить сохранение состояния
+    * 2. Добавить цвета (ну чтоб были нормальными)
+    * 3. Нужно учесть анимацию убывания на несколько секторов
+    * 4. В центре сектора написать сколько в нем процентов
+    * */
+
 
     // событие касания
     private var motionEvent: MotionEvent? = null
 
-    // угол касания, для определения сектора
-    private var tapAngle = 0.0
+    // сектор, который будет уменьшаться
+    private var unSelectedChartPart: ChartPart? = null
+
+    // сектор, который будет увеличиваться
+    private var selectedChartPart: ChartPart? = null
+
+    private val chartAnimator = ChartAnimator() { animationResult ->
+        selectedChartPart?.animate(
+            animAngle = animationResult[ChartAnimator.angleKeyInc] ?: 0f,
+            animStroke = animationResult[ChartAnimator.strokeKeyInc] ?: 0f
+        )
+        unSelectedChartPart?.animate(
+            animAngle = animationResult[ChartAnimator.angleKeyDec] ?: 0f,
+            animStroke = animationResult[ChartAnimator.strokeKeyDec] ?: 0f
+        )
+
+        invalidate()
+    }
 
     private val paint = Paint().apply {
         flags = Paint.ANTI_ALIAS_FLAG
@@ -65,7 +84,6 @@ class PieChartView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return if (MotionEvent.ACTION_DOWN == event.action) {
             motionEvent = event
-            tapAngle = convertTouchEventToAngle(event)
             performClick()
             true
         } else {
@@ -73,24 +91,26 @@ class PieChartView @JvmOverloads constructor(
         }
     }
 
-    private fun convertTouchEventToAngle(event: MotionEvent): Double {
-        val x: Float = event.x - width * 0.5f
-        val y: Float = event.y - height * 0.5f
-
-        var angle = Math.toDegrees(atan2(y, x) + Math.PI / 2) - 90
-        angle = if (angle < 0) angle + 360 else angle
-
-        return angle
-    }
 
     override fun performClick(): Boolean {
         super.performClick()
 
-        chartParts.firstOrNull { it.isChartPartTap(tapAngle) }?.let { chartPart ->
-            if (chartPart.isTouchOnChart(motionEvent)) {
-                Toast.makeText(context, chartPart.name, Toast.LENGTH_SHORT).show()
-                chartPart.animate { invalidate() }
+        // получаем часть по которой кликнули
+        chartParts.firstOrNull { it.chartTap(motionEvent) }?.let { clickedPart ->
+
+            // установить часть которую будем уменьшаться
+            unSelectedChartPart = selectedChartPart
+
+            selectedChartPart = if (clickedPart.name == unSelectedChartPart?.name) {
+                null
+            } else {
+                clickedPart
             }
+            selectedChartPart?.name?.let {
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            }
+
+            chartAnimator.startAnimation()
         }
 
         return true
@@ -113,8 +133,14 @@ class PieChartView @JvmOverloads constructor(
             startAngle += it.sweepAngle
 
             it.setViewSize(width, height)
-            it.draw(canvas, paint)
+            // рисуем все части кроме кликнутой
+            if (selectedChartPart?.name != it.name) {
+                it.draw(canvas, paint)
+            }
         }
+
+        // рисуем выбранную часть
+        selectedChartPart?.draw(canvas, paint)
     }
 
 }
