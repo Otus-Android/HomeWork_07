@@ -1,105 +1,89 @@
 package otus.homework.customview.pieChart
 
-import android.animation.ValueAnimator
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
-import android.util.Log
 import android.view.MotionEvent
-import android.view.animation.AccelerateInterpolator
-import android.view.animation.LinearInterpolator
-import androidx.core.animation.addListener
-import androidx.core.animation.doOnEnd
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 class ChartPart(
-    val id: Int,
     val name: String,
-    val amount: Int,
-    val category: String,
-    val time: Long
+    percent: Float,
+    private val color: Int
 ) {
-
 
     companion object {
         private const val TAG = "CHART_PART_TAG"
     }
 
     var startAngle: Float = 0f
-    var sweepAngle: Float = 0f
-    var color: Int = Color.TRANSPARENT
+    var sweepAngle: Float = 360 * percent
 
+    // центр родителя
     private var cX = 0
     private var cY = 0
 
+    // размер родителя
     private var parentViewSize = 0f
     private var halfViewSize = 0f
 
     private var strokeWidth = 0f
     private var halfStrokeWidth: Float = 0f
 
-    private var strokePadding: Float = 0f
-
-    private var valueAnimator: ValueAnimator? = null
-
-    private var width: Int = 0
-    private var height: Int = 0
-
-    private var chartPadding = 0f
-
-
+    // пределы в которых рисуется график
     private var left: Float = 0f
     private var right: Float = 0f
     private var top: Float = 0f
     private var bottom: Float = 0f
 
-    fun setCenterCoordinates(x: Int, y: Int) {
-        cX = x
-        cY = y
-    }
+    // ключ указываюший выбран график или нет
+    private var isSelected = false
 
-    fun setParentViewSize(parentSize: Float, w: Int, h: Int) {
-        width = w
-        height = h
+    // отступ между частями графика
+    private val chartPartsMargin = 3f
 
-        parentViewSize = parentSize
+    /** Функция простановки размеров графика*/
+    fun setViewSize(w: Int, h: Int) {
+        cX = w / 2
+        cY = h / 2
+
+        parentViewSize = min(w, h).toFloat()
         halfViewSize = parentViewSize / 2
 
-        strokeWidth = parentViewSize / 10
-        halfStrokeWidth = strokeWidth / 2
-
-        strokePadding = strokeWidth
+        strokeWidth = parentViewSize * 0.2f
+        halfStrokeWidth = strokeWidth * 0.5f
     }
 
-    fun draw(canvas: Canvas, paint: Paint, padding: Float = 0f) {
+    /** функция отрисовки части графика */
+    fun draw(canvas: Canvas, paint: Paint) {
 
-        chartPadding = padding
+        paint.strokeWidth = strokeWidth
 
-        left = cX - halfViewSize + strokePadding + chartPadding
-        right = cX + halfViewSize - strokePadding - chartPadding
-        top = cY - halfViewSize + strokePadding + chartPadding
-        bottom = cY + halfViewSize - strokePadding - chartPadding
+        left = cX - halfViewSize + halfStrokeWidth
+        right = cX + halfViewSize - halfStrokeWidth
+        top = cY - halfViewSize + halfStrokeWidth
+        bottom = cY + halfViewSize - halfStrokeWidth
 
         paint.color = color
-
-        Log.i(TAG, "draw: $strokePadding")
 
         val oval = RectF(left, top, right, bottom)
         canvas.drawArc(
             oval,
-            startAngle - 0.5f,
-            sweepAngle - 0.5f,
+            startAngle - chartPartsMargin,
+            sweepAngle - chartPartsMargin,
             false, paint
         )
     }
 
+    /** функция которая проверяет входит ли угол клика в диапозон углов этой части графика */
     fun isChartPartTap(tapAngle: Double): Boolean {
-        val endAngle = startAngle + sweepAngle - 1.0
-        return (startAngle - 0.5) <= tapAngle && tapAngle <= endAngle
+        val endAngle = startAngle + sweepAngle - chartPartsMargin
+        return (startAngle - chartPartsMargin) <= tapAngle && tapAngle <= endAngle
     }
 
+    /** функция которая проверит кликнул или пользователь на эту часть */
     fun isTouchOnChart(event: MotionEvent?): Boolean {
         return if (event == null) {
             false
@@ -108,39 +92,48 @@ class ChartPart(
             val xTouch = event.x
             val yTouch = event.y
 
-            val xCenter = width * 0.5f
-            val yCenter = height * 0.5f
-
             val distanceToCenter = sqrt(
-                (xTouch - xCenter).toDouble().pow(2.0) + (yTouch - yCenter).toDouble().pow(2.0)
+                (xTouch - cX).toDouble().pow(2.0) + (yTouch - cY).toDouble().pow(2.0)
             )
 
-            val bigRadius = (right - left) / 2 - chartPadding
+            val bigRadius = (right - left) / 2 + halfStrokeWidth
             val smallRadius = bigRadius - strokeWidth
 
-
-            distanceToCenter in bigRadius..smallRadius
+            isSelected = distanceToCenter in smallRadius..bigRadius
+            isSelected
         }
     }
 
     fun animate(callback: () -> Unit) {
-        val startValue =
-            if (strokePadding.toInt() == halfStrokeWidth.toInt()) halfStrokeWidth else strokeWidth
-        val endValue =
-            if (strokePadding.toInt() == halfStrokeWidth.toInt()) strokeWidth else halfStrokeWidth
 
-        val isRunning = valueAnimator?.isRunning ?: false
-        if (!isRunning) {
-            valueAnimator = ValueAnimator.ofFloat(startValue, endValue).apply {
-                interpolator = LinearInterpolator()
-                duration = 500
-                addUpdateListener {
-                    strokePadding = it.animatedValue as Float
-                    callback.invoke()
-                }
+        /*ValueAnimator.ofFloat(0f, 10F).apply {
+            interpolator = LinearInterpolator()
+            duration = 1000
+            addUpdateListener {
+                startAngle -= it.animatedValue as Float
+                //sweepAngle += it.animatedValue as Float
+
+                callback.invoke()
             }
-            valueAnimator?.start()
-        }
+        }.start()*/
     }
 
+    /*val startValue =
+        if (strokePadding.toInt() == halfStrokeWidth.toInt()) halfStrokeWidth else strokeWidth
+    val endValue =
+        if (strokePadding.toInt() == halfStrokeWidth.toInt()) strokeWidth else halfStrokeWidth
+
+    val isRunning = valueAnimator?.isRunning ?: false
+    if (!isRunning) {
+        valueAnimator = ValueAnimator.ofFloat(startValue, endValue).apply {
+            interpolator = LinearInterpolator()
+            duration = 500
+            addUpdateListener {
+                strokePadding = it.animatedValue as Float
+                callback.invoke()
+            }
+        }
+        valueAnimator?.start()
+    }*/
 }
+

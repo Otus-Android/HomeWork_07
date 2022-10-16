@@ -16,38 +16,31 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var chartView: PieChartView
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         chartView = findViewById(R.id.chart)
 
-        val chartParts = readJsonFile()
-
-        setUpChartParts(chartParts)
-
+        val chartParts = createChartParts()
         chartView.drawChartParts(chartParts)
     }
 
-    private fun setUpChartParts(chartParts: List<ChartPart>) {
+    private fun createChartParts(): List<ChartPart> {
+
+        val models = readJsonFile()
         // считаем общую сумму. Для точности переводим в Float
-        val totalAmount = chartParts.sumOf { it.amount }.toFloat()
-        // считаем какая сумма соответствует одному проценту
-        val oneAmountDegree = totalAmount / 360
+        val totalAmount = models.sumOf { it.amount }.toFloat()
 
-        // начальное значение с которого будет строиться график
-        var startChartDegreePoint = 0f
-        chartParts.forEach {
-            // считаем сколько градусов занимает значение
-            val partDegreeAngle = it.amount / oneAmountDegree
+        val chartParts = mutableListOf<ChartPart>()
+        models.groupBy { it.category }.forEach { map ->
+            val amount = map.value.sumOf { it.amount }.toFloat()
+            val percent = amount / totalAmount
 
-            it.startAngle = startChartDegreePoint
-            it.sweepAngle = partDegreeAngle
-            it.color = generateColor()
-
-            startChartDegreePoint += partDegreeAngle
+            chartParts.add(ChartPart(map.key, percent, generateColor()))
         }
+
+        return chartParts
     }
 
     private fun generateColor(): Int {
@@ -55,11 +48,11 @@ class MainActivity : AppCompatActivity() {
         return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
     }
 
-    private fun readJsonFile(): List<ChartPart> {
+    private fun readJsonFile(): List<JsonModel> {
         val identifier = resources.getIdentifier("payload", "raw", packageName)
         val inputStream = resources.openRawResource(identifier)
         val reader: Reader = InputStreamReader(inputStream)
-        val type: Type = object : TypeToken<List<ChartPart>>() {}.type
+        val type: Type = object : TypeToken<List<JsonModel>>() {}.type
         return Gson().fromJson(reader, type)
     }
 }

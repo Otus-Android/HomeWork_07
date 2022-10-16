@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
@@ -19,20 +18,16 @@ class PieChartView @JvmOverloads constructor(
         private const val TAG = "PIE_CHART_TAG"
     }
 
-    private var viewSize: Float = 0f
-    private var strokeWidth: Float = 0f
-
+    // событие касания
     private var motionEvent: MotionEvent? = null
+
+    // угол касания, для определения сектора
     private var tapAngle = 0.0
 
     private val paint = Paint().apply {
         flags = Paint.ANTI_ALIAS_FLAG
         style = Paint.Style.STROKE
     }
-
-    private val chartPadding = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP, 8f, resources.displayMetrics
-    )
 
     private val chartParts = mutableListOf<ChartPart>()
 
@@ -64,13 +59,7 @@ class PieChartView @JvmOverloads constructor(
             else -> h
         }
 
-        viewSize = min(viewWidth, viewHeight).toFloat() - 2 * chartPadding
-        strokeWidth = viewSize / 5
-        chartParts.forEach {
-            it.setParentViewSize(viewSize, widthSize, heightSize)
-        }
-
-        setMeasuredDimension(widthSize, heightSize)
+        setMeasuredDimension(viewWidth, viewHeight)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -96,11 +85,14 @@ class PieChartView @JvmOverloads constructor(
 
     override fun performClick(): Boolean {
         super.performClick()
-        val chartPart = chartParts.firstOrNull { it.isChartPartTap(tapAngle) }
-        if (chartPart?.isTouchOnChart(motionEvent) == true) {
-            Toast.makeText(context, chartPart.name, Toast.LENGTH_SHORT).show()
-            chartPart.animate { invalidate() }
+
+        chartParts.firstOrNull { it.isChartPartTap(tapAngle) }?.let { chartPart ->
+            if (chartPart.isTouchOnChart(motionEvent)) {
+                Toast.makeText(context, chartPart.name, Toast.LENGTH_SHORT).show()
+                chartPart.animate { invalidate() }
+            }
         }
+
         return true
     }
 
@@ -109,11 +101,19 @@ class PieChartView @JvmOverloads constructor(
 
         val cX = width / 2
         val cY = height / 2
+        paint.strokeWidth = 2f
 
-        paint.strokeWidth = strokeWidth
+        canvas.drawLine(cX.toFloat(), 0f, cX.toFloat(), height.toFloat(), paint)
+        canvas.drawLine(0f, cY.toFloat(), width.toFloat(), cY.toFloat(), paint)
+
+
+        var startAngle = 0f
         chartParts.forEach {
-            it.setCenterCoordinates(cX, cY)
-            it.draw(canvas, paint, chartPadding)
+            it.startAngle = startAngle
+            startAngle += it.sweepAngle
+
+            it.setViewSize(width, height)
+            it.draw(canvas, paint)
         }
     }
 
