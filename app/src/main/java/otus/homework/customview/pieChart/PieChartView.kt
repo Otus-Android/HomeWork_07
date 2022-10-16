@@ -119,12 +119,12 @@ class PieChartView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        val cX = width / 2
+        /*val cX = width / 2
         val cY = height / 2
         paint.strokeWidth = 2f
 
         canvas.drawLine(cX.toFloat(), 0f, cX.toFloat(), height.toFloat(), paint)
-        canvas.drawLine(0f, cY.toFloat(), width.toFloat(), cY.toFloat(), paint)
+        canvas.drawLine(0f, cY.toFloat(), width.toFloat(), cY.toFloat(), paint)*/
 
 
         var startAngle = 0f

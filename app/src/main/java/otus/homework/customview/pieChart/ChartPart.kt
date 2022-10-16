@@ -1,21 +1,14 @@
 package otus.homework.customview.pieChart
 
-import android.animation.PropertyValuesHolder
-import android.animation.ValueAnimator
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.*
 import android.util.Log
 import android.view.MotionEvent
-import android.view.animation.LinearInterpolator
-import kotlin.math.atan2
-import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.sqrt
+import java.time.format.TextStyle
+import kotlin.math.*
 
 class ChartPart(
     val name: String,
-    percent: Float,
+    private val percent: Float,
     private val color: Int
 ) {
 
@@ -84,7 +77,27 @@ class ChartPart(
 
         Log.i(TAG, "draw: $angleAnimValue")
 
+        paint.style = Paint.Style.STROKE
         canvas.drawArc(oval, startAngle, sweepAngle, false, paint)
+
+        drawText(canvas, paint)
+    }
+
+    private fun drawText(canvas: Canvas, paint: Paint) {
+        val textSize = 40f
+
+        val alpha = startAngle + sweepAngle / 2
+        val d = bigRadius - ((bigRadius - smallRadius) / 2)
+        val x = cX + d * cos(Math.toRadians(alpha.toDouble()))
+        val y = cY + d * sin(Math.toRadians(alpha.toDouble())) + textSize / 2
+
+        paint.style = Paint.Style.FILL
+        paint.textSize = textSize
+        paint.color = Color.BLACK
+        paint.textAlign = Paint.Align.CENTER
+        paint.typeface = Typeface.DEFAULT_BOLD
+        val text = "%.2f".format(percent * 100) + "%"
+        canvas.drawText(text, x.toFloat(), y.toFloat(), paint)
     }
 
     /** функция которая проверяет входит ли угол клика в диапозон углов этой части графика */
