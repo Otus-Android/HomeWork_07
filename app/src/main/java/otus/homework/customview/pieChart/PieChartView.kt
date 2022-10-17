@@ -20,11 +20,6 @@ class PieChartView @JvmOverloads constructor(
     // событие касания
     private var motionEvent: MotionEvent? = null
 
-    /*
-    * 1. Добавить цвета (ну чтоб были нормальными)
-    * 2. Нужно учесть анимацию убывания на несколько секторов
-    * */
-
     private val chartAnimator = ChartAnimator() { animationResult ->
         chartState.selectedChartPart?.animate(
             animAngle = animationResult[ChartAnimator.angleKeyInc] ?: 0f,
