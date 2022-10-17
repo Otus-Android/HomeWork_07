@@ -2,27 +2,41 @@ package otus.homework.customview
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.PersistableBundle
+import android.widget.RadioGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import otus.homework.customview.linerChart.LinearChartView
 import otus.homework.customview.pieChart.PieChartSector
 import otus.homework.customview.pieChart.PieChartView
 import java.lang.reflect.Type
 import java.util.*
 
+const val RADIO_GROUP_KEY = "radio_group_key"
+
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var chartView: PieChartView
+    lateinit var radioButtonGroup: RadioGroup
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        chartView = findViewById(R.id.chart)
+        val pieChartView: PieChartView = findViewById(R.id.pieChart)
+        val linearChartView: LinearChartView = findViewById(R.id.lineChart)
+
+        radioButtonGroup = findViewById(R.id.group)
+        radioButtonGroup.setOnCheckedChangeListener { _, id ->
+            pieChartView.isVisible = id == R.id.btnPieChart
+            linearChartView.isVisible = id == R.id.btnLinearChart
+        }
 
         val chartParts = createChartParts()
         if (savedInstanceState == null) {
-            chartView.drawChartParts(chartParts)
+            pieChartView.drawChartParts(chartParts)
+            radioButtonGroup.check(R.id.btnPieChart)
         }
     }
 
@@ -54,5 +68,15 @@ class MainActivity : AppCompatActivity() {
 
         val type: Type = object : TypeToken<List<JsonModel>>() {}.type
         return Gson().fromJson(jsonData, type)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(RADIO_GROUP_KEY, radioButtonGroup.checkedRadioButtonId)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        radioButtonGroup.check(savedInstanceState.getInt(RADIO_GROUP_KEY))
     }
 }

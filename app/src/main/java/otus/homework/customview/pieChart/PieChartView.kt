@@ -7,16 +7,15 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
+import otus.homework.customview.BaseChartView
 import otus.homework.customview.ViewInfo
 import kotlin.math.min
 
 class PieChartView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
+) : BaseChartView(context, attrs) {
 
     private var chartState = PieChartState()
-
-    private val viewInfo = ViewInfo()
 
     // событие касания
     private var motionEvent: MotionEvent? = null
@@ -35,7 +34,7 @@ class PieChartView @JvmOverloads constructor(
     }
 
     /** Метод установки значений из json*/
-    fun drawChartParts(data: List<PieChartSector>) {
+    override fun drawChartParts(data: List<PieChartSector>) {
 
         data.firstOrNull()?.let {
             chartState.pieChartCenter = PieChartCenter(it.totalAmount)
@@ -44,33 +43,6 @@ class PieChartView @JvmOverloads constructor(
         chartState.pieChartSectors.clear()
         chartState.pieChartSectors.addAll(data)
         invalidate()
-    }
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-
-        val w = resources.displayMetrics.widthPixels
-        val h = resources.displayMetrics.heightPixels
-
-        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
-        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
-        val viewWidth = when (widthMode) {
-            MeasureSpec.EXACTLY -> widthSize
-            MeasureSpec.AT_MOST -> min(w, widthSize)
-            else -> w
-        }
-
-        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
-        val heightSize = MeasureSpec.getSize(heightMeasureSpec)
-        val viewHeight = when (heightMode) {
-            MeasureSpec.EXACTLY -> heightSize
-            MeasureSpec.AT_MOST -> min(h, heightSize)
-            else -> h
-        }
-
-        viewInfo.width = viewWidth
-        viewInfo.height = viewHeight
-
-        setMeasuredDimension(viewWidth, viewHeight)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
