@@ -1,9 +1,7 @@
 package otus.homework.customview.pieChart
 
 import android.graphics.*
-import android.util.Log
 import android.view.MotionEvent
-import java.time.format.TextStyle
 import kotlin.math.*
 
 class ChartPart(
@@ -39,13 +37,29 @@ class ChartPart(
     private var bigRadius: Float = 0f
     private var smallRadius: Float = 0f
 
+    private val textSize = 40f
+
+    private val sectorPaint = Paint().apply {
+        flags = Paint.ANTI_ALIAS_FLAG
+        style = Paint.Style.STROKE
+    }
+
+    private val textPaint = Paint().apply {
+        flags = Paint.ANTI_ALIAS_FLAG
+        style = Paint.Style.FILL
+        textSize = this@ChartPart.textSize
+        color = Color.BLACK
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.DEFAULT_BOLD
+    }
+
     /** функция отрисовки части графика */
-    fun draw(canvas: Canvas, paint: Paint, viewInfo: ViewInfo) {
+    fun draw(canvas: Canvas, viewInfo: ViewInfo) {
 
         strokeWidth = viewInfo.getViewSize() * strokeAnimValue
         halfStrokeWidth = strokeWidth * 0.5f
 
-        paint.strokeWidth = strokeWidth
+        sectorPaint.strokeWidth = strokeWidth
 
         cX = viewInfo.getCenterX()
         cY = viewInfo.getCenterY()
@@ -58,33 +72,24 @@ class ChartPart(
         bigRadius = (right - left) / 2 + halfStrokeWidth
         smallRadius = bigRadius - strokeWidth
 
-        paint.color = color
+        sectorPaint.color = color
 
         val oval = RectF(left, top, right, bottom)
         val startAngle = startAngle + chartPartsMargin - angleAnimValue
         val sweepAngle = sweepAngle - chartPartsMargin + (2 * angleAnimValue)
 
-        Log.i(TAG, "draw: $angleAnimValue")
+        canvas.drawArc(oval, startAngle, sweepAngle, false, sectorPaint)
 
-        paint.style = Paint.Style.STROKE
-        canvas.drawArc(oval, startAngle, sweepAngle, false, paint)
-
-        drawText(canvas, paint)
+        drawText(canvas, textPaint)
     }
 
     private fun drawText(canvas: Canvas, paint: Paint) {
-        val textSize = 40f
 
         val alpha = startAngle + chartPartsMargin / 2 + sweepAngle / 2
         val d = bigRadius - ((bigRadius - smallRadius) / 2)
         val x = cX + d * cos(Math.toRadians(alpha.toDouble()))
         val y = cY + d * sin(Math.toRadians(alpha.toDouble())) + textSize / 2
 
-        paint.style = Paint.Style.FILL
-        paint.textSize = textSize
-        paint.color = Color.BLACK
-        paint.textAlign = Paint.Align.CENTER
-        paint.typeface = Typeface.DEFAULT_BOLD
         val text = "%.2f".format(percent * 100) + "%"
         canvas.drawText(text, x.toFloat(), y.toFloat(), paint)
     }

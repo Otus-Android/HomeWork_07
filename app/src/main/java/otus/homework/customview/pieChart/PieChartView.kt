@@ -2,7 +2,7 @@ package otus.homework.customview.pieChart
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Paint
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -13,36 +13,24 @@ class PieChartView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    init {
-        isSaveEnabled = true
-    }
-
-    /*
-    * 1. Добавить сохранение состояния
-    * 2. Добавить цвета (ну чтоб были нормальными)
-    * 3. Нужно учесть анимацию убывания на несколько секторов
-    * */
+    private var chartState = ChartState()
 
     private val viewInfo = ViewInfo()
 
     // событие касания
     private var motionEvent: MotionEvent? = null
 
-    // сектор, который будет уменьшаться
-    private var unSelectedChartPart: ChartPart? = null
-
-    // сектор, который будет увеличиваться
-    private var selectedChartPart: ChartPart? = null
-
-    // центральная часть круга
-    private var chartCenter: ChartCenter? = null
+    /*
+    * 1. Добавить цвета (ну чтоб были нормальными)
+    * 2. Нужно учесть анимацию убывания на несколько секторов
+    * */
 
     private val chartAnimator = ChartAnimator() { animationResult ->
-        selectedChartPart?.animate(
+        chartState.selectedChartPart?.animate(
             animAngle = animationResult[ChartAnimator.angleKeyInc] ?: 0f,
             animStroke = animationResult[ChartAnimator.strokeKeyInc] ?: 0f
         )
-        unSelectedChartPart?.animate(
+        chartState.unSelectedChartPart?.animate(
             animAngle = animationResult[ChartAnimator.angleKeyDec] ?: 0f,
             animStroke = animationResult[ChartAnimator.strokeKeyDec] ?: 0f
         )
@@ -50,22 +38,15 @@ class PieChartView @JvmOverloads constructor(
         invalidate()
     }
 
-    private val paint = Paint().apply {
-        flags = Paint.ANTI_ALIAS_FLAG
-        style = Paint.Style.STROKE
-    }
-
-    private val chartParts = mutableListOf<ChartPart>()
-
     /** Метод установки значений из json*/
     fun drawChartParts(data: List<ChartPart>) {
 
         data.firstOrNull()?.let {
-            chartCenter = ChartCenter(it.totalAmount)
+            chartState.chartCenter = ChartCenter(it.totalAmount)
         }
 
-        chartParts.clear()
-        chartParts.addAll(data)
+        chartState.chartParts.clear()
+        chartState.chartParts.addAll(data)
         invalidate()
     }
 
@@ -106,29 +87,13 @@ class PieChartView @JvmOverloads constructor(
         }
     }
 
-
     override fun performClick(): Boolean {
         super.performClick()
 
-        // получаем часть по которой кликнули
-        chartParts.firstOrNull { it.chartTap(motionEvent) }?.let { clickedPart ->
-
-            // установить часть которую будем уменьшаться
-            unSelectedChartPart = selectedChartPart
-
-            selectedChartPart = if (clickedPart.name == unSelectedChartPart?.name) {
-                null
-            } else {
-                clickedPart
-            }
-
-            chartCenter?.selectedAmount = null
-
-            selectedChartPart?.let {
-                chartCenter?.selectedAmount = it.amount
-                Toast.makeText(context, it.name, Toast.LENGTH_SHORT).show()
-            }
-
+        val callback = { chartPart: ChartPart ->
+            Toast.makeText(context, chartPart.name, Toast.LENGTH_SHORT).show()
+        }
+        if (chartState.handleMotionEvent(motionEvent, callback)) {
             chartAnimator.startAnimation()
         }
 
@@ -138,26 +103,18 @@ class PieChartView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        chartCenter?.draw(canvas, paint, viewInfo)
+        chartState.drawCenterCircle(canvas, viewInfo)
+        chartState.drawSectors(canvas, viewInfo)
+    }
 
-        var startAngle = 0f
-        chartParts.forEach {
-            it.startAngle = startAngle
-            startAngle += it.sweepAngle
+    override fun onSaveInstanceState(): Parcelable {
+        super.onSaveInstanceState()
+        return BaseSavedState(chartState)
+    }
 
-            // рисуем все части кроме кликнутой
-            if (selectedChartPart?.name != it.name &&
-                unSelectedChartPart?.name != it.name
-            ) {
-                it.draw(canvas, paint, viewInfo)
-            }
-        }
-
-        // сначала рисуем часть которая скрывается
-        unSelectedChartPart?.draw(canvas, paint, viewInfo)
-        // рисуем выбранную часть
-        selectedChartPart?.draw(canvas, paint, viewInfo)
-
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        chartState = (state as BaseSavedState).superState as ChartState
+        super.onRestoreInstanceState(state)
     }
 
 }

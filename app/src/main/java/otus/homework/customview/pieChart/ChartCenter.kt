@@ -5,8 +5,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import java.text.NumberFormat
-import java.util.Currency
-import java.util.Locale
+import java.util.*
 
 class ChartCenter(private val totalAmount: Float) {
 
@@ -14,22 +13,42 @@ class ChartCenter(private val totalAmount: Float) {
 
     var selectedAmount: Float? = null
 
+    private val circlePaint = Paint().apply {
+        flags = Paint.ANTI_ALIAS_FLAG
+        style = Paint.Style.FILL
+        color = Color.GRAY
+    }
+
+    private val textPaint = Paint().apply {
+        flags = Paint.ANTI_ALIAS_FLAG
+        textSize = 80f
+        style = Paint.Style.FILL
+        color = Color.BLACK
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.DEFAULT_BOLD
+    }
+
+    private val smallTextSize = Paint().apply {
+        flags = Paint.ANTI_ALIAS_FLAG
+        textSize = 40f
+        style = Paint.Style.FILL
+        color = Color.BLACK
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.DEFAULT_BOLD
+    }
+
     /** Функция которая отрисует сентральный круг и напишет текст */
-    fun draw(canvas: Canvas, paint: Paint, viewInfo: ViewInfo) {
+    fun draw(canvas: Canvas, viewInfo: ViewInfo) {
         this.viewInfo = viewInfo
 
-        drawCircle(canvas, paint)
-        drawText(canvas, paint)
+        drawCircle(canvas, circlePaint)
+        drawText(canvas, textPaint)
+        drawSelectedSectorAmount(canvas, smallTextSize)
     }
 
     /** функция отрисовки круга*/
     private fun drawCircle(canvas: Canvas, paint: Paint) {
-
-        paint.style = Paint.Style.FILL
-        paint.color = Color.GRAY
-
         viewInfo?.let {
-
             val radius = it.getViewSize() * 0.25f
             canvas.drawCircle(
                 it.getCenterX().toFloat(),
@@ -38,46 +57,39 @@ class ChartCenter(private val totalAmount: Float) {
                 paint
             )
         }
-
     }
 
     /** функция отрисовки текста в круге*/
     private fun drawText(canvas: Canvas, paint: Paint) {
-
-        paint.textSize = 80f
-        paint.style = Paint.Style.FILL
-        paint.color = Color.BLACK
-        paint.textAlign = Paint.Align.CENTER
-        paint.typeface = Typeface.DEFAULT_BOLD
-
         viewInfo?.let {
-
-            val format = NumberFormat.getCurrencyInstance()
-            format.maximumFractionDigits = 0
-            format.currency = Currency.getInstance(Locale.getDefault())
-            val text = format.format(totalAmount)
-
             canvas.drawText(
-                text,
+                convertAmountToText(totalAmount.toInt()),
                 it.getCenterX().toFloat(),
                 it.getCenterY().toFloat() + 40f,
                 paint
             )
-
-            selectedAmount?.let { amount ->
-                val selectedAmountText = format.format(amount)
-                paint.textSize = 40f
-                canvas.drawText(
-                    selectedAmountText,
-                    it.getCenterX().toFloat(),
-                    it.getCenterY().toFloat() + 140f,
-                    paint
-                )
-            }
-
         }
-
-
     }
 
+    /** Функция которая отрисует сумму выбранного сектора*/
+    private fun drawSelectedSectorAmount(canvas: Canvas, paint: Paint) {
+        viewInfo?.let {
+            canvas.drawText(
+                convertAmountToText(selectedAmount?.toInt()),
+                it.getCenterX().toFloat(),
+                it.getCenterY().toFloat() + 140f,
+                paint
+            )
+        }
+    }
+
+    /** Функция перевода суммы в удобный вид */
+    private fun convertAmountToText(amount: Int?): String {
+        val format = NumberFormat.getCurrencyInstance()
+        format.maximumFractionDigits = 0
+        format.currency = Currency.getInstance(Locale.getDefault())
+        return amount?.let {
+            format.format(it)
+        } ?: ""
+    }
 }

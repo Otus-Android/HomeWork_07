@@ -23,7 +23,9 @@ class MainActivity : AppCompatActivity() {
         chartView = findViewById(R.id.chart)
 
         val chartParts = createChartParts()
-        chartView.drawChartParts(chartParts)
+        if (savedInstanceState == null) {
+            chartView.drawChartParts(chartParts)
+        }
     }
 
     private fun createChartParts(): List<ChartPart> {
@@ -47,10 +49,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun readJsonFile(): List<JsonModel> {
-        val identifier = resources.getIdentifier("payload", "raw", packageName)
-        val inputStream = resources.openRawResource(identifier)
-        val reader: Reader = InputStreamReader(inputStream)
+        val jsonData = applicationContext.resources
+            .openRawResource(R.raw.payload)
+            .bufferedReader()
+            .use { it.readText() }
+
         val type: Type = object : TypeToken<List<JsonModel>>() {}.type
-        return Gson().fromJson(reader, type)
+        return Gson().fromJson(jsonData, type)
     }
 }
