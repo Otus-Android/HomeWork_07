@@ -2,7 +2,7 @@ package otus.homework.customview
 
 import android.graphics.Color
 import android.os.Bundle
-import android.os.PersistableBundle
+import android.util.Log
 import android.widget.RadioGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -12,6 +12,8 @@ import otus.homework.customview.linerChart.LinearChartView
 import otus.homework.customview.pieChart.PieChartSector
 import otus.homework.customview.pieChart.PieChartView
 import java.lang.reflect.Type
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 
 const val RADIO_GROUP_KEY = "radio_group_key"
@@ -33,14 +35,16 @@ class MainActivity : AppCompatActivity() {
             linearChartView.isVisible = id == R.id.btnLinearChart
         }
 
-        val chartParts = createChartParts()
+        createLinearChart()
+
+        val chartParts = createPieChartSectors()
         if (savedInstanceState == null) {
             pieChartView.drawChartParts(chartParts)
             radioButtonGroup.check(R.id.btnPieChart)
         }
     }
 
-    private fun createChartParts(): List<PieChartSector> {
+    private fun createPieChartSectors(): List<PieChartSector> {
 
         val models = readJsonFile()
         // считаем общую сумму. Для точности переводим в Float
@@ -53,6 +57,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         return pieChartSectors
+    }
+
+    private fun createLinearChart() {
+        val models = readJsonFile()
+        val simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+
+        models.groupBy {
+            val data = Date(it.time * 1000)
+            val formatDate = simpleDateFormat.format(data)
+            formatDate
+        }
+            .toSortedMap()
+            .forEach {
+                Log.i("MainActivityTag", "crateLinearChart: ${it.value.size}")
+            }
     }
 
     private fun generateColor(): Int {
