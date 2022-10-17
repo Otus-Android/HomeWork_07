@@ -35,9 +35,7 @@ class MainActivity : AppCompatActivity() {
         val chartParts = mutableListOf<ChartPart>()
         models.groupBy { it.category }.forEach { map ->
             val amount = map.value.sumOf { it.amount }.toFloat()
-            val percent = amount / totalAmount
-
-            chartParts.add(ChartPart(map.key, percent, generateColor()))
+            chartParts.add(ChartPart(map.key, amount, totalAmount, generateColor()))
         }
 
         return chartParts

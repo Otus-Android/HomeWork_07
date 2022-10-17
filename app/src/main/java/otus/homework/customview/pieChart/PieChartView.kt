@@ -13,13 +13,17 @@ class PieChartView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
+    init {
+        isSaveEnabled = true
+    }
+
     /*
     * 1. Добавить сохранение состояния
     * 2. Добавить цвета (ну чтоб были нормальными)
     * 3. Нужно учесть анимацию убывания на несколько секторов
-    * 4. В центре сектора написать сколько в нем процентов
     * */
 
+    private val viewInfo = ViewInfo()
 
     // событие касания
     private var motionEvent: MotionEvent? = null
@@ -29,6 +33,9 @@ class PieChartView @JvmOverloads constructor(
 
     // сектор, который будет увеличиваться
     private var selectedChartPart: ChartPart? = null
+
+    // центральная часть круга
+    private var chartCenter: ChartCenter? = null
 
     private val chartAnimator = ChartAnimator() { animationResult ->
         selectedChartPart?.animate(
@@ -52,6 +59,11 @@ class PieChartView @JvmOverloads constructor(
 
     /** Метод установки значений из json*/
     fun drawChartParts(data: List<ChartPart>) {
+
+        data.firstOrNull()?.let {
+            chartCenter = ChartCenter(it.totalAmount)
+        }
+
         chartParts.clear()
         chartParts.addAll(data)
         invalidate()
@@ -77,6 +89,9 @@ class PieChartView @JvmOverloads constructor(
             MeasureSpec.AT_MOST -> min(h, heightSize)
             else -> h
         }
+
+        viewInfo.width = viewWidth
+        viewInfo.height = viewHeight
 
         setMeasuredDimension(viewWidth, viewHeight)
     }
@@ -106,8 +121,12 @@ class PieChartView @JvmOverloads constructor(
             } else {
                 clickedPart
             }
-            selectedChartPart?.name?.let {
-                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+
+            chartCenter?.selectedAmount = null
+
+            selectedChartPart?.let {
+                chartCenter?.selectedAmount = it.amount
+                Toast.makeText(context, it.name, Toast.LENGTH_SHORT).show()
             }
 
             chartAnimator.startAnimation()
@@ -119,28 +138,26 @@ class PieChartView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        /*val cX = width / 2
-        val cY = height / 2
-        paint.strokeWidth = 2f
-
-        canvas.drawLine(cX.toFloat(), 0f, cX.toFloat(), height.toFloat(), paint)
-        canvas.drawLine(0f, cY.toFloat(), width.toFloat(), cY.toFloat(), paint)*/
-
+        chartCenter?.draw(canvas, paint, viewInfo)
 
         var startAngle = 0f
         chartParts.forEach {
             it.startAngle = startAngle
             startAngle += it.sweepAngle
 
-            it.setViewSize(width, height)
             // рисуем все части кроме кликнутой
-            if (selectedChartPart?.name != it.name) {
-                it.draw(canvas, paint)
+            if (selectedChartPart?.name != it.name &&
+                unSelectedChartPart?.name != it.name
+            ) {
+                it.draw(canvas, paint, viewInfo)
             }
         }
 
+        // сначала рисуем часть которая скрывается
+        unSelectedChartPart?.draw(canvas, paint, viewInfo)
         // рисуем выбранную часть
-        selectedChartPart?.draw(canvas, paint)
+        selectedChartPart?.draw(canvas, paint, viewInfo)
+
     }
 
 }

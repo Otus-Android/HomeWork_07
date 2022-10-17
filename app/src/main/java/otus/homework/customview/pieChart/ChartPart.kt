@@ -8,7 +8,8 @@ import kotlin.math.*
 
 class ChartPart(
     val name: String,
-    private val percent: Float,
+    val amount: Float,
+    val totalAmount: Float,
     private val color: Int
 ) {
 
@@ -16,55 +17,43 @@ class ChartPart(
         private const val TAG = "CHART_PART_TAG"
     }
 
+    private val percent: Float = amount / totalAmount
+
     var startAngle: Float = 0f
     var sweepAngle: Float = 360 * percent
 
     // отступ между частями графика
     private val chartPartsMargin = 3f
 
-    private var angleAnimValue = 0f
-
     // центр родителя
     private var cX = 0
     private var cY = 0
 
-    // размер родителя
-    private var parentViewSize = 0f
-    private var halfViewSize = 0f
-
     private var strokeWidth = 0f
     private var halfStrokeWidth: Float = 0f
+    private var strokeAnimValue = 0.2f
+
+    private var angleAnimValue = 0f
 
     // пределы в которых рисуется график
     private var bigRadius: Float = 0f
     private var smallRadius: Float = 0f
 
-    // ключ указываюший выбран график или нет
-    private var isSelected = false
-
-    private var strokeAnimValue = 0.2f
-
-    /** Функция простановки размеров графика*/
-    fun setViewSize(w: Int, h: Int) {
-        cX = w / 2
-        cY = h / 2
-
-        parentViewSize = min(w, h).toFloat()
-        halfViewSize = parentViewSize / 2
-
-        strokeWidth = parentViewSize * strokeAnimValue
-        halfStrokeWidth = strokeWidth * 0.5f
-    }
-
     /** функция отрисовки части графика */
-    fun draw(canvas: Canvas, paint: Paint) {
+    fun draw(canvas: Canvas, paint: Paint, viewInfo: ViewInfo) {
+
+        strokeWidth = viewInfo.getViewSize() * strokeAnimValue
+        halfStrokeWidth = strokeWidth * 0.5f
 
         paint.strokeWidth = strokeWidth
 
-        val left = cX - halfViewSize + halfStrokeWidth
-        val right = cX + halfViewSize - halfStrokeWidth
-        val top = cY - halfViewSize + halfStrokeWidth
-        val bottom = cY + halfViewSize - halfStrokeWidth
+        cX = viewInfo.getCenterX()
+        cY = viewInfo.getCenterY()
+
+        val left = cX - viewInfo.getHalfViewSize() + halfStrokeWidth
+        val right = cX + viewInfo.getHalfViewSize() - halfStrokeWidth
+        val top = cY - viewInfo.getHalfViewSize() + halfStrokeWidth
+        val bottom = cY + viewInfo.getHalfViewSize() - halfStrokeWidth
 
         bigRadius = (right - left) / 2 + halfStrokeWidth
         smallRadius = bigRadius - strokeWidth
