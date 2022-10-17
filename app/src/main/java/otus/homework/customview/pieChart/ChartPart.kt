@@ -75,7 +75,7 @@ class ChartPart(
     private fun drawText(canvas: Canvas, paint: Paint) {
         val textSize = 40f
 
-        val alpha = startAngle + sweepAngle / 2
+        val alpha = startAngle + chartPartsMargin / 2 + sweepAngle / 2
         val d = bigRadius - ((bigRadius - smallRadius) / 2)
         val x = cX + d * cos(Math.toRadians(alpha.toDouble()))
         val y = cY + d * sin(Math.toRadians(alpha.toDouble())) + textSize / 2
