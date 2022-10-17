@@ -1,4 +1,4 @@
-package otus.homework.customview.pieChart
+package otus.homework.customview
 
 import kotlin.math.min
 

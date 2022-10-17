@@ -3,63 +3,63 @@ package otus.homework.customview.pieChart
 import android.graphics.Canvas
 import android.os.Parcelable
 import android.view.MotionEvent
-import android.widget.Toast
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
+import otus.homework.customview.ViewInfo
 
 @Parcelize
-class ChartState(
+class PieChartState(
     // сектор, который будет уменьшаться
-    var unSelectedChartPart: @RawValue ChartPart? = null,
+    var unSelectedPieChartSector: @RawValue PieChartSector? = null,
     // сектор, который будет увеличиваться
-    var selectedChartPart: @RawValue ChartPart? = null,
+    var selectedPieChartSector: @RawValue PieChartSector? = null,
     // центральная часть круга
-    var chartCenter: @RawValue ChartCenter? = null,
-    val chartParts: @RawValue MutableList<ChartPart> = mutableListOf()
+    var pieChartCenter: @RawValue PieChartCenter? = null,
+    val pieChartSectors: @RawValue MutableList<PieChartSector> = mutableListOf()
 ) : Parcelable {
 
     fun drawCenterCircle(canvas: Canvas, viewInfo: ViewInfo) {
-        chartCenter?.draw(canvas, viewInfo)
+        pieChartCenter?.draw(canvas, viewInfo)
     }
 
     fun drawSectors(canvas: Canvas, viewInfo: ViewInfo) {
         var startAngle = 0f
-        chartParts.forEach {
+        pieChartSectors.forEach {
             it.startAngle = startAngle
             startAngle += it.sweepAngle
 
             // рисуем все части кроме кликнутой
-            if (selectedChartPart?.name != it.name &&
-                unSelectedChartPart?.name != it.name
+            if (selectedPieChartSector?.name != it.name &&
+                unSelectedPieChartSector?.name != it.name
             ) {
                 it.draw(canvas, viewInfo)
             }
         }
 
         // сначала рисуем часть которая скрывается
-        unSelectedChartPart?.draw(canvas, viewInfo)
+        unSelectedPieChartSector?.draw(canvas, viewInfo)
         // рисуем выбранную часть
-        selectedChartPart?.draw(canvas, viewInfo)
+        selectedPieChartSector?.draw(canvas, viewInfo)
     }
 
-    fun handleMotionEvent(motionEvent: MotionEvent?, callback: (chartPart: ChartPart) -> Unit): Boolean {
+    fun handleMotionEvent(motionEvent: MotionEvent?, callback: (pieChartSector: PieChartSector) -> Unit): Boolean {
         // получаем часть по которой кликнули
-        return chartParts.firstOrNull { it.chartTap(motionEvent) }?.let { clickedPart ->
+        return pieChartSectors.firstOrNull { it.chartTap(motionEvent) }?.let { clickedPart ->
 
             // установить часть которую будем уменьшаться
-            unSelectedChartPart = selectedChartPart
+            unSelectedPieChartSector = selectedPieChartSector
 
-            selectedChartPart =
-                if (clickedPart.name == unSelectedChartPart?.name) {
+            selectedPieChartSector =
+                if (clickedPart.name == unSelectedPieChartSector?.name) {
                     null
                 } else {
                     clickedPart
                 }
 
-            chartCenter?.selectedAmount = null
+            pieChartCenter?.selectedAmount = null
 
-            selectedChartPart?.let {
-                chartCenter?.selectedAmount = it.amount
+            selectedPieChartSector?.let {
+                pieChartCenter?.selectedAmount = it.amount
                 callback.invoke(it)
             }
 

@@ -2,9 +2,10 @@ package otus.homework.customview.pieChart
 
 import android.graphics.*
 import android.view.MotionEvent
+import otus.homework.customview.ViewInfo
 import kotlin.math.*
 
-class ChartPart(
+class PieChartSector(
     val name: String,
     val amount: Float,
     val totalAmount: Float,
@@ -47,7 +48,7 @@ class ChartPart(
     private val textPaint = Paint().apply {
         flags = Paint.ANTI_ALIAS_FLAG
         style = Paint.Style.FILL
-        textSize = this@ChartPart.textSize
+        textSize = this@PieChartSector.textSize
         color = Color.BLACK
         textAlign = Paint.Align.CENTER
         typeface = Typeface.DEFAULT_BOLD

@@ -4,10 +4,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
+import otus.homework.customview.ViewInfo
 import java.text.NumberFormat
 import java.util.*
 
-class ChartCenter(private val totalAmount: Float) {
+class PieChartCenter(private val totalAmount: Float) {
 
     private var viewInfo: ViewInfo? = null
 

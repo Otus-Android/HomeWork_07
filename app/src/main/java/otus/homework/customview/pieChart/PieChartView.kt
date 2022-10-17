@@ -7,13 +7,14 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
+import otus.homework.customview.ViewInfo
 import kotlin.math.min
 
 class PieChartView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    private var chartState = ChartState()
+    private var chartState = PieChartState()
 
     private val viewInfo = ViewInfo()
 
@@ -21,11 +22,11 @@ class PieChartView @JvmOverloads constructor(
     private var motionEvent: MotionEvent? = null
 
     private val chartAnimator = ChartAnimator() { animationResult ->
-        chartState.selectedChartPart?.animate(
+        chartState.selectedPieChartSector?.animate(
             animAngle = animationResult[ChartAnimator.angleKeyInc] ?: 0f,
             animStroke = animationResult[ChartAnimator.strokeKeyInc] ?: 0f
         )
-        chartState.unSelectedChartPart?.animate(
+        chartState.unSelectedPieChartSector?.animate(
             animAngle = animationResult[ChartAnimator.angleKeyDec] ?: 0f,
             animStroke = animationResult[ChartAnimator.strokeKeyDec] ?: 0f
         )
@@ -34,14 +35,14 @@ class PieChartView @JvmOverloads constructor(
     }
 
     /** Метод установки значений из json*/
-    fun drawChartParts(data: List<ChartPart>) {
+    fun drawChartParts(data: List<PieChartSector>) {
 
         data.firstOrNull()?.let {
-            chartState.chartCenter = ChartCenter(it.totalAmount)
+            chartState.pieChartCenter = PieChartCenter(it.totalAmount)
         }
 
-        chartState.chartParts.clear()
-        chartState.chartParts.addAll(data)
+        chartState.pieChartSectors.clear()
+        chartState.pieChartSectors.addAll(data)
         invalidate()
     }
 
@@ -85,8 +86,8 @@ class PieChartView @JvmOverloads constructor(
     override fun performClick(): Boolean {
         super.performClick()
 
-        val callback = { chartPart: ChartPart ->
-            Toast.makeText(context, chartPart.name, Toast.LENGTH_SHORT).show()
+        val callback = { pieChartSector: PieChartSector ->
+            Toast.makeText(context, pieChartSector.name, Toast.LENGTH_SHORT).show()
         }
         if (chartState.handleMotionEvent(motionEvent, callback)) {
             chartAnimator.startAnimation()
@@ -108,7 +109,7 @@ class PieChartView @JvmOverloads constructor(
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
-        chartState = (state as BaseSavedState).superState as ChartState
+        chartState = (state as BaseSavedState).superState as PieChartState
         super.onRestoreInstanceState(state)
     }
 

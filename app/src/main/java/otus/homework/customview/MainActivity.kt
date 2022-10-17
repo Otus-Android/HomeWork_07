@@ -5,10 +5,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import otus.homework.customview.pieChart.ChartPart
+import otus.homework.customview.pieChart.PieChartSector
 import otus.homework.customview.pieChart.PieChartView
-import java.io.InputStreamReader
-import java.io.Reader
 import java.lang.reflect.Type
 import java.util.*
 
@@ -28,19 +26,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun createChartParts(): List<ChartPart> {
+    private fun createChartParts(): List<PieChartSector> {
 
         val models = readJsonFile()
         // считаем общую сумму. Для точности переводим в Float
         val totalAmount = models.sumOf { it.amount }.toFloat()
 
-        val chartParts = mutableListOf<ChartPart>()
+        val pieChartSectors = mutableListOf<PieChartSector>()
         models.groupBy { it.category }.forEach { map ->
             val amount = map.value.sumOf { it.amount }.toFloat()
-            chartParts.add(ChartPart(map.key, amount, totalAmount, generateColor()))
+            pieChartSectors.add(PieChartSector(map.key, amount, totalAmount, generateColor()))
         }
 
-        return chartParts
+        return pieChartSectors
     }
 
     private fun generateColor(): Int {
