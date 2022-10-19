@@ -34,7 +34,7 @@ class PieChartView @JvmOverloads constructor(
     }
 
     /** Метод установки значений из json*/
-    override fun drawChartParts(data: List<PieChartSector>) {
+    fun drawChartParts(data: List<PieChartSector>) {
 
         data.firstOrNull()?.let {
             chartState.pieChartCenter = PieChartCenter(it.totalAmount)

@@ -2,7 +2,6 @@ package otus.homework.customview
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.widget.RadioGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -12,7 +11,6 @@ import otus.homework.customview.linerChart.LinearChartView
 import otus.homework.customview.pieChart.PieChartSector
 import otus.homework.customview.pieChart.PieChartView
 import java.lang.reflect.Type
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -35,11 +33,11 @@ class MainActivity : AppCompatActivity() {
             linearChartView.isVisible = id == R.id.btnLinearChart
         }
 
-        createLinearChart()
-
         val chartParts = createPieChartSectors()
         if (savedInstanceState == null) {
             pieChartView.drawChartParts(chartParts)
+
+            linearChartView.drawChartParts(createLinearChart())
             radioButtonGroup.check(R.id.btnPieChart)
         }
     }
@@ -59,19 +57,16 @@ class MainActivity : AppCompatActivity() {
         return pieChartSectors
     }
 
-    private fun createLinearChart() {
+    private fun createLinearChart(): Map<String, List<JsonModel>> {
         val models = readJsonFile()
-        val simpleDateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        val simpleDateFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
 
-        models.groupBy {
+        return models.groupBy {
             val data = Date(it.time * 1000)
             val formatDate = simpleDateFormat.format(data)
             formatDate
         }
             .toSortedMap()
-            .forEach {
-                Log.i("MainActivityTag", "crateLinearChart: ${it.value.size}")
-            }
     }
 
     private fun generateColor(): Int {

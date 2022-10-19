@@ -12,9 +12,6 @@ abstract class BaseChartView @JvmOverloads constructor(
 
     val viewInfo = ViewInfo()
 
-    /** Метод установки значений из json*/
-    abstract fun drawChartParts(data: List<PieChartSector>)
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
 
         val w = resources.displayMetrics.widthPixels
