@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_navigation"
+    app:startDestination="@id/pieChartFragment">
+
+    <fragment
+        android:id="@+id/pieChartFragment"
+        android:name="otus.homework.customview.ui.PieChartFragment"
+        android:label="PieChartFragment" />
+    <fragment
+        android:id="@+id/timelineFragment"
+        android:name="otus.homework.customview.ui.TimelineFragment"
+        android:label="TimelineFragment" />
+</navigation>
