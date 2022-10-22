@@ -8,15 +8,16 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import otus.homework.customview.Either
-import otus.homework.customview.tools.JsonParser
 import otus.homework.customview.R
 import otus.homework.customview.databinding.FragmentPieChartBinding
 import otus.homework.customview.entities.Category
 import otus.homework.customview.recycler_view.CategoryListAdapter
+import otus.homework.customview.tools.JsonParser
 
 class PieChartFragment : Fragment(), HasTitle {
 
     private lateinit var listAdapter: CategoryListAdapter
+    private val categories: MutableList<Category> = mutableListOf()
 
     private var _binding: FragmentPieChartBinding? = null
     private val binding: FragmentPieChartBinding
@@ -29,6 +30,12 @@ class PieChartFragment : Fragment(), HasTitle {
         findNavController().navigate(destinationId, args)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(KEY_CATEGORIES, PieChartFragmentSaveState(categories))
+        _binding?.pieChartView?.isFragmentStateSaved = true
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,33 +46,47 @@ class PieChartFragment : Fragment(), HasTitle {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        refreshPieChartView(binding.pieChartView)
+        setUpRecyclerView()
+        val saveState =
+            savedInstanceState?.getParcelable(KEY_CATEGORIES) as? PieChartFragmentSaveState
+        saveState?.let { restoreFromSaveState(it) } ?: loadFromJson()
 
-        binding.buttonRefresh.setOnClickListener {
-            refreshPieChartView(binding.pieChartView)
-        }
+        binding.buttonRefresh.setOnClickListener { loadFromJson() }
         binding.pieChartView.setOnClickListener(categoryClickListener)
     }
 
-    private fun refreshPieChartView(view: PieChartView) {
-        when (val categories = JsonParser(requireContext()).sortedCategoriesByTotal()) {
+    private fun setUpRecyclerView() {
+        listAdapter = CategoryListAdapter()
+        binding.recyclerView.adapter = listAdapter
+        listAdapter.submitList(categories)
+        listAdapter.onListClickListener = categoryClickListener
+    }
+
+    private fun restoreFromSaveState(saveState: PieChartFragmentSaveState) {
+        if (saveState.categories.size != 0) {
+            updateCategories(saveState.categories)
+            binding.pieChartView.isFragmentStateSaved = true
+        } else loadFromJson()
+
+    }
+
+    private fun loadFromJson() {
+        when (val sortedCategories = JsonParser(requireContext()).sortedCategoriesByTotal()) {
             is Either.Success -> {
-                view.initCategories(categories.result)
-                setUpRecyclerView(categories.result)
+                updateCategories(sortedCategories.result)
+                binding.pieChartView.initCategories(categories)
             }
             is Either.Failure -> Toast.makeText(
                 requireContext(),
-                categories.error,
+                sortedCategories.error,
                 Toast.LENGTH_SHORT
             ).show()
         }
     }
 
-    private fun setUpRecyclerView(list: List<Category>) {
-        listAdapter = CategoryListAdapter()
-        binding.recyclerView.adapter = listAdapter
-        listAdapter.submitList(list)
-        listAdapter.onListClickListener = categoryClickListener
+    private fun updateCategories(list: List<Category>) {
+        categories.clear()
+        categories.addAll(list)
     }
 
     override fun onDestroy() {
@@ -74,4 +95,9 @@ class PieChartFragment : Fragment(), HasTitle {
     }
 
     override fun getTitle(): String = getString(R.string.pie_chart)
+
+    companion object {
+
+        private const val KEY_CATEGORIES = "categories"
+    }
 }

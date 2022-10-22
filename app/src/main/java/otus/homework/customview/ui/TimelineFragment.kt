@@ -7,14 +7,15 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import otus.homework.customview.Either
-import otus.homework.customview.tools.JsonParser
 import otus.homework.customview.databinding.FragmentTimelineBinding
 import otus.homework.customview.entities.Spending
 import otus.homework.customview.recycler_view.SpendingListAdapter
+import otus.homework.customview.tools.JsonParser
 
 class TimelineFragment : Fragment(), HasTitle {
 
     private lateinit var listAdapter: SpendingListAdapter
+    private val spendingList: MutableList<Spending> = mutableListOf()
 
     private var _binding: FragmentTimelineBinding? = null
     private val binding: FragmentTimelineBinding
@@ -37,36 +38,49 @@ class TimelineFragment : Fragment(), HasTitle {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        refreshTimelineView(binding.timelineView)
+        setUpRecyclerView()
+        val saveState =
+            savedInstanceState?.getParcelable(KEY_SPENDING_LIST) as? TimelineFragmentSaveState
+        saveState?.let { restoreFromSaveState(it) } ?: loadFromJson()
 
-        binding.buttonRefresh.setOnClickListener {
-            refreshTimelineView(binding.timelineView)
-        }
-
+        binding.buttonRefresh.setOnClickListener { loadFromJson() }
     }
 
-    private fun refreshTimelineView(view: TimelineView) {
-        when (val spendingList =
+    private fun restoreFromSaveState(saveState: TimelineFragmentSaveState) {
+        updateSpendingList(saveState.spendingList)
+        binding.timelineView.updateSpendingList(spendingList)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(KEY_SPENDING_LIST, TimelineFragmentSaveState(spendingList))
+    }
+
+    private fun loadFromJson() {
+        when (val spendingListResult =
             JsonParser(requireContext()).sortedSpendingListByTime(categoryName)) {
             is Either.Success -> {
-                view.initSpendingList(spendingList.result)
-                view.initCategoryColor(categoryColor)
-                setUpRecyclerView(spendingList.result)
-                view.requestLayout()
-                view.invalidate()
+                updateSpendingList(spendingListResult.result)
+                binding.timelineView.updateSpendingList(spendingList)
+                binding.timelineView.initCategoryColor(categoryColor)
             }
             is Either.Failure -> Toast.makeText(
                 requireContext(),
-                spendingList.error,
+                spendingListResult.error,
                 Toast.LENGTH_SHORT
             ).show()
         }
     }
 
-    private fun setUpRecyclerView(list: List<Spending>) {
+    private fun updateSpendingList(list: List<Spending>) {
+        spendingList.clear()
+        spendingList.addAll(list)
+    }
+
+    private fun setUpRecyclerView() {
         listAdapter = SpendingListAdapter()
         binding.recyclerView.adapter = listAdapter
-        listAdapter.submitList(list)
+        listAdapter.submitList(spendingList)
     }
 
     override fun onDestroy() {
@@ -74,10 +88,12 @@ class TimelineFragment : Fragment(), HasTitle {
         _binding = null
     }
 
-    companion object {
+    override fun getTitle(): String = categoryName
 
+    companion object {
         private const val CATEGORY_NAME = "category name"
         private const val CATEGORY_COLOR = "category color"
+        private const val KEY_SPENDING_LIST = "spending list"
 
         fun createArgs(categoryName: String, categoryColor: Int) =
             Bundle().apply {
@@ -85,6 +101,4 @@ class TimelineFragment : Fragment(), HasTitle {
                 putInt(CATEGORY_COLOR, categoryColor)
             }
     }
-
-    override fun getTitle(): String = categoryName
 }

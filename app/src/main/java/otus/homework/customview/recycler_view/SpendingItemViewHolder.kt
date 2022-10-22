@@ -4,7 +4,7 @@ import androidx.recyclerview.widget.RecyclerView
 import otus.homework.customview.R
 import otus.homework.customview.databinding.ItemSpendingBinding
 import otus.homework.customview.entities.Spending
-import otus.homework.customview.entities.Time
+import otus.homework.customview.tools.Time
 
 class SpendingItemViewHolder(
     private val binding: ItemSpendingBinding,

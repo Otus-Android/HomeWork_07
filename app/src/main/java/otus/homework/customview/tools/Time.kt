@@ -1,4 +1,4 @@
-package otus.homework.customview.entities
+package otus.homework.customview.tools
 
 import java.text.SimpleDateFormat
 import java.util.*

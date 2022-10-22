@@ -2,13 +2,15 @@ package otus.homework.customview.ui
 
 import android.content.Context
 import android.graphics.*
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
+import androidx.annotation.ColorInt
 import otus.homework.customview.entities.AmountLine
 import otus.homework.customview.entities.Spending
-import otus.homework.customview.entities.Time
 import otus.homework.customview.entities.TimeLine
+import otus.homework.customview.tools.Time
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.log10
@@ -58,12 +60,22 @@ class TimelineView : View {
         textAlign = Paint.Align.LEFT
     }
 
-    fun initSpendingList(list: List<Spending>) {
+    override fun onSaveInstanceState(): Parcelable =
+        TimelineViewSavedState(pathPaint.color, super.onSaveInstanceState())
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is TimelineViewSavedState) {
+            super.onRestoreInstanceState(state.superState)
+            initCategoryColor(state.categoryColor)
+        } else super.onRestoreInstanceState(state)
+    }
+
+    fun updateSpendingList(list: List<Spending>) {
         spendingList.clear()
         spendingList.addAll(list)
     }
 
-    fun initCategoryColor(categoryColor: Int) {
+    fun initCategoryColor(@ColorInt categoryColor: Int) {
         pathPaint.color = categoryColor
         pointPaint.color = categoryColor
     }
@@ -166,7 +178,6 @@ class TimelineView : View {
         super.onSizeChanged(w, h, oldw, oldh)
         initRectForDraw()
         initGraphField()
-        invalidate()
     }
 
     override fun onDraw(canvas: Canvas?) {

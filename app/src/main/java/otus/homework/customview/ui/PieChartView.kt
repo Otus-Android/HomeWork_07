@@ -5,14 +5,15 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.Either
-import otus.homework.customview.entities.ErrorResult
 import otus.homework.customview.entities.Arc
 import otus.homework.customview.entities.Category
+import otus.homework.customview.entities.ErrorResult
 import otus.homework.customview.failure
 import otus.homework.customview.success
 import java.lang.Integer.max
@@ -33,28 +34,46 @@ class PieChartView : View {
             : super(context, attrs, defStyleAttr)
 
     private val categories: MutableList<Category> = mutableListOf()
+    var isFragmentStateSaved = false
 
     private var pieRadius by Delegates.notNull<Float>()
     private var blankRadius by Delegates.notNull<Float>()
     private var clickListener: ((Category) -> Unit)? = null
 
     private val arcs = mutableListOf<Arc>()
-
-    private val strokeArcs = mutableListOf<Arc>()
     private var currentArc: Arc? = null
     private val rectForDraw = RectF()
 
+    private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+    }
     private val blankPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
         style = Paint.Style.FILL
+    }
+    private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = mapDpInPixels(5f)
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        return if (isFragmentStateSaved) PieChartViewSavedState(arcs, super.onSaveInstanceState())
+        else super.onSaveInstanceState()
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is PieChartViewSavedState && isFragmentStateSaved) {
+            super.onRestoreInstanceState(state.superState)
+            arcs.clear()
+            arcs.addAll(state.arcs)
+        } else super.onRestoreInstanceState(state)
     }
 
     fun initCategories(list: List<Category>) {
         categories.clear()
         categories.addAll(list)
         initArcs()
-        requestLayout()
-        invalidate()
     }
 
     fun setOnClickListener(listener: (Category) -> Unit) {
@@ -76,33 +95,18 @@ class PieChartView : View {
     }
 
     private fun initArcs() {
-        var totalFromAllCategories = 0
-        categories.forEach { totalFromAllCategories += it.total }
+        val totalFromAllCategories = categories.map { it.total }
+            .fold(0) { total, item -> total + item }
         val unitTotalInDegree = 2 * PI_IN_DEGREES / totalFromAllCategories.toFloat()
         var currentAngle = START_ANGLE
-        val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
-            style = Paint.Style.STROKE
-            strokeWidth = 15f
-        }
         categories.forEach {
             val sweepAngle = it.total * unitTotalInDegree
-            val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = it.color
-                style = Paint.Style.FILL
-            }
             val arc = Arc(
-                rectForDraw.left,
-                rectForDraw.top,
-                rectForDraw.right,
-                rectForDraw.bottom,
-                currentAngle,
-                sweepAngle,
-                arcPaint,
-                it.id
+                startAngle = currentAngle,
+                sweepAngle = sweepAngle,
+                category = it
             )
             arcs.add(arc)
-            strokeArcs.add(arc.copy(paint = strokePaint))
             currentAngle += sweepAngle
         }
     }
@@ -126,11 +130,7 @@ class PieChartView : View {
 
     override fun performClick(): Boolean {
         super.performClick()
-        if (currentArc != null) {
-            val findCategory = findCategoryById(currentArc?.categoryId)
-            if (findCategory is Either.Success)
-                clickListener?.invoke(findCategory.result)
-        }
+        currentArc?.let { clickListener?.invoke(it.category) }
         return true
     }
 
@@ -149,33 +149,28 @@ class PieChartView : View {
         return arc?.success() ?: ErrorResult.UnknownArc.failure()
     }
 
-    private fun findCategoryById(id: Int?): Either<ErrorResult.UnknownCategory, Category> {
-        if (id == null) return ErrorResult.UnknownCategory.failure()
-        val category = categories.find { it.id == id }
-        return category?.success() ?: ErrorResult.UnknownCategory.failure()
-    }
-
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         if (canvas == null || arcs.size == 0) return
-        drawArcs(canvas, arcs)
-        drawArcs(canvas, strokeArcs)
+        drawArcs(canvas)
         drawBlankCircle(canvas)
     }
 
-    private fun drawArcs(canvas: Canvas, arcs: List<Arc>) {
+    private fun drawArcs(canvas: Canvas) {
         arcs.forEach {
-            canvas.drawArc(
-                it.left,
-                it.top,
-                it.right,
-                it.bottom,
-                it.startAngle,
-                it.sweepAngle,
-                true,
-                it.paint
-            )
+            drawArc(canvas, it, arcPaint.apply { color = it.category.color })
+            drawArc(canvas, it, strokePaint)
         }
+    }
+
+    private fun drawArc(canvas: Canvas, arc: Arc, paint: Paint) {
+        canvas.drawArc(
+            rectForDraw,
+            arc.startAngle,
+            arc.sweepAngle,
+            true,
+            paint
+        )
     }
 
     private fun drawBlankCircle(canvas: Canvas) {
@@ -207,12 +202,6 @@ class PieChartView : View {
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         initRectForDraw()
-        initArcs()
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        clickListener = null
     }
 
     companion object {
