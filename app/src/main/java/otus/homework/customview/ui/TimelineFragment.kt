@@ -1,5 +1,6 @@
 package otus.homework.customview.ui
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -39,8 +40,14 @@ class TimelineFragment : Fragment(), HasTitle {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setUpRecyclerView()
+        @Suppress("DEPRECATION")
         val saveState =
-            savedInstanceState?.getParcelable(KEY_SPENDING_LIST) as? TimelineFragmentSaveState
+            if (Build.VERSION.SDK_INT >= 33)
+                savedInstanceState?.getParcelable(
+                    KEY_SPENDING_LIST,
+                    TimelineFragmentSaveState::class.java
+                )
+            else savedInstanceState?.getParcelable(KEY_SPENDING_LIST)
         saveState?.let { restoreFromSaveState(it) } ?: loadFromJson()
 
         binding.buttonRefresh.setOnClickListener { loadFromJson() }

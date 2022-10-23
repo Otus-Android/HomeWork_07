@@ -1,5 +1,6 @@
 package otus.homework.customview.ui
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,7 +25,6 @@ class PieChartFragment : Fragment(), HasTitle {
         get() = _binding ?: throw RuntimeException("FragmentPieChartBinding is null")
 
     private val categoryClickListener: (Category) -> Unit = { category ->
-        Toast.makeText(requireContext(), category.name, Toast.LENGTH_SHORT).show()
         val destinationId = R.id.timelineFragment
         val args = TimelineFragment.createArgs(category.name, category.color)
         findNavController().navigate(destinationId, args)
@@ -47,8 +47,14 @@ class PieChartFragment : Fragment(), HasTitle {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setUpRecyclerView()
+        @Suppress("DEPRECATION")
         val saveState =
-            savedInstanceState?.getParcelable(KEY_CATEGORIES) as? PieChartFragmentSaveState
+            if (Build.VERSION.SDK_INT >= 33)
+                savedInstanceState?.getParcelable(
+                    KEY_CATEGORIES,
+                    PieChartFragmentSaveState::class.java
+                )
+            else savedInstanceState?.getParcelable(KEY_CATEGORIES)
         saveState?.let { restoreFromSaveState(it) } ?: loadFromJson()
 
         binding.buttonRefresh.setOnClickListener { loadFromJson() }
