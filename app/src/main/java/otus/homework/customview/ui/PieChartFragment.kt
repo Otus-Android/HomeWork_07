@@ -57,7 +57,10 @@ class PieChartFragment : Fragment(), HasTitle {
             else savedInstanceState?.getParcelable(KEY_CATEGORIES)
         saveState?.let { restoreFromSaveState(it) } ?: loadFromJson()
 
-        binding.buttonRefresh.setOnClickListener { loadFromJson() }
+        binding.buttonRefresh.setOnClickListener {
+            loadFromJson()
+            binding.pieChartView.runAnimation()
+        }
         binding.pieChartView.setOnClickListener(categoryClickListener)
     }
 
@@ -80,7 +83,7 @@ class PieChartFragment : Fragment(), HasTitle {
         when (val sortedCategories = JsonParser(requireContext()).sortedCategoriesByTotal()) {
             is Either.Success -> {
                 updateCategories(sortedCategories.result)
-                binding.pieChartView.initCategories(categories)
+                binding.pieChartView.initView(categories)
             }
             is Either.Failure -> Toast.makeText(
                 requireContext(),

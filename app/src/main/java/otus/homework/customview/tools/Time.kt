@@ -23,9 +23,10 @@ class Time {
 
     fun timeToDateInSeconds(time: Int) = time / SECONDS_IN_DAY * SECONDS_IN_DAY
 
+    fun secondsInDay() = SECONDS_IN_DAY
+
     companion object {
         private const val MILLIS_IN_SECOND = 1000
         private const val SECONDS_IN_DAY = 24 * 60 * 60
-
     }
 }

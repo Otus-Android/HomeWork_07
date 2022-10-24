@@ -1,20 +1,18 @@
 package otus.homework.customview.ui
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.annotation.ColorInt
-import otus.homework.customview.entities.AmountLine
+import androidx.core.animation.doOnEnd
 import otus.homework.customview.entities.Spending
-import otus.homework.customview.entities.TimeLine
+import otus.homework.customview.entities.TimelineGrid
 import otus.homework.customview.tools.Time
-import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.log10
-import kotlin.math.pow
 
 class TimelineView : View {
 
@@ -28,15 +26,16 @@ class TimelineView : View {
     private val spendingList: MutableList<Spending> = mutableListOf()
 
     private val pointList: MutableList<PointF> = mutableListOf()
+    private val animatedPointList: MutableList<PointF> = mutableListOf()
     private val rectForDraw = RectF()
-    private val amountLines: MutableList<AmountLine> = mutableListOf()
-    private val timeLines: MutableList<TimeLine> = mutableListOf()
+    private lateinit var timelineGrid: TimelineGrid
 
     private val timeMapper = Time()
     private val path = Path()
+    private val animatedPath = Path()
 
     private val pathPaint = Paint().apply {
-        pathEffect = CornerPathEffect(mapDpInPixels(10f))
+        pathEffect = CornerPathEffect(mapDpInPixels(5f))
         style = Paint.Style.STROKE
         strokeWidth = mapDpInPixels(5f)
     }
@@ -70,7 +69,7 @@ class TimelineView : View {
         } else super.onRestoreInstanceState(state)
     }
 
-    fun updateSpendingList(list: List<Spending>) {
+    fun initView(list: List<Spending>) {
         spendingList.clear()
         spendingList.addAll(list)
     }
@@ -78,11 +77,6 @@ class TimelineView : View {
     fun initCategoryColor(@ColorInt categoryColor: Int) {
         pathPaint.color = categoryColor
         pointPaint.color = categoryColor
-    }
-
-    private fun Int.length() = when (this) {
-        0 -> 1
-        else -> log10(abs(toDouble())).toInt() + 1
     }
 
     private fun initRectForDraw() {
@@ -106,8 +100,8 @@ class TimelineView : View {
                 .map { it.amount }
                 .fold(0) { total, item -> total + item }
         }
-        if (set.size == 1) set.add(Spending(time = set.elementAt(0).time - SECONDS_IN_DAY))
-        return set.toList()
+        if (set.size == 1) set.add(Spending(time = set.elementAt(0).time - timeMapper.secondsInDay()))
+        return set.toList().sortedBy { it.time }
     }
 
     private fun initGraphField() {
@@ -115,50 +109,10 @@ class TimelineView : View {
         val listWithCorrectDate =
             spendingList.map { it.copy(time = timeMapper.timeToDateInSeconds(it.time)) }
         val listWithSumSpendingByDate = listWithSumSpendingByDate(listWithCorrectDate)
-        var minTime = listWithSumSpendingByDate[0].time
-        var maxTime = listWithSumSpendingByDate[0].time
-        var minAmount = listWithSumSpendingByDate[0].amount
-        var maxAmount = listWithSumSpendingByDate[0].amount
+        timelineGrid = TimelineGrid(listWithSumSpendingByDate, timeMapper, rectForDraw)
         listWithSumSpendingByDate.forEach {
-            if (it.time < minTime) minTime = it.time
-            if (it.time > maxTime) maxTime = it.time
-            if (it.amount < minAmount) minAmount = it.amount
-            if (it.amount > maxAmount) maxAmount = it.amount
-        }
-        val minDayInSeconds = timeMapper.timeToDateInSeconds(minTime)
-        val maxDayInSeconds = timeMapper.timeToDateInSeconds(maxTime)
-        val daysNumber = (maxDayInSeconds - minDayInSeconds) / SECONDS_IN_DAY
-        val horizontalGridStepInDays = ceil(daysNumber.toFloat() / TIME_CELLS_NUMBER)
-        val verticalDesiredStep = maxAmount / LINES_NUMBER
-        val baseVerticalGridStep = 10f.pow(verticalDesiredStep.length() - 1)
-        val verticalGridStep =
-            ceil((verticalDesiredStep / baseVerticalGridStep)) * baseVerticalGridStep
-        val resultAmountInPixels =
-            (rectForDraw.height()) / (verticalGridStep * LINES_NUMBER)
-        for (i in 0..LINES_NUMBER) {
-            amountLines
-                .add(
-                    AmountLine(
-                        rectForDraw.bottom - i * (rectForDraw.height()) / LINES_NUMBER,
-                        (i * verticalGridStep.toInt()).toString()
-                    )
-                )
-        }
-        val numberVerticalLines = ceil(daysNumber / horizontalGridStepInDays).toInt()
-        val timeInPixels =
-            (rectForDraw.width()) / (horizontalGridStepInDays * numberVerticalLines * SECONDS_IN_DAY)
-        for (i in 0..numberVerticalLines) {
-            timeLines
-                .add(
-                    TimeLine(
-                        rectForDraw.left + i * (rectForDraw.width()) / numberVerticalLines,
-                        timeMapper.timeToDayAndMonthString(minTime + i * SECONDS_IN_DAY * horizontalGridStepInDays.toInt())
-                    )
-                )
-        }
-        listWithSumSpendingByDate.forEach {
-            val x = rectForDraw.left + (it.time - minTime) * timeInPixels
-            val y = rectForDraw.bottom - it.amount * resultAmountInPixels
+            val x = rectForDraw.left + (it.time - timelineGrid.minTime) * timelineGrid.timeInPixels
+            val y = rectForDraw.bottom - it.amount * timelineGrid.amountInPixels
             pointList.add(PointF(x, y))
         }
     }
@@ -178,25 +132,65 @@ class TimelineView : View {
         super.onSizeChanged(w, h, oldw, oldh)
         initRectForDraw()
         initGraphField()
+        initPath()
+        runAnimation()
+    }
+
+    private fun initPath() {
+        path.reset()
+        path.moveTo(pointList[0].x, pointList[0].y)
+        pointList.forEach { path.lineTo(it.x, it.y) }
+    }
+
+    fun runAnimation() {
+        if (pointList.size == 0) return
+        val pathMeasure = PathMeasure(path, false)
+        var currentIndexPoint = 0
+        animatedPointList.clear()
+        animatedPath.reset()
+        animatedPath.moveTo(pointList[0].x, pointList[0].y)
+        val tan = floatArrayOf(0f, 0f)
+        var currentTan = floatArrayOf(0f, 0f)
+        val pos = floatArrayOf(0f, 0f)
+        ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = (pathMeasure.length).toLong()
+            interpolator = AccelerateDecelerateInterpolator()
+            addUpdateListener {
+                val distance = it.animatedValue as Float
+                pathMeasure.getPosTan(distance * pathMeasure.length, pos, tan)
+                if (!tan.contentEquals(currentTan)) {
+                    currentTan = tan.clone()
+                    animatedPointList.add(pointList[currentIndexPoint++])
+                }
+                val x = pos[0]
+                val y = pos[1]
+                animatedPath.lineTo(x, y)
+                invalidate()
+            }
+            start()
+            doOnEnd { addLastPointToAnimatedList() }
+        }
+    }
+
+    private fun addLastPointToAnimatedList() {
+        animatedPointList.add(pointList.last())
+        invalidate()
     }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         if (canvas == null || pointList.size == 0) return
         drawGrid(canvas)
-        drawPath(canvas)
+        drawGraph(canvas)
         drawPoints(canvas)
     }
 
-    private fun drawPath(canvas: Canvas) {
-        path.reset()
-        path.moveTo(pointList[0].x, pointList[0].y)
-        pointList.forEach { path.lineTo(it.x, it.y) }
-        canvas.drawPath(path, pathPaint)
+    private fun drawGraph(canvas: Canvas) {
+        canvas.drawPath(animatedPath, pathPaint)
     }
 
     private fun drawGrid(canvas: Canvas) {
-        amountLines.forEach { amountLine ->
+        timelineGrid.amountLines.forEach { amountLine ->
             canvas.drawLine(
                 rectForDraw.left,
                 amountLine.y,
@@ -210,7 +204,7 @@ class TimelineView : View {
                 ), amountLine.y - timeTextPaint.descent(), amountTextPaint
             )
         }
-        timeLines.forEach { timeLine ->
+        timelineGrid.timeLines.forEach { timeLine ->
             canvas.drawLine(timeLine.x, rectForDraw.top, timeLine.x, rectForDraw.bottom, gridPaint)
             canvas.drawText(
                 timeLine.text,
@@ -222,16 +216,13 @@ class TimelineView : View {
     }
 
     private fun drawPoints(canvas: Canvas) {
-        pointList.forEach { canvas.drawCircle(it.x, it.y, mapDpInPixels(5f), pointPaint) }
+        animatedPointList.forEach { canvas.drawCircle(it.x, it.y, mapDpInPixels(5f), pointPaint) }
     }
 
     companion object {
 
         private const val HORIZONTAL_PADDING = 40f
         private const val VERTICAL_PADDING = 40f
-        private const val LINES_NUMBER = 5
-        private const val TIME_CELLS_NUMBER = 5
-        private const val SECONDS_IN_DAY = 24 * 60 * 60
         private const val AMOUNT_TEXT_LEFT_PADDING = 5f
     }
 }

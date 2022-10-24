@@ -50,12 +50,15 @@ class TimelineFragment : Fragment(), HasTitle {
             else savedInstanceState?.getParcelable(KEY_SPENDING_LIST)
         saveState?.let { restoreFromSaveState(it) } ?: loadFromJson()
 
-        binding.buttonRefresh.setOnClickListener { loadFromJson() }
+        binding.buttonRefresh.setOnClickListener {
+            loadFromJson()
+            binding.timelineView.runAnimation()
+        }
     }
 
     private fun restoreFromSaveState(saveState: TimelineFragmentSaveState) {
         updateSpendingList(saveState.spendingList)
-        binding.timelineView.updateSpendingList(spendingList)
+        binding.timelineView.initView(spendingList)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -68,7 +71,7 @@ class TimelineFragment : Fragment(), HasTitle {
             JsonParser(requireContext()).sortedSpendingListByTime(categoryName)) {
             is Either.Success -> {
                 updateSpendingList(spendingListResult.result)
-                binding.timelineView.updateSpendingList(spendingList)
+                binding.timelineView.initView(spendingList)
                 binding.timelineView.initCategoryColor(categoryColor)
             }
             is Either.Failure -> Toast.makeText(

@@ -1,5 +1,6 @@
 package otus.homework.customview.ui
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -10,6 +11,8 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.AccelerateInterpolator
+import androidx.core.animation.doOnEnd
 import otus.homework.customview.Either
 import otus.homework.customview.entities.Arc
 import otus.homework.customview.entities.Category
@@ -41,6 +44,7 @@ class PieChartView : View {
     private var clickListener: ((Category) -> Unit)? = null
 
     private val arcs = mutableListOf<Arc>()
+    private val animatedArcs = mutableListOf<Arc>()
     private var currentArc: Arc? = null
     private val rectForDraw = RectF()
 
@@ -70,10 +74,14 @@ class PieChartView : View {
         } else super.onRestoreInstanceState(state)
     }
 
-    fun initCategories(list: List<Category>) {
+    fun initView(list: List<Category>) {
+        updateCategories(list)
+        initArcs()
+    }
+
+    private fun updateCategories(list: List<Category>) {
         categories.clear()
         categories.addAll(list)
-        initArcs()
     }
 
     fun setOnClickListener(listener: (Category) -> Unit) {
@@ -149,6 +157,41 @@ class PieChartView : View {
         return arc?.success() ?: ErrorResult.UnknownArc.failure()
     }
 
+    fun runAnimation() {
+        if (arcs.size == 0) return
+        animatedArcs.clear()
+        var currentArc = arcs[0]
+        animatedArcs.add(currentArc)
+        val arrayAngle = FloatArray(360 * 5) { it / 5.toFloat() }
+        ValueAnimator.ofFloat(*arrayAngle).apply {
+            interpolator = AccelerateInterpolator()
+            duration = 500
+            addUpdateListener { value ->
+                val angle = value.animatedValue as Float
+                val arc =
+                    arcs.find { it -> it.startAngle <= angle && (it.startAngle + it.sweepAngle) > angle }
+                arc?.let { it ->
+                    if (it.category != currentArc.category) {
+                        animatedArcs.removeLast()
+                        animatedArcs.add(currentArc)
+                        currentArc = it
+                        animatedArcs.add(currentArc)
+                    }
+                    animatedArcs.removeLast()
+                    animatedArcs.add(it.copy(sweepAngle = angle - it.startAngle))
+                }
+                invalidate()
+            }
+            start()
+            doOnEnd { correctErrorOfInterpolator() }
+        }
+    }
+
+    private fun correctErrorOfInterpolator() {
+        animatedArcs.last().sweepAngle = 360f - animatedArcs.last().startAngle
+        invalidate()
+    }
+
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         if (canvas == null || arcs.size == 0) return
@@ -157,7 +200,7 @@ class PieChartView : View {
     }
 
     private fun drawArcs(canvas: Canvas) {
-        arcs.forEach {
+        animatedArcs.forEach {
             drawArc(canvas, it, arcPaint.apply { color = it.category.color })
             drawArc(canvas, it, strokePaint)
         }
@@ -202,6 +245,7 @@ class PieChartView : View {
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         initRectForDraw()
+        runAnimation()
     }
 
     companion object {

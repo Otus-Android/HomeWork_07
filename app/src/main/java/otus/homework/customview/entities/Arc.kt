@@ -6,6 +6,6 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class Arc(
     val startAngle: Float,
-    val sweepAngle: Float,
+    var sweepAngle: Float,
     val category: Category
 ) : Parcelable
