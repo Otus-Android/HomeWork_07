@@ -1,6 +1,8 @@
 package otus.homework.customview.customView
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -10,6 +12,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import otus.homework.customview.PieChartClickListener
 import otus.homework.customview.models.Metka
 import otus.homework.customview.models.PiePiece
 
@@ -20,7 +23,9 @@ class PieChartView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
+    var pieChartClickListener: PieChartClickListener? = null
     private var mPaint: Paint = Paint()
+    private var bitmap: Bitmap? = null
     var count: Int = 0
     var delitel: Int = 0
     var data: List<PiePiece>? = emptyList()
@@ -50,6 +55,9 @@ class PieChartView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val newCanvas = bitmap?.let { Canvas(it) }
         val width = 400f
         val height = 240f
         val radius = 100f
@@ -80,6 +88,7 @@ class PieChartView @JvmOverloads constructor(
         oval[center_x - 200f, center_y - 200f, center_x + 200f] = center_y + 200f
         data?.forEach {
             canvas?.drawArc(oval, it.start, it.end, true, it.paint)
+            newCanvas?.drawArc(oval, it.start, it.end, true, it.paint)
         }
         paint.color = Color.WHITE
         canvas?.drawCircle( center_x, center_y, radius+60f, paint) // рисуем круг
@@ -93,27 +102,19 @@ class PieChartView @JvmOverloads constructor(
         center_y = 540f
         oval[center_x - radius, center_y - radius, center_x + radius] = center_y + radius
 //        canvas?.drawArc(oval, 135f, 270f, false, paint)
-        super.onDraw(canvas)
     }
 
-    private fun getColor(index: Int): Int {
-        return when(index){
-            0 ->Color.BLACK
-            1 ->0xf2f3f4
-            2 ->Color.GRAY
-            3 ->Color.LTGRAY
-            4 ->Color.BLACK
-            5 ->Color.RED
-            6 ->Color.GREEN
-            7 ->Color.BLUE
-            8 -> Color.YELLOW
-            9 ->Color.CYAN
-            10 ->Color.MAGENTA
-            else -> 0x555555
-        }
-    }
-
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+        val color = event?.let { bitmap?.getPixel(event.x.toInt(), event.y.toInt()) }
+        if (event?.action == MotionEvent.ACTION_DOWN) return true
+        if (event?.action == MotionEvent.ACTION_UP) {
+            data?.forEach {
+                if (it.paint.color == color) {
+                    pieChartClickListener?.onClick(it.category)
+                }
+            }
+        }
         return super.onTouchEvent(event)
     }
 }

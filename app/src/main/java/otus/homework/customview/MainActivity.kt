@@ -2,6 +2,7 @@ package otus.homework.customview
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -20,10 +21,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val pieChartView = findViewById<PieChartView>(R.id.pieChartView)
         val graphView = findViewById<GraphView>(R.id.graphView)
+        val text = findViewById<TextView>(R.id.text)
+
+        val pieChartClickListener = object : PieChartClickListener {
+            override fun onClick(category: String) {
+                text.text = category
+            }
+        }
         val data = loadJSONFromAsset()
         pieChartView.setData(
             mapToPie(data)
         )
+
+        pieChartView.pieChartClickListener = pieChartClickListener
     }
 
     private fun mapToPie(data: List<Metka>?): List<PiePiece>? {
