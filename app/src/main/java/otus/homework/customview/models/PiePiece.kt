@@ -9,7 +9,8 @@ data class PiePiece(
     val start: Float,
     val end: Float,
     val paint: Paint,
-    val data: List<Metka>
+    val data: List<Metka>,
+    val isClicked: Boolean = false
 )
 
 fun createPaint(): Paint {

@@ -23,15 +23,20 @@ class MainActivity : AppCompatActivity() {
         val graphView = findViewById<GraphView>(R.id.graphView)
         val text = findViewById<TextView>(R.id.text)
 
+        val data = loadJSONFromAsset()
+        var pie = mapToPie(data)
+        pieChartView.setData(pie)
+
         val pieChartClickListener = object : PieChartClickListener {
             override fun onClick(category: String) {
                 text.text = category
+                pie = pie?.map {
+                    if(it.category == category) it.copy(isClicked = true)
+                    else it.copy(isClicked = false)
+                }
+                pieChartView.setData(pie)
             }
         }
-        val data = loadJSONFromAsset()
-        pieChartView.setData(
-            mapToPie(data)
-        )
 
         pieChartView.pieChartClickListener = pieChartClickListener
     }

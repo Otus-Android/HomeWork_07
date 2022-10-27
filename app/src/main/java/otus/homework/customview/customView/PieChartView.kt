@@ -38,6 +38,7 @@ class PieChartView @JvmOverloads constructor(
     @JvmName("setData1")
     fun setData(list: List<PiePiece>?) {
         data = list
+        invalidate()
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -65,43 +66,32 @@ class PieChartView @JvmOverloads constructor(
         val path = Path()
         path.addCircle(width, height, radius, Path.Direction.CW)
         val paint = Paint()
-        paint.color = Color.BLACK // установим белый цвет
-
-        paint.strokeWidth = 5f
-        paint.style = Paint.Style.FILL_AND_STROKE // заливаем
-
+        paint.color = Color.BLACK
         paint.isAntiAlias = true
 
         val center_x = 240f
         var center_y = 220f
 
         val oval = RectF()
-        oval[center_x - radius, center_y - radius, center_x + radius] = center_y + radius
-//        canvas?.drawArc(oval, 0f, 0f, true, paint) // рисуем пакмана
-//        canvas?.drawCircle( center_x, center_y, radius, paint) // рисуем круг
-
-
-// рисуем большого пакмана без заливки
-
-// рисуем большого пакмана без заливки
-//        paint.style = Paint.Style.STROKE
         oval[center_x - 200f, center_y - 200f, center_x + 200f] = center_y + 200f
         data?.forEach {
+            if(it.isClicked){
+
+                oval[center_x - 220f, center_y - 220f, center_x + 220f] = center_y + 220f
+            } else {
+
+                oval[center_x - 200f, center_y - 200f, center_x + 200f] = center_y + 200f
+            }
             canvas?.drawArc(oval, it.start, it.end, true, it.paint)
             newCanvas?.drawArc(oval, it.start, it.end, true, it.paint)
         }
         paint.color = Color.WHITE
         canvas?.drawCircle( center_x, center_y, radius+60f, paint) // рисуем круг
-
-
-        paint.style = Paint.Style.STROKE
-
-// рисуем разорванное кольцо
-
-// рисуем разорванное кольцо
-        center_y = 540f
-        oval[center_x - radius, center_y - radius, center_x + radius] = center_y + radius
-//        canvas?.drawArc(oval, 135f, 270f, false, paint)
+        paint.color = Color.BLACK
+        paint.textSize = 30f
+        paint.textAlign = Paint.Align.CENTER
+        val text = data?.find { it.isClicked }?.category
+        canvas?.drawText(text?:"", center_x, center_y, paint)
     }
 
     @SuppressLint("ClickableViewAccessibility")
