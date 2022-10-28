@@ -16,10 +16,11 @@ class GraphView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     private var mPaint: Paint = Paint()
+    private var rectF = RectF(0f, 0f, 400f, 600f)
     var data: Map<Pair<String, Paint>, Map<Int, Point>> = emptyMap()
 
     init{
-        mPaint.color = Color.BLUE
+        mPaint.color = Color.BLACK
         mPaint.strokeWidth = 2f
     }
 
@@ -29,13 +30,26 @@ class GraphView @JvmOverloads constructor(
         invalidate()
     }
 
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        val widthAddition = (width.toFloat() - measuredWidth) / 2
+        val heightAddition = (height.toFloat() - measuredHeight) / 2
+        rectF.let {
+            it.left = widthAddition + paddingLeft
+            it.top = heightAddition + paddingTop
+            it.right = measuredWidth + widthAddition - paddingRight.toFloat()
+            it.bottom = measuredHeight + heightAddition - paddingBottom.toFloat()
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        when (MeasureSpec.getMode(widthMeasureSpec)) {
+            MeasureSpec.UNSPECIFIED,
+            MeasureSpec.AT_MOST,
+            MeasureSpec.EXACTLY -> {
+                super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            }
+        }
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -44,10 +58,16 @@ class GraphView @JvmOverloads constructor(
         canvas?.drawLine(2f, 400f, 2f, 0f, mPaint)
         canvas?.drawLine(2f, 400f, 600f, 400f, mPaint)
 
+        var offset = 30f
         data.forEach {cat ->
             val catName = cat.key.first
             val paint = cat.key.second
-
+            paint.strokeWidth = 2f
+            mPaint.textSize = 16f
+            mPaint.isAntiAlias = true
+            canvas?.drawLine(2f,400f + offset, 22f, 400f + offset, paint)
+            canvas?.drawText(catName, 44f, 400f + offset, mPaint)
+            offset += 30f
             var i = 1
             cat.value[i]?.let {
                 paint.strokeWidth = 2f
@@ -64,9 +84,5 @@ class GraphView @JvmOverloads constructor(
             }
 
         }
-    }
-
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        return super.onTouchEvent(event)
     }
 }

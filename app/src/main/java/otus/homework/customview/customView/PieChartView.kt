@@ -9,11 +9,9 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.PieChartClickListener
-import otus.homework.customview.models.Metka
 import otus.homework.customview.models.PiePiece
 
 
@@ -26,11 +24,9 @@ class PieChartView @JvmOverloads constructor(
     var pieChartClickListener: PieChartClickListener? = null
     private var mPaint: Paint = Paint()
     private var bitmap: Bitmap? = null
-    var count: Int = 0
-    var delitel: Int = 0
-    var data: List<PiePiece>? = emptyList()
+    private var data: List<PiePiece>? = emptyList()
 
-    init{
+    init {
         mPaint.color = Color.BLUE
         mPaint.strokeWidth = 10f
     }
@@ -39,10 +35,6 @@ class PieChartView @JvmOverloads constructor(
     fun setData(list: List<PiePiece>?) {
         data = list
         invalidate()
-    }
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -73,9 +65,10 @@ class PieChartView @JvmOverloads constructor(
         var center_y = 220f
 
         val oval = RectF()
+        var offset = 30f
         oval[center_x - 200f, center_y - 200f, center_x + 200f] = center_y + 200f
         data?.forEach {
-            if(it.isClicked){
+            if (it.isClicked) {
 
                 oval[center_x - 220f, center_y - 220f, center_x + 220f] = center_y + 220f
             } else {
@@ -84,14 +77,20 @@ class PieChartView @JvmOverloads constructor(
             }
             canvas?.drawArc(oval, it.start, it.end, true, it.paint)
             newCanvas?.drawArc(oval, it.start, it.end, true, it.paint)
+
+            paint.strokeWidth = 20f
+            paint.textSize = 16f
+            canvas?.drawLine(480f,0f + offset, 500f, 0f + offset, it.paint)
+            canvas?.drawText(it.category, 520f, 0f + offset, paint)
+            offset += 30f
         }
         paint.color = Color.WHITE
-        canvas?.drawCircle( center_x, center_y, radius+60f, paint) // рисуем круг
+        canvas?.drawCircle(center_x, center_y, radius + 60f, paint) // рисуем круг
         paint.color = Color.BLACK
         paint.textSize = 30f
         paint.textAlign = Paint.Align.CENTER
         val text = data?.find { it.isClicked }?.category
-        canvas?.drawText(text?:"", center_x, center_y, paint)
+        canvas?.drawText(text ?: "", center_x, center_y, paint)
     }
 
     @SuppressLint("ClickableViewAccessibility")
