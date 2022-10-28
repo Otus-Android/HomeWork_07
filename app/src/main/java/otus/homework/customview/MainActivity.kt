@@ -1,5 +1,6 @@
 package otus.homework.customview
 
+import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
@@ -10,6 +11,7 @@ import otus.homework.customview.customView.GraphView
 import otus.homework.customview.customView.PieChartView
 import otus.homework.customview.models.Metka
 import otus.homework.customview.models.PiePiece
+import otus.homework.customview.models.Point
 import otus.homework.customview.models.createPaint
 import java.io.Reader
 import java.lang.reflect.Type
@@ -25,13 +27,16 @@ class MainActivity : AppCompatActivity() {
 
         val data = loadJSONFromAsset()
         var pie = mapToPie(data)
+        var points = mapToPoints(data!!)
+        Log.d("DDDDD", points.toString())
         pieChartView.setData(pie)
+        graphView.setData(points)
 
         val pieChartClickListener = object : PieChartClickListener {
             override fun onClick(category: String) {
                 text.text = category
                 pie = pie?.map {
-                    if(it.category == category) it.copy(isClicked = true)
+                    if (it.category == category) it.copy(isClicked = true)
                     else it.copy(isClicked = false)
                 }
                 pieChartView.setData(pie)
@@ -56,7 +61,7 @@ class MainActivity : AppCompatActivity() {
             map.value.forEach {
                 countElem += it.amount
             }
-            finishPoint = countElem/count * 360f
+            finishPoint = countElem / count * 360f
             PiePiece(
                 category = map.key,
                 start = startPoint,
@@ -65,6 +70,32 @@ class MainActivity : AppCompatActivity() {
                 data = map.value,
             )
         }
+    }
+
+    private fun mapToPoints(data: List<Metka>): Map<Pair<String, Paint>, Map<Int, Point>> {
+        val minAmount = data.minOf { it.amount }.toFloat()
+        val maxAmount = ((data.maxOf { it.amount }) - minAmount).toFloat()
+        val minTime = data.minOf { it.time }.toFloat()
+        val maxTime = ((data.maxOf { it.time }) - minTime).toFloat()
+        val group = data.groupBy { it.category }
+
+        val outMap: MutableMap<Pair<String, Paint>, Map<Int, Point>> = mutableMapOf()
+        group.forEach { map ->
+            var i = 0
+
+            val pointMap = mutableMapOf<Int, Point>()
+
+            map.value.forEach {
+                pointMap[++i] =
+                    Point(
+                        coorX = ((it.time - minTime) / maxTime) * 600f,
+                        coorY = ((it.amount - minAmount) / maxAmount) * 400f,
+                    )
+            }
+            outMap[Pair(map.key, createPaint())] = pointMap
+        }
+
+        return outMap
     }
 
     private fun loadJSONFromAsset(): List<Metka>? =
