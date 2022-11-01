@@ -10,7 +10,7 @@
 
     <otus.homework.customview.customView.PieChartView
         android:id="@+id/pieChartView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_marginTop="16dp"
         android:layout_height="200dp"
         app:layout_constraintEnd_toEndOf="parent"
