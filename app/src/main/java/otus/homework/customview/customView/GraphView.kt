@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.models.PiePiece
@@ -16,8 +17,11 @@ class GraphView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     private var mPaint: Paint = Paint()
-    private var rectF = RectF(0f, 0f, 400f, 600f)
     var data: Map<Pair<String, Paint>, Map<Int, Point>> = emptyMap()
+    var height = 0f
+    var width = 0f
+
+    private var rectF = RectF(0f, 0f, height, width)
 
     init{
         mPaint.color = Color.BLACK
@@ -28,6 +32,13 @@ class GraphView @JvmOverloads constructor(
     fun setData(list: Map<Pair<String, Paint>, Map<Int, Point>>) {
         data = list
         invalidate()
+    }
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        Log.d("GW", w.toString())
+        Log.d("GW", h.toString())
+        height = h.toFloat()
+        width = w.toFloat()
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -54,9 +65,8 @@ class GraphView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        val rectF = RectF(0f, 0f, 200f, 200f)
-        canvas?.drawLine(2f, 400f, 2f, 0f, mPaint)
-        canvas?.drawLine(2f, 400f, 600f, 400f, mPaint)
+        canvas?.drawLine(2f, height, 2f, 0f, mPaint)
+        canvas?.drawLine(2f, height, width, height, mPaint)
 
         var offset = 30f
         data.forEach {cat ->
@@ -65,20 +75,20 @@ class GraphView @JvmOverloads constructor(
             paint.strokeWidth = 2f
             mPaint.textSize = 16f
             mPaint.isAntiAlias = true
-            canvas?.drawLine(2f,400f + offset, 22f, 400f + offset, paint)
-            canvas?.drawText(catName, 44f, 400f + offset, mPaint)
+            canvas?.drawLine(2f,height + offset, 22f, height + offset, paint)
+            canvas?.drawText(catName, 44f, height + offset, mPaint)
             offset += 30f
             var i = 1
             cat.value[i]?.let {
                 paint.strokeWidth = 2f
-                canvas?.drawLine(2f,400f, it.coorX+2f, 400f-it.coorY, paint)
+                canvas?.drawLine(2f,height, it.coorX+2f, height-it.coorY, paint)
             }
             cat.value.forEach { point ->
                 paint.strokeWidth = 10f
-                canvas?.drawPoint(point.value.coorX+2f, 400f-point.value.coorY, paint)
+                canvas?.drawPoint(point.value.coorX+2f, height-point.value.coorY, paint)
                 cat.value[i+1]?.let {
                     paint.strokeWidth = 2f
-                    canvas?.drawLine(point.value.coorX+2f, 400f-point.value.coorY, it.coorX+2f, 400f-it.coorY, paint)
+                    canvas?.drawLine(point.value.coorX+2f, height-point.value.coorY, it.coorX+2f, height-it.coorY, paint)
                 }
                 i++
             }
