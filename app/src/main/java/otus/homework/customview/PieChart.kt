@@ -2,14 +2,17 @@ package otus.homework.customview
 
 import android.content.Context
 import android.graphics.*
+import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.util.SparseArray
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.os.bundleOf
 import kotlinx.parcelize.Parcelize
 import otus.homework.customview.data.Segment
+import java.util.ArrayList
 import kotlin.math.*
 
 class PieChart @JvmOverloads constructor(
@@ -45,9 +48,8 @@ class PieChart @JvmOverloads constructor(
         textSize = 40F
     }
 
-
     fun setData(segmentList: List<Segment>) {
-        this.segmentList = segmentList.asSequence().sortedByDescending { it.value }.toList()
+        this.segmentList = segmentList.sortedByDescending { it.value }
         invalidate()
     }
 
@@ -123,7 +125,6 @@ class PieChart @JvmOverloads constructor(
         }
 
         canvas.drawCircle(midX, midY, radius/3, corePaint)
-
     }
 
     // базовое смещение для матрицы
@@ -131,8 +132,8 @@ class PieChart @JvmOverloads constructor(
     private val baseY = 50F
 
     /*
-    расчет динамического смещения нашего сектора в зависимости от угла поворота
-    направление смещения расчитывается согласно углу angelOffSet,
+    расчет динамического смещения нашего сектора в зависимости от угла поворота.
+    Направление смещения расчитывается согласно углу angelOffSet,
     которое считается от верхней части нашей окружности до середины нашего сектора
     */
 
@@ -146,8 +147,6 @@ class PieChart @JvmOverloads constructor(
 
     private var isTouched = false
     private var touchedAngle = 0F
-
-
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when(event?.action) {
@@ -167,15 +166,14 @@ class PieChart @JvmOverloads constructor(
     }
 
 /*
-Так как touchedAngle при пересчете отсчитывается, начиная с правой стороны:
+ Так как touchedAngle при пересчете отсчитывается, начиная с правой стороны:
  по часовой: 0 -> 90 -> 180;
  против часовой 0 -> -90 -> -180
- а канвас начинает отсчет, начиная справой стороны от -90 до 270 градусов,
+ А канвас начинает отсчет, начиная справой стороны 0 -> 90 -> 180 -> 270 -> -90 градусов,
  то вносим условие для пересчета touchedAngle на канвас
  */
     private fun calculateAngle(x: Float, y: Float) {
         touchedAngle = Math.toDegrees(atan2((y - midY).toDouble(), (x - midX).toDouble())).toFloat()
-        Log.i("aaaaa", touchedAngle.toString())
         if (touchedAngle in -180F..-90F) {
             touchedAngle = 360F - abs(touchedAngle)
         }

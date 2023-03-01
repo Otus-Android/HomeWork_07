@@ -1,12 +1,11 @@
 package otus.homework.customview
 
-import android.graphics.Color
 import android.graphics.Color.parseColor
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.MotionEvent
-import android.view.OrientationEventListener
-import androidx.appcompat.content.res.AppCompatResources
+import android.os.Parcelable
+import android.os.PersistableBundle
+import android.view.*
 import org.json.JSONArray
 import otus.homework.customview.data.Category
 import otus.homework.customview.data.Segment
@@ -15,6 +14,7 @@ import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    var orientationMode = 0
     private val colorsList by lazy {
         listOf(
             parseColor("#041763"),
@@ -31,21 +31,29 @@ class MainActivity : AppCompatActivity() {
             parseColor("#EB0CB7"),
         )
     }
-    private val segmentList = ArrayList<Segment>()
+    private var segmentList = ArrayList<Segment>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        fillDataList()
+
+        orientationMode = resources.configuration.orientation
+
+        binding.pieChart.setData(segmentList)
+        binding.linearChart.setData(segmentList, orientationMode)
+    }
+
+    private fun fillDataList() {
         val categoriesList = ArrayList<Category>()
         readFromJson(categoriesList)
 
         categoriesList.forEachIndexed { index, category ->
-            val segment = Segment(category.name, colorsList[index], category.amount)
+            val segment = Segment(category.name, colorsList[index], category.amount, category.time)
             segmentList.add(segment)
         }
-        binding.pieChart.setData(segmentList)
     }
 
     private fun readFromJson(categoriesList: ArrayList<Category>) {
@@ -70,4 +78,28 @@ class MainActivity : AppCompatActivity() {
             io.printStackTrace()
         }
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.chart_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId) {
+            R.id.item_pie -> {
+                binding.pieChart.visibility = View.VISIBLE
+                binding.linearChart.visibility = View.GONE
+                true
+            }
+            R.id.item_linear -> {
+                binding.linearChart.visibility = View.VISIBLE
+                binding.pieChart.visibility = View.GONE
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+
+    }
+
 }
