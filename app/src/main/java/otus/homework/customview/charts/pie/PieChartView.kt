@@ -31,10 +31,10 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
     }
 
     private var payloadSum = 0
-    private var payload: List<PayloadEntity>? = null
+    private var payload: List<PiePayloadEntity>? = null
     private var listener: OnPieSliceClickListener? = null
 
-    fun updatePayload(payload: List<PayloadEntity>){
+    fun updatePayload(payload: List<PiePayloadEntity>){
         this.payload = payload
         payloadSum = payload.fold(0) { acc, entry -> acc + entry.amount }
         invalidate()
