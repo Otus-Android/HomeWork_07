@@ -56,6 +56,7 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
         oval.bottom = layoutParams.height.toFloat()
         oval.left = (width / 2) - (layoutParams.height / 2).toFloat()
         oval.right = (width / 2) + (layoutParams.height / 2).toFloat()
+
         textPaint.textSize = height / 30f
     }
 
@@ -133,9 +134,9 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
         this.listener = listener
     }
 
-    var scrollStartX = 0f
-    var scrollStartY = 0f
-    var touchDownTime = 0L
+    private var scrollStartX = 0f
+    private var scrollStartY = 0f
+    private var touchDownTime = 0L
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
 
@@ -146,7 +147,7 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
             Log.d("ACTION_DOWN", "$scrollStartX   $scrollStartY")
             return true
         }
-/*
+
         if (event?.action == MotionEvent.ACTION_MOVE){
             val dx = event.x - scrollStartX
             val dy = event.y - scrollStartY
@@ -164,10 +165,11 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
             invalidate()
             Log.d("ACTION_MOVE", "$dx   $dy   $distance")
         }
-*/
+
         if(event?.action == MotionEvent.ACTION_UP){
             if ((System.currentTimeMillis() - touchDownTime) <= 200){
                 //looks like a click
+
                 val clickAngle = findClickAngle(scrollStartX, scrollStartY)
 
                 clickAssistance.filter { it.value.inRange(clickAngle) }.forEach {

@@ -4,9 +4,16 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import otus.homework.customview.charts.pie.PiePayloadEntity
 
 class LineChartView(context: Context, attributeSet: AttributeSet): View(context, attributeSet) {
 
+
+    private var payload: List<LinePayloadEntry>? = null
+    fun updatePayload(payload: List<LinePayloadEntry>){
+        this.payload = payload
+        invalidate()
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
