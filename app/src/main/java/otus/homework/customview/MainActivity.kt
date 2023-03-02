@@ -2,6 +2,7 @@ package otus.homework.customview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import org.json.JSONArray
 import otus.homework.customview.charts.PayloadEntity
 import otus.homework.customview.charts.pie.OnPieSliceClickListener
@@ -47,8 +48,8 @@ class MainActivity : AppCompatActivity(), OnPieSliceClickListener {
 
     }
 
-    override fun onClick(entry: PayloadEntity) {
-        //TODO("Not yet implemented")
+    override fun onClick(entry: PiePayloadEntity) {
+        Toast.makeText(this, entry.category, Toast.LENGTH_SHORT).show()
     }
 
 }

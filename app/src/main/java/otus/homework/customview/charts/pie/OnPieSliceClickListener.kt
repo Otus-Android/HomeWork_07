@@ -4,6 +4,6 @@ import otus.homework.customview.charts.PayloadEntity
 
 interface OnPieSliceClickListener {
 
-    fun onClick(entry: PayloadEntity)
+    fun onClick(entry: PiePayloadEntity)
 
 }
