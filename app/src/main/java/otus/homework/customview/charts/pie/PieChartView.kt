@@ -148,7 +148,7 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
             return true
         }
 
-        if (event?.action == MotionEvent.ACTION_MOVE){
+       /* if (event?.action == MotionEvent.ACTION_MOVE){
             val dx = event.x - scrollStartX
             val dy = event.y - scrollStartY
 
@@ -164,13 +164,13 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
 
             invalidate()
             Log.d("ACTION_MOVE", "$dx   $dy   $distance")
-        }
+        }*/
 
         if(event?.action == MotionEvent.ACTION_UP){
             if ((System.currentTimeMillis() - touchDownTime) <= 200){
                 //looks like a click
 
-                val clickAngle = findClickAngle(scrollStartX, scrollStartY)
+                val clickAngle = findClickAngle(scrollStartX, scrollStartY) + startAngle
 
                 clickAssistance.filter { it.value.inRange(clickAngle) }.forEach {
                     payload?.get(it.key)?.let { entity ->
@@ -182,7 +182,6 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
                 Log.d("CLICK ANGLE", "$clickAngle")
             }
         }
-
 
         return super.onTouchEvent(event)
     }

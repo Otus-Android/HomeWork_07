@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity(), OnPieSliceClickListener {
             )
         }
 
-        lineChartView.updatePayload(linePayload)
+        //lineChartView.updatePayload(linePayload)
 
     }
 
