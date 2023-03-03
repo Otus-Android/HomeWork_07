@@ -12,12 +12,12 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.ColorInt
-import otus.homework.customview.charts.PayloadEntity
 import kotlin.math.*
 
 class PieChartView(context: Context, attributeSet: AttributeSet): View(context, attributeSet) {
 
-    private val oval = RectF()
+    private val baseOval = RectF()
+    private val selectOval = RectF()
     private val newPaint: Paint = Paint()
     private val textPaint: Paint = Paint()
     private val colors = HashMap<Int, @ColorInt Int>()
@@ -35,11 +35,12 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
         colors[8] = Color.parseColor("#e2cf56")
         colors[9] = Color.parseColor("#aee256")
 
+        textPaint.color = Color.WHITE
         textPaint.isAntiAlias = true
-
     }
 
     private var payloadSum = 0
+    private var selectIndex = -1
     private var payload: List<PiePayloadEntity>? = null
     private var listener: OnPieSliceClickListener? = null
 
@@ -52,35 +53,57 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
     fun pacMan(){}
 
     private fun calculateOvalSize(){
-        oval.top = 0f
-        oval.bottom = layoutParams.height.toFloat()
-        oval.left = (width / 2) - (layoutParams.height / 2).toFloat()
-        oval.right = (width / 2) + (layoutParams.height / 2).toFloat()
+        val basePieSize = min(width, height) * 0.8f
+        val selectPieSize = basePieSize * 1.2f
 
-        textPaint.textSize = height / 30f
+        val centerX = width / 2
+        val centerY = height / 2
+
+        baseOval.top = centerY - (basePieSize / 2 )
+        baseOval.left = centerX - (basePieSize / 2 )
+        baseOval.bottom = centerY + (basePieSize / 2 )
+        baseOval.right = centerX + (basePieSize / 2 )
+
+        selectOval.top = centerY - (selectPieSize / 2 )
+        selectOval.left = centerX - (selectPieSize / 2 )
+        selectOval.bottom = centerY + (selectPieSize / 2 )
+        selectOval.right = centerX + (selectPieSize / 2 )
+
+        textPaint.textSize = basePieSize / 30f
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
-        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+
+        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
 
-        when (widthMode) {
-            MeasureSpec.UNSPECIFIED -> {
-                Log.d("PieChartView", "onMeasure UNSPECIFIED")
-            }
+        when(widthMode) {
             MeasureSpec.AT_MOST -> {
-                Log.d("PieChartView", "onMeasure AT_MOST")
+                setMeasuredDimension(widthSize, heightSize)
             }
             MeasureSpec.EXACTLY -> {
-                Log.d("PieChartView", "onMeasure EXACTLY")
-                //super.onMeasure(widthMeasureSpec, heightMeasureSpec)
                 setMeasuredDimension(widthSize, heightSize)
+            }
+            MeasureSpec.UNSPECIFIED -> {
+
             }
         }
 
-        //calculateOvalSize()
+        when(heightMode) {
+            MeasureSpec.AT_MOST -> {
+                setMeasuredDimension(widthSize, heightSize)
+            }
+            MeasureSpec.EXACTLY -> {
+                setMeasuredDimension(widthSize, heightSize)
+            }
+            MeasureSpec.UNSPECIFIED -> {
+
+            }
+        }
 
     }
 
@@ -99,11 +122,17 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
         var currentAngle = startAngle
 
         clickAssistance.clear()
+
         payload?.forEachIndexed { index, payloadEntity ->
             //draw slice
             val sweepAngle = calcProportionAngle(payloadEntity.amount, payloadSum)
             newPaint.color = colors[index] ?: Color.MAGENTA
-            canvas?.drawArc(oval, currentAngle, sweepAngle, true, newPaint)
+
+            if (index == selectIndex) {
+                canvas?.drawArc(selectOval, currentAngle, sweepAngle, true, newPaint)
+            }else{
+                canvas?.drawArc(baseOval, currentAngle, sweepAngle, true, newPaint)
+            }
 
             clickAssistance[index] = ClickRange(currentAngle, currentAngle + sweepAngle)
 
@@ -147,8 +176,8 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
             Log.d("ACTION_DOWN", "$scrollStartX   $scrollStartY")
             return true
         }
-
-       /* if (event?.action == MotionEvent.ACTION_MOVE){
+/*
+        if (event?.action == MotionEvent.ACTION_MOVE){
             val dx = event.x - scrollStartX
             val dy = event.y - scrollStartY
 
@@ -173,9 +202,10 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
                 val clickAngle = findClickAngle(scrollStartX, scrollStartY) + startAngle
 
                 clickAssistance.filter { it.value.inRange(clickAngle) }.forEach {
+                    selectIndex = it.key
+                    invalidate()
                     payload?.get(it.key)?.let { entity ->
                         listener?.onClick(entity)
-
                     }
                 }
 
@@ -187,10 +217,17 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
     }
 
     private fun findClickAngle(touchedX: Float, touchedY: Float): Float {
-        val centerX =  (oval.right - oval.left) / 2 //oval.width() / 2
-        val centerY =  (oval.bottom - oval.top) / 2
 
-        //val distance = sqrt((centerX - touchedX) + (centerY - touchedY))
+        val centerX = width / 2
+        val centerY = height / 2
+
+
+        val basePieSize = min(width, height) * 0.8f
+        val distance = sqrt((centerX - touchedX) + (centerY - touchedY))
+
+        if (distance > basePieSize){
+            return -1f
+        }
 
         return (Math.toDegrees(
             atan2(
@@ -199,7 +236,6 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
             )
         )).toFloat() + 180
     }
-
 
     override fun onSaveInstanceState(): Parcelable {
         val superState = super.onSaveInstanceState()
