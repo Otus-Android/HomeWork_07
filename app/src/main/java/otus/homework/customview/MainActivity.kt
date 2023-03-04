@@ -1,8 +1,10 @@
 package otus.homework.customview
 
 import android.os.Bundle
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import otus.homework.customview.linear.LinearChart
 import otus.homework.customview.pie.PieCartCallback
 import otus.homework.customview.pie.PieChart
 import timber.log.Timber
@@ -14,6 +16,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     var pieChart: PieChart? = null
+    var linearChart: LinearChart? = null
 
     private val pieCharCallback = object : PieCartCallback {
         override fun sectorClick(category: String) {
@@ -31,10 +34,40 @@ class MainActivity : AppCompatActivity() {
             setCallback(pieCharCallback)
         }
 
+        linearChart = findViewById<LinearChart>(R.id.linearChart).apply {
+
+        }
+
         if (savedInstanceState == null) {
             pieChart?.setItems(repository.getSpendItems())
             pieChart?.startAnimationRotation()
 
+        }
+
+        //linear chart
+
+        val linearChartItems = repository.getSpendItemsLinear()
+
+        val menuItems = linearChartItems.map { it.category }.distinct()
+
+        val popupMenu = PopupMenu(this, linearChart).apply {
+            menuItems.forEach {
+                menu.add(it)
+            }
+        }.apply {
+            setOnMenuItemClickListener { menuItem ->
+                val items = linearChartItems.filter {
+                    it.category == menuItem.title
+                }
+
+                linearChart?.setData(items)
+
+                true
+            }
+        }
+
+        linearChart?.setOnClickListener {
+            popupMenu.show()
         }
     }
 

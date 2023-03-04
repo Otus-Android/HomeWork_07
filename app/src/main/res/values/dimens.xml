@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="minPieChartSize">200dp</dimen>
+
+    <dimen name="minLinearChartHeight">200dp</dimen>
+    <dimen name="minLinearChartWidth">400dp</dimen>
+
+    <dimen name="rowSize">50dp</dimen>
+
+    <dimen name="yAxisTextHeight">16dp</dimen>
 </resources>
