@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/category"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:textSize="32sp"
+            android:layout_weight="1"
+            android:textStyle="bold"
+            android:text="Category" />
+
+        <ImageButton
+            android:id="@+id/like"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginVertical="16dp"
+            android:background="@drawable/bg_round_gray"
+            android:src="@drawable/icon_like" />
+
+        <ImageButton
+            android:id="@+id/dislike"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginVertical="16dp"
+            android:background="@drawable/bg_round_gray"
+            android:src="@drawable/icon_dislike" />
+
+    </LinearLayout>
+
+    <otus.homework.customview.SpendingLineChart
+        android:id="@+id/line_chart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</LinearLayout>
