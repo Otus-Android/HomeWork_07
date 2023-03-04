@@ -28,6 +28,13 @@
     "time": 1623326031
   },
   {
+    "id": 12,
+    "name": "Uber",
+    "amount": 299,
+    "category": "Подписки",
+    "time": 1623419934
+  },
+  {
     "id": 5,
     "name": "Simple Wine",
     "amount": 1600,
@@ -81,6 +88,27 @@
     "name": "Uber",
     "amount": 389,
     "category": "Транспорт",
+    "time": 1623419934
+  },
+  {
+    "id": 12,
+    "name": "Uber",
+    "amount": 1200,
+    "category": "Одежда",
+    "time": 1623419934
+  },
+  {
+    "id": 12,
+    "name": "Uber",
+    "amount": 750,
+    "category": "Развлечения",
+    "time": 1623419934
+  },
+  {
+    "id": 12,
+    "name": "Uber",
+    "amount": 999,
+    "category": "Квартра",
     "time": 1623419934
   }
 ]
