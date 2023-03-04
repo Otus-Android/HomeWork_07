@@ -225,7 +225,7 @@ class PieChartView(context: Context, attributeSet: AttributeSet): View(context, 
         val basePieSize = min(width, height) * 0.8f
         val distance = sqrt((centerX - touchedX) + (centerY - touchedY))
 
-        if (distance > basePieSize){
+        if (distance > (basePieSize / 2)){
             return -1f
         }
 

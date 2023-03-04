@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity(), OnPieSliceClickListener {
         pieChartView.updatePayload(piePayload)
         pieChartView.setOnPieSliceClickListener(this)
 
-        val lineChartView = findViewById<LineChartView>(R.id.linechart)
+        lineChartView = findViewById(R.id.linechart)
 
     }
 
@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity(), OnPieSliceClickListener {
             )
         }
 
-        //lineChartView.updatePayload(linePayload)
+        lineChartView.updatePayload(linePayload)
 
     }
 
