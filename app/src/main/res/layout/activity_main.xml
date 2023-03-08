@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <otus.homework.customview.PieChartView
+    <otus.homework.customview.ui.PieChartView
         android:id="@+id/chart_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

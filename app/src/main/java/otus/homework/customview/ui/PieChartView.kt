@@ -1,13 +1,16 @@
-package otus.homework.customview
+package otus.homework.customview.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
-import kotlin.math.min
+import otus.homework.customview.R
+import kotlin.math.*
 
 // strokes
 private const val STROKE_WIDTH = 100f
@@ -82,17 +85,14 @@ class PieChartView @JvmOverloads constructor(
   }
 
   private fun drawSections(canvas: Canvas) {
-    var angle = -90f
-    for (index in model.items.indices) {
-      val sweepAngle = 360 * model.getRatioByIndex(index)
+    model.sections.forEachIndexed { index, section ->
       paint.color = COLORS[index % COLORS.size]
       paint.strokeWidth = if (index == accentSectionIndex) {
         ACCENT_STROKE_WIDTH
       } else {
         STROKE_WIDTH
       }
-      canvas.drawArc(rect, angle, sweepAngle - GAP_ANGLE, false, paint)
-      angle += sweepAngle
+      canvas.drawArc(rect, -90f + section.startAngle, section.sweepAngle - GAP_ANGLE, false, paint)
     }
   }
 
@@ -110,12 +110,32 @@ class PieChartView @JvmOverloads constructor(
     return "${accentItem.name}: ${accentItem.value}"
   }
 
-  fun setAccentSection(index: Int) {
+  @SuppressLint("ClickableViewAccessibility")
+  override fun onTouchEvent(event: MotionEvent): Boolean {
+    val x = event.x - measuredWidth / 2
+    val y = event.y - measuredHeight / 2
+
+    var angle = Math.toDegrees(atan2(y.toDouble(), x.toDouble())) + 90f
+    if (angle < 0) angle += 360f
+
+    val radius = sqrt(x * x + y * y)
+    if (radius in (measuredWidth / 2f - ACCENT_STROKE_WIDTH) .. (measuredWidth / 2f)) {
+      val section = model.sections.find { it.startAngle <= angle && angle <= it.endAngle }
+      val index = model.sections.indexOf(section)
+      setAccentSection(index)
+    } else {
+      resetAccentSection()
+    }
+
+    return true
+  }
+
+  private fun setAccentSection(index: Int) {
     this.accentSectionIndex = index
     invalidate()
   }
 
-  fun resetAccentSection() {
+  private fun resetAccentSection() {
     this.accentSectionIndex = NONE_SECTION_INDEX
     invalidate()
   }

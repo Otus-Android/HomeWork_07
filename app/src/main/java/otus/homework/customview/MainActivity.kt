@@ -2,7 +2,9 @@ package otus.homework.customview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import kotlin.concurrent.thread
+import otus.homework.customview.ui.PieChartItem
+import otus.homework.customview.ui.PieChartModel
+import otus.homework.customview.ui.PieChartView
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,13 +33,5 @@ class MainActivity : AppCompatActivity() {
       items.map { PieChartItem(it.name, it.amount) }
     )
     chartView.model = model
-
-    var index = 0
-    thread {
-      while (true) {
-        Thread.sleep(200)
-        chartView.post { chartView.setAccentSection(++index % items.size) }
-      }
-    }
   }
 }
