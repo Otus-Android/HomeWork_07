@@ -1,6 +1,6 @@
-package otus.homework.customview
+package otus.homework.customview.dto
 
-data class PieChartDto(
+data class DomainDto(
   val id: Int,
   val name: String,
   val amount: Int,
