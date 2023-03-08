@@ -44,13 +44,9 @@ class PieChartView @JvmOverloads constructor(
   defStyleAttrs: Int = 0
 ) : View(context, attributeSet, defStyleAttrs) {
 
-  var model = PieChartModel(emptyList())
-    set(value) {
-      field = value
-      invalidate()
-    }
+  private var model = PieChartModel(emptyList())
 
-  private var accentSectionIndex: Int = NONE_SECTION_INDEX
+  private var accentSectionIndex = NONE_SECTION_INDEX
 
   private val rect = RectF()
 
@@ -115,27 +111,23 @@ class PieChartView @JvmOverloads constructor(
     val x = event.x - measuredWidth / 2
     val y = event.y - measuredHeight / 2
 
+    val radius = sqrt(x * x + y * y)
     var angle = Math.toDegrees(atan2(y.toDouble(), x.toDouble())) + 90f
     if (angle < 0) angle += 360f
 
-    val radius = sqrt(x * x + y * y)
-    if (radius in (measuredWidth / 2f - ACCENT_STROKE_WIDTH) .. (measuredWidth / 2f)) {
+    if (radius in (measuredWidth / 2f - ACCENT_STROKE_WIDTH)..(measuredWidth / 2f)) {
       val section = model.sections.find { it.startAngle <= angle && angle <= it.endAngle }
-      val index = model.sections.indexOf(section)
-      setAccentSection(index)
+      accentSectionIndex = model.sections.indexOf(section)
     } else {
-      resetAccentSection()
+      accentSectionIndex = NONE_SECTION_INDEX
     }
+    invalidate()
 
     return true
   }
 
-  private fun setAccentSection(index: Int) {
-    this.accentSectionIndex = index
-    invalidate()
-  }
-
-  private fun resetAccentSection() {
+  fun updateData(model: PieChartModel) {
+    this.model = model
     this.accentSectionIndex = NONE_SECTION_INDEX
     invalidate()
   }
