@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Custom View</string>
+    <string name="total_amount">Total amount: %s</string>
 </resources>

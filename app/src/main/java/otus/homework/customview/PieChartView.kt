@@ -99,7 +99,7 @@ class PieChartView @JvmOverloads constructor(
 
   private fun createText(): String {
     if (accentSectionIndex !in model.items.indices) {
-      return "Total amount: ${model.totalAmount}"
+      return context.getString(R.string.total_amount, "${model.totalAmount}")
     }
     val accentItem = model.items[accentSectionIndex]
     return "${accentItem.name}: ${accentItem.value}"
