@@ -102,7 +102,7 @@ class PieChartView @JvmOverloads constructor(
       return "Total amount: ${model.totalAmount}"
     }
     val accentItem = model.items[accentSectionIndex]
-    return "${accentItem.name}: ${accentItem.amount}"
+    return "${accentItem.name}: ${accentItem.value}"
   }
 
   fun setAccentSection(index: Int) {
