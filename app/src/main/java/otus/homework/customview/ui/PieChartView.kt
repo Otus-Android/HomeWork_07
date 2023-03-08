@@ -93,6 +93,7 @@ class PieChartView @JvmOverloads constructor(
   }
 
   private fun drawText(canvas: Canvas) {
+    if (model.items.isEmpty()) return
     val text = createText()
     val textWidth = textPaint.measureText(text)
     canvas.drawText(text, (measuredWidth - textWidth) / 2f, (measuredHeight + TEXT_SIZE) / 2f, textPaint)

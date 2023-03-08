@@ -32,8 +32,6 @@ class MainActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
-    showItems()
-
     findViewById<View>(R.id.button_items).setOnClickListener {
       showItems()
     }
