@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         PieChartDto(2, "", 20, "", 0),
         PieChartDto(3, "", 30, "", 0),
         PieChartDto(4, "", 40, "", 0),
-        PieChartDto(5, "", 40, "", 0),
+        PieChartDto(5, "Simple Wine", 40, "", 0),
         PieChartDto(6, "", 40, "", 0),
         PieChartDto(7, "", 40, "", 0),
         PieChartDto(8, "", 40, "", 0),
@@ -29,5 +29,6 @@ class MainActivity : AppCompatActivity() {
       )
     )
     chartView.model = model
+    chartView.setAccentSection(4)
   }
 }

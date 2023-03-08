@@ -9,10 +9,17 @@ import android.util.AttributeSet
 import android.view.View
 import kotlin.math.min
 
-private const val STROKE_WIDTH = 100
+// strokes
+private const val STROKE_WIDTH = 100f
 private const val ACCENT_RATIO = 1.8f
 private const val ACCENT_STROKE_WIDTH = ACCENT_RATIO * STROKE_WIDTH
+
+// sections
 private const val GAP_ANGLE = 1.5f
+private const val NONE_SECTION_INDEX = -1
+
+// text
+private const val TEXT_SIZE = 96f
 
 private val COLORS = listOf(
   Color.parseColor("#ff0000"),
@@ -39,18 +46,20 @@ class PieChartView @JvmOverloads constructor(
       invalidate()
     }
 
+  private var accentSectionIndex: Int = NONE_SECTION_INDEX
+
   private val rect = RectF()
 
   private val paint = Paint()
     .apply {
       style = Paint.Style.STROKE
-      strokeWidth = STROKE_WIDTH.toFloat()
+      strokeWidth = STROKE_WIDTH
     }
 
   private val textPaint = Paint()
     .apply {
       color = Color.BLACK
-      textSize = 96f
+      textSize = TEXT_SIZE
     }
 
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -67,15 +76,42 @@ class PieChartView @JvmOverloads constructor(
 
   override fun onDraw(canvas: Canvas) {
     super.onDraw(canvas)
+    drawSections(canvas)
+    drawText(canvas)
+  }
+
+  private fun drawSections(canvas: Canvas) {
     var angle = -90f
     for (i in model.items.indices) {
       val sweepAngle = 360 * model.getRatioByIndex(i)
       paint.color = COLORS[i % COLORS.size]
+      paint.strokeWidth = if (i == accentSectionIndex) ACCENT_STROKE_WIDTH else STROKE_WIDTH
       canvas.drawArc(rect, angle, sweepAngle - GAP_ANGLE, false, paint)
       angle += sweepAngle
     }
-    val text = "Total amount: ${model.totalAmount}"
+  }
+
+  private fun drawText(canvas: Canvas) {
+    val text = createText()
     val textWidth = textPaint.measureText(text)
-    canvas.drawText(text, (measuredWidth - textWidth) / 2f, measuredHeight / 2f, textPaint)
+    canvas.drawText(text, (measuredWidth - textWidth) / 2f, (measuredHeight + TEXT_SIZE) / 2f, textPaint)
+  }
+
+  private fun createText(): String {
+    if (accentSectionIndex !in model.items.indices) {
+      return "Total amount: ${model.totalAmount}"
+    }
+    val accentItem = model.items[accentSectionIndex]
+    return "${accentItem.name}: ${accentItem.amount}"
+  }
+
+  fun setAccentSection(index: Int) {
+    this.accentSectionIndex = index
+    invalidate()
+  }
+
+  fun resetAccentSection() {
+    this.accentSectionIndex = NONE_SECTION_INDEX
+    invalidate()
   }
 }
