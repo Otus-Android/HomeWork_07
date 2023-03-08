@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -18,7 +19,7 @@ private const val ACCENT_RATIO = 1.8f
 private const val ACCENT_STROKE_WIDTH = ACCENT_RATIO * STROKE_WIDTH
 
 // sections
-private const val GAP_ANGLE = 1.5f
+private const val GAP_ANGLE = 0.5f
 private const val NONE_SECTION_INDEX = -1
 
 // text
@@ -56,7 +57,7 @@ class PieChartView @JvmOverloads constructor(
       strokeWidth = STROKE_WIDTH
     }
 
-  private val textPaint = Paint()
+  private val textPaint = TextPaint()
     .apply {
       color = TEXT_COLOR
       textSize = TEXT_SIZE
