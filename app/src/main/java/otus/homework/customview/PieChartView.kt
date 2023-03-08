@@ -20,6 +20,7 @@ private const val NONE_SECTION_INDEX = -1
 
 // text
 private const val TEXT_SIZE = 96f
+private const val TEXT_COLOR = Color.BLACK
 
 private val COLORS = listOf(
   Color.parseColor("#ff0000"),
@@ -58,7 +59,7 @@ class PieChartView @JvmOverloads constructor(
 
   private val textPaint = Paint()
     .apply {
-      color = Color.BLACK
+      color = TEXT_COLOR
       textSize = TEXT_SIZE
     }
 
