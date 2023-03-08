@@ -9,7 +9,21 @@ import android.util.AttributeSet
 import android.view.View
 import kotlin.math.min
 
-private const val STROKE_WIDTH = 48
+private const val STROKE_WIDTH = 100
+private const val GAP_ANGLE = 1.5f
+
+private val COLORS = listOf(
+  Color.parseColor("#ff0000"),
+  Color.parseColor("#ff8700"),
+  Color.parseColor("#ffd300"),
+  Color.parseColor("#deff0a"),
+  Color.parseColor("#a1ff0a"),
+  Color.parseColor("#0aff99"),
+  Color.parseColor("#0aefff"),
+  Color.parseColor("#147df5"),
+  Color.parseColor("#580aff"),
+  Color.parseColor("#be0aff")
+)
 
 class PieChartView @JvmOverloads constructor(
   context: Context,
@@ -29,7 +43,6 @@ class PieChartView @JvmOverloads constructor(
     .apply {
       style = Paint.Style.STROKE
       strokeWidth = STROKE_WIDTH.toFloat()
-      color = Color.RED
     }
 
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -44,20 +57,13 @@ class PieChartView @JvmOverloads constructor(
     rect.right = rectDimension
   }
 
-  private val colors = listOf(
-    Color.RED,
-    Color.GREEN,
-    Color.BLUE,
-    Color.MAGENTA
-  )
-
   override fun onDraw(canvas: Canvas) {
     super.onDraw(canvas)
     var angle = -90f
     for (i in model.items.indices) {
       val sweepAngle = 360 * model.getRatioByIndex(i)
-      paint.color = colors[i]
-      canvas.drawArc(rect, angle, sweepAngle, false, paint)
+      paint.color = COLORS[i % COLORS.size]
+      canvas.drawArc(rect, angle, sweepAngle - GAP_ANGLE, false, paint)
       angle += sweepAngle
     }
   }
