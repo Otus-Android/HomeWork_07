@@ -82,10 +82,14 @@ class PieChartView @JvmOverloads constructor(
 
   private fun drawSections(canvas: Canvas) {
     var angle = -90f
-    for (i in model.items.indices) {
-      val sweepAngle = 360 * model.getRatioByIndex(i)
-      paint.color = COLORS[i % COLORS.size]
-      paint.strokeWidth = if (i == accentSectionIndex) ACCENT_STROKE_WIDTH else STROKE_WIDTH
+    for (index in model.items.indices) {
+      val sweepAngle = 360 * model.getRatioByIndex(index)
+      paint.color = COLORS[index % COLORS.size]
+      paint.strokeWidth = if (index == accentSectionIndex) {
+        ACCENT_STROKE_WIDTH
+      } else {
+        STROKE_WIDTH
+      }
       canvas.drawArc(rect, angle, sweepAngle - GAP_ANGLE, false, paint)
       angle += sweepAngle
     }
