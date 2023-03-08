@@ -10,6 +10,8 @@ import android.view.View
 import kotlin.math.min
 
 private const val STROKE_WIDTH = 100
+private const val ACCENT_RATIO = 1.8f
+private const val ACCENT_STROKE_WIDTH = ACCENT_RATIO * STROKE_WIDTH
 private const val GAP_ANGLE = 1.5f
 
 private val COLORS = listOf(
@@ -45,14 +47,20 @@ class PieChartView @JvmOverloads constructor(
       strokeWidth = STROKE_WIDTH.toFloat()
     }
 
+  private val textPaint = Paint()
+    .apply {
+      color = Color.BLACK
+      textSize = 96f
+    }
+
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     val minimalDimension = min(measuredWidth, measuredHeight)
     setMeasuredDimension(minimalDimension, minimalDimension)
 
-    val rectDimension = minimalDimension - STROKE_WIDTH / 2f
-    rect.left = STROKE_WIDTH / 2f
-    rect.top = STROKE_WIDTH / 2f
+    val rectDimension = minimalDimension - ACCENT_STROKE_WIDTH / 2f
+    rect.left = ACCENT_STROKE_WIDTH / 2f
+    rect.top = ACCENT_STROKE_WIDTH / 2f
     rect.bottom = rectDimension
     rect.right = rectDimension
   }
@@ -66,5 +74,8 @@ class PieChartView @JvmOverloads constructor(
       canvas.drawArc(rect, angle, sweepAngle - GAP_ANGLE, false, paint)
       angle += sweepAngle
     }
+    val text = "Total amount: ${model.totalAmount}"
+    val textWidth = textPaint.measureText(text)
+    canvas.drawText(text, (measuredWidth - textWidth) / 2f, measuredHeight / 2f, textPaint)
   }
 }
