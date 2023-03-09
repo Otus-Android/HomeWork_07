@@ -28,6 +28,10 @@ class MainActivity : AppCompatActivity() {
       object : TypeToken<List<DomainDto>>() {}.type
     )
 
+    if (savedInstanceState == null) {
+      showItems()
+    }
+
     findViewById<View>(R.id.button_items).setOnClickListener {
       showItems()
     }
