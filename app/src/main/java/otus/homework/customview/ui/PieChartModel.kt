@@ -1,9 +1,16 @@
 package otus.homework.customview.ui
 
-data class PieChartModel(internal val items: List<PieChartItem>) {
+import android.os.Parcelable
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
+data class PieChartModel(internal val items: List<PieChartItem>): Parcelable {
+
+  @IgnoredOnParcel
   val totalAmount = items.sumBy { it.value }
 
+  @IgnoredOnParcel
   internal val sections = mutableListOf<PieChartSection>()
 
   init {
@@ -16,10 +23,11 @@ data class PieChartModel(internal val items: List<PieChartItem>) {
   }
 }
 
+@Parcelize
 data class PieChartItem(
   val name: String,
   val value: Int
-)
+) : Parcelable
 
 internal data class PieChartSection(
   val startAngle: Float,

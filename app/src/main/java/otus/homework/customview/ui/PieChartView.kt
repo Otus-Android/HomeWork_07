@@ -6,6 +6,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.os.Parcel
+import android.os.Parcelable
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -132,5 +134,51 @@ class PieChartView @JvmOverloads constructor(
     this.model = model
     this.accentSectionIndex = NONE_SECTION_INDEX
     invalidate()
+  }
+
+  override fun onSaveInstanceState(): Parcelable {
+    return PieChartSavedState(super.onSaveInstanceState())
+  }
+
+  override fun onRestoreInstanceState(state: Parcelable?) {
+    super.onRestoreInstanceState(state)
+    if (state is PieChartSavedState) {
+      model = state.model
+      accentSectionIndex = state.accentSectionIndex
+    }
+  }
+
+  private inner class PieChartSavedState : BaseSavedState {
+
+    internal val model: PieChartModel
+    internal val accentSectionIndex: Int
+
+    constructor(source: Parcelable?) : super(source) {
+      model = this@PieChartView.model
+      accentSectionIndex = this@PieChartView.accentSectionIndex
+    }
+
+    constructor(`in`: Parcel) : super(`in`) {
+      model = `in`.readParcelable(PieChartModel::class.java.classLoader) ?: PieChartModel(emptyList())
+      accentSectionIndex = `in`.readInt()
+    }
+
+    override fun writeToParcel(out: Parcel?, flags: Int) {
+      super.writeToParcel(out, flags)
+      out?.writeParcelable(model, 0)
+      out?.writeInt(accentSectionIndex)
+    }
+
+    @JvmField
+    val CREATE: Parcelable.Creator<PieChartSavedState> = object : Parcelable.Creator<PieChartSavedState> {
+
+      override fun createFromParcel(source: Parcel): PieChartSavedState {
+        return PieChartSavedState(source)
+      }
+
+      override fun newArray(size: Int): Array<PieChartSavedState?> {
+        return arrayOfNulls(size)
+      }
+    }
   }
 }
