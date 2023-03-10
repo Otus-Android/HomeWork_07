@@ -29,8 +29,8 @@
     <otus.homework.customview.ui.PieChartView
         android:id="@+id/chart_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/lines_view"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_categories" />
@@ -38,10 +38,11 @@
     <otus.homework.customview.ui.DynamicChartView
         android:id="@+id/lines_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_categories" />
+        app:layout_constraintTop_toBottomOf="@+id/chart_view" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

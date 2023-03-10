@@ -2,7 +2,10 @@ package otus.homework.customview.ui
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.CornerPathEffect
 import android.graphics.Paint
+import android.graphics.Paint.ANTI_ALIAS_FLAG
+import android.graphics.Path
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -10,6 +13,7 @@ import android.view.View
 
 // lines
 private const val LINE_WIDTH = 8f
+private const val CORNER_RADIUS = 8f
 
 class DynamicChartView @JvmOverloads constructor(
   context: Context,
@@ -19,11 +23,14 @@ class DynamicChartView @JvmOverloads constructor(
 
   private var model = DynamicChartModel(emptyList())
 
-  private val paint = Paint()
+  private val paint = Paint(ANTI_ALIAS_FLAG)
     .apply {
       style = Paint.Style.STROKE
       strokeWidth = LINE_WIDTH
+      pathEffect = CornerPathEffect(CORNER_RADIUS)
     }
+
+  private val path = Path()
 
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -31,10 +38,49 @@ class DynamicChartView @JvmOverloads constructor(
 
   override fun onDraw(canvas: Canvas) {
     super.onDraw(canvas)
-    model.pairs.forEachIndexed { index, pair ->
+    model.lines.forEachIndexed { index, line ->
       paint.color = COLORS[index % COLORS.size]
-      canvas.drawLine(0f, 100f * index, measuredWidth.toFloat(), measuredHeight.toFloat() - 100f * index, paint)
+
+      val points = line.points
+
+      if (points.isEmpty()) {
+        return@forEachIndexed
+      }
+
+      path.reset()
+
+      val firstPoint = points[0]
+
+      val prevPointX = firstPoint.pointX()
+      var prevPointY = firstPoint.pointY()
+      if (prevPointX == 0f) {
+        path.moveTo(prevPointX, prevPointY)
+      } else {
+        path.moveTo(0f, measuredHeight.toFloat())
+        path.addLineAndMove(prevPointX, measuredHeight.toFloat())
+        path.addLineAndMove(prevPointX, prevPointY)
+      }
+
+      points.drop(1).forEach {
+        val pointX = it.pointX()
+        val pointY = it.pointY()
+        path.addLineAndMove(pointX, prevPointY)
+        path.addLineAndMove(pointX, pointY)
+        prevPointY = pointY
+      }
+
+      val lastPoint = points.last()
+      path.addLineAndMove(measuredWidth.toFloat(), lastPoint.pointY())
+
+      path.close()
+
+      canvas.drawPath(path, paint)
     }
+  }
+
+  private fun Path.addLineAndMove(x: Float, y: Float) {
+    lineTo(x, y)
+    moveTo(x, y)
   }
 
   fun updateData(model: DynamicChartModel) {
@@ -52,6 +98,10 @@ class DynamicChartView @JvmOverloads constructor(
       model = state.model
     }
   }
+
+  private fun DynamicChartPoint.pointX() : Float = datePosition * measuredWidth
+
+  private fun DynamicChartPoint.pointY() : Float = measuredHeight - amountPosition * measuredHeight
 
   private inner class DynamicChartSavedState : BaseSavedState {
 

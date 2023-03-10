@@ -23,13 +23,17 @@ data class DynamicChartModel(
 
   init {
     pairs.forEach { (cat, items) ->
-      val points = items.map {
-        DynamicChartPoint(
-          it.amount,
-          it.date / (endDate - startDate).toFloat()
-        )
-      }
-      DynamicChartLine(cat, points)
+      var increasedAmount = 0
+      val points = items
+        .sortedBy { it.date }
+        .map {
+          increasedAmount += it.amount
+          DynamicChartPoint(
+            increasedAmount / maxAmount.toFloat(),
+            (it.date - startDate) / (endDate - startDate).toFloat()
+          )
+        }
+      lines.add(DynamicChartLine(cat, points))
     }
   }
 }
@@ -46,6 +50,6 @@ internal class DynamicChartLine(
 )
 
 internal data class DynamicChartPoint(
-  val amount: Int,
+  val amountPosition: Float,
   val datePosition: Float
 )

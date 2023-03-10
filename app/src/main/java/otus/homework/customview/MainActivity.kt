@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     )
 
     if (savedInstanceState == null) {
+      showItems()
       showLines()
     }
 
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   private fun showLines() {
-    val categories = items.map { it.category }
+    val categories = items.map { it.category }.distinct()
     val lines = categories.map { cat ->
       val list = items.filter { it.category == cat }.map { DynamicChartItem(it.amount, it.time) }
       cat to list
