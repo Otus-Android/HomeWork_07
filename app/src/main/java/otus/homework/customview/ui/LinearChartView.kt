@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.CornerPathEffect
 import android.graphics.Paint
-import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.graphics.Path
 import android.os.Parcel
 import android.os.Parcelable
@@ -15,15 +14,15 @@ import android.view.View
 private const val LINE_WIDTH = 8f
 private const val CORNER_RADIUS = 8f
 
-class DynamicChartView @JvmOverloads constructor(
+class LinearChartView @JvmOverloads constructor(
   context: Context,
   attributeSet: AttributeSet? = null,
   defStyleAttrs: Int = 0
 ) : View(context, attributeSet, defStyleAttrs) {
 
-  private var model = DynamicChartModel(emptyList())
+  private var model = LinearChartModel(emptyList())
 
-  private val paint = Paint(ANTI_ALIAS_FLAG)
+  private val paint = Paint()
     .apply {
       style = Paint.Style.STROKE
       strokeWidth = LINE_WIDTH
@@ -83,36 +82,36 @@ class DynamicChartView @JvmOverloads constructor(
     moveTo(x, y)
   }
 
-  fun updateData(model: DynamicChartModel) {
+  fun updateData(model: LinearChartModel) {
     this.model = model
     invalidate()
   }
 
   override fun onSaveInstanceState(): Parcelable {
-    return DynamicChartSavedState(super.onSaveInstanceState())
+    return LinearChartSavedState(super.onSaveInstanceState())
   }
 
   override fun onRestoreInstanceState(state: Parcelable?) {
     super.onRestoreInstanceState(state)
-    if (state is DynamicChartSavedState) {
+    if (state is LinearChartSavedState) {
       model = state.model
     }
   }
 
-  private fun DynamicChartPoint.pointX() : Float = datePosition * measuredWidth
+  private fun LinearChartPoint.pointX() : Float = datePosition * measuredWidth
 
-  private fun DynamicChartPoint.pointY() : Float = measuredHeight - amountPosition * measuredHeight
+  private fun LinearChartPoint.pointY() : Float = measuredHeight - amountPosition * measuredHeight
 
-  private inner class DynamicChartSavedState : BaseSavedState {
+  private inner class LinearChartSavedState : BaseSavedState {
 
-    internal val model: DynamicChartModel
+    internal val model: LinearChartModel
 
     constructor(source: Parcelable?) : super(source) {
-      model = this@DynamicChartView.model
+      model = this@LinearChartView.model
     }
 
     constructor(`in`: Parcel) : super(`in`) {
-      model = `in`.readParcelable(DynamicChartModel::class.java.classLoader) ?: DynamicChartModel(emptyList())
+      model = `in`.readParcelable(LinearChartModel::class.java.classLoader) ?: LinearChartModel(emptyList())
     }
 
     override fun writeToParcel(out: Parcel?, flags: Int) {
@@ -121,13 +120,13 @@ class DynamicChartView @JvmOverloads constructor(
     }
 
     @JvmField
-    val CREATE: Parcelable.Creator<DynamicChartSavedState> = object : Parcelable.Creator<DynamicChartSavedState> {
+    val CREATE: Parcelable.Creator<LinearChartSavedState> = object : Parcelable.Creator<LinearChartSavedState> {
 
-      override fun createFromParcel(source: Parcel): DynamicChartSavedState {
-        return DynamicChartSavedState(source)
+      override fun createFromParcel(source: Parcel): LinearChartSavedState {
+        return LinearChartSavedState(source)
       }
 
-      override fun newArray(size: Int): Array<DynamicChartSavedState?> {
+      override fun newArray(size: Int): Array<LinearChartSavedState?> {
         return arrayOfNulls(size)
       }
     }

@@ -25,7 +25,7 @@ private const val GAP_ANGLE = 0.5f
 private const val NONE_SECTION_INDEX = -1
 
 // text
-private const val TEXT_SIZE = 96f
+private const val TEXT_SIZE = 48f
 private const val TEXT_COLOR = Color.BLACK
 
 class PieChartView @JvmOverloads constructor(

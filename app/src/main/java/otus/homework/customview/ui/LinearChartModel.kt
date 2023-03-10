@@ -5,8 +5,8 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class DynamicChartModel(
-  internal val pairs: List<Pair<String, List<DynamicChartItem>>>
+data class LinearChartModel(
+  internal val pairs: List<Pair<String, List<LinearChartItem>>>
 ) : Parcelable {
 
   @IgnoredOnParcel
@@ -19,7 +19,7 @@ data class DynamicChartModel(
   internal val endDate = pairs.map { it.second }.maxOfOrNull { items -> items.maxOf { it.date } } ?: 0
 
   @IgnoredOnParcel
-  internal val lines = mutableListOf<DynamicChartLine>()
+  internal val lines = mutableListOf<LinearChartLine>()
 
   init {
     pairs.forEach { (cat, items) ->
@@ -28,28 +28,28 @@ data class DynamicChartModel(
         .sortedBy { it.date }
         .map {
           increasedAmount += it.amount
-          DynamicChartPoint(
+          LinearChartPoint(
             increasedAmount / maxAmount.toFloat(),
             (it.date - startDate) / (endDate - startDate).toFloat()
           )
         }
-      lines.add(DynamicChartLine(cat, points))
+      lines.add(LinearChartLine(cat, points))
     }
   }
 }
 
 @Parcelize
-data class DynamicChartItem(
+data class LinearChartItem(
   val amount: Int,
   val date: Long
 ) : Parcelable
 
-internal class DynamicChartLine(
+internal class LinearChartLine(
   val name: String,
-  val points: List<DynamicChartPoint>
+  val points: List<LinearChartPoint>
 )
 
-internal data class DynamicChartPoint(
+internal data class LinearChartPoint(
   val amountPosition: Float,
   val datePosition: Float
 )

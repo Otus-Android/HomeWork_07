@@ -11,7 +11,7 @@ import otus.homework.customview.ui.*
 class MainActivity : AppCompatActivity() {
 
   private val chartView: PieChartView by lazy { findViewById(R.id.chart_view) }
-  private val linesView: DynamicChartView by lazy { findViewById(R.id.lines_view) }
+  private val linesView: LinearChartView by lazy { findViewById(R.id.lines_view) }
 
   private var items = emptyList<DomainDto>()
 
@@ -66,10 +66,10 @@ class MainActivity : AppCompatActivity() {
   private fun showLines() {
     val categories = items.map { it.category }.distinct()
     val lines = categories.map { cat ->
-      val list = items.filter { it.category == cat }.map { DynamicChartItem(it.amount, it.time) }
+      val list = items.filter { it.category == cat }.map { LinearChartItem(it.amount, it.time) }
       cat to list
     }
-    val model = DynamicChartModel(lines)
+    val model = LinearChartModel(lines)
     linesView.updateData(model)
   }
 }
