@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
     val categories = items.map { it.category }
     val lines = categories.map { cat ->
       val list = items.filter { it.category == cat }.map { DynamicChartItem(it.amount, it.time) }
-      DynamicChartLine(cat, list)
+      cat to list
     }
     val model = DynamicChartModel(lines)
     linesView.updateData(model)

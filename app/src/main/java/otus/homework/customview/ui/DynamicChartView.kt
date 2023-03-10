@@ -31,7 +31,7 @@ class DynamicChartView @JvmOverloads constructor(
 
   override fun onDraw(canvas: Canvas) {
     super.onDraw(canvas)
-    model.lines.forEachIndexed { index, line ->
+    model.pairs.forEachIndexed { index, pair ->
       paint.color = COLORS[index % COLORS.size]
       canvas.drawLine(0f, 100f * index, measuredWidth.toFloat(), measuredHeight.toFloat() - 100f * index, paint)
     }
