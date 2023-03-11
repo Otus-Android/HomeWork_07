@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="min_pie_chart_size">100dp</dimen>
+    <dimen name="text_spacing">8dp</dimen>
+    <dimen name="segment_text_border_inset">3dp</dimen>
+    <dimen name="segment_text_border_width">1dp</dimen>
+    <dimen name="segment_text_border_radius">6dp</dimen>
+
+    <dimen name="segment_text_size">12sp</dimen>
+    <dimen name="segment_text_expanded_size">16sp</dimen>
+    <dimen name="total_text_size">24sp</dimen>
+</resources>
