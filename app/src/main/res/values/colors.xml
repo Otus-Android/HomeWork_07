@@ -7,4 +7,13 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="white50">#80ffffff</color>
+
+    <color name="chartLineColorGray1">#4D565D</color>
+    <color name="chartLineColorGray2">#383D42</color>
+    <color name="chartLineColorGreen">#5ACE00</color>
+    <color name="chartLineColorBlue">#23C9ED</color>
+    <color name="chartLineColorBlueForGradient">#FF0490D8</color>
+    <color name="chartLineColorBlueForGradientAlpha">#000490D8</color>
 </resources>
