@@ -4,5 +4,5 @@ data class PurchaseDto(
     val name: String,
     val amount: Int,
     val category: String,
-    val time: Int
+    val time: Long
 )

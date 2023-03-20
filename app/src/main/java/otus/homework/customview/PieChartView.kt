@@ -14,14 +14,18 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.view.doOnLayout
 import java.util.Random
 import kotlin.math.PI
-import kotlin.math.acos
 import kotlin.math.atan
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 private const val TOTAL_DEGREES = 360f
+private const val MIN_SIZE = 260
+private const val SECTOR_WIDTH = 48
+private const val CONTENT_PADDING = 8
+
 class PieChartView : View {
     constructor(context: Context) : super(context)
 
@@ -31,18 +35,20 @@ class PieChartView : View {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int
     ) : super(context, attrs, defStyleAttr)
 
+    private val Int.dp: Float
+        get() = this * Resources.getSystem().displayMetrics.density
+
     private var onCategoryClickListener: ((categoryName: String) -> Unit)? = null
     private var totalAmount: Int = 0
+    private var chartSide: Float = 0f
     private val categoriesToDraw = mutableMapOf<String, CategoryVisualisationModel>()
     private val data = mutableMapOf<String, Int>()
-
-    private val totalAmountTextValuePaint: Paint = Paint().apply {
-        textSize = 20.dp
+    private val totalAmountTextPaint: Paint = Paint().apply {
+        textSize = 21.dp
         color = Color.DKGRAY
         textAlign = Paint.Align.CENTER
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
-
     private val generalGestureDetector = GestureDetector(
         context, object : GestureDetector.SimpleOnGestureListener() {
             override fun onDown(e: MotionEvent): Boolean = true
@@ -53,8 +59,8 @@ class PieChartView : View {
                         touchY = event.y,
                         chartCategoryStartAngle = it.value.startAngle,
                         chartCategoryEndAngle = it.value.endAngle,
-                        chartCategoryInnerRadius = 82.dp,
-                        chartCategoryOuterRadius = 130.dp
+                        chartCategoryInnerRadius = chartSide / 2f - CONTENT_PADDING.dp - SECTOR_WIDTH.dp,
+                        chartCategoryOuterRadius = chartSide / 2f - CONTENT_PADDING.dp
                     )
                     if (isChartCategoryUnderTouch) {
                         onCategoryClickListener?.invoke(it.key)
@@ -66,43 +72,50 @@ class PieChartView : View {
         }
     )
 
-
-    val Int.dp: Float
-        get() = this * Resources.getSystem().displayMetrics.density
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
-        val minContentWidth = 260.dp.toInt()
-        val minContentHeight = 260.dp.toInt()
 
         // check all available width/height combinations
         when {
             widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.AT_MOST -> {
                 setMeasuredDimension(
-                    minContentWidth,
-                    minContentHeight
+                    MIN_SIZE.dp.toInt(),
+                    MIN_SIZE.dp.toInt()
                 )
+                chartSide = MIN_SIZE.dp
             }
             widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.AT_MOST -> {
                 setMeasuredDimension(
-                    widthSize.coerceAtLeast(minContentWidth),
-                    minContentHeight
+                    widthSize.coerceAtLeast(MIN_SIZE.dp.toInt()),
+                    MIN_SIZE.dp.toInt()
                 )
+                chartSide = widthSize
+                    .toFloat()
+                    .coerceAtLeast(MIN_SIZE.dp)
+                    .coerceAtMost(heightSize.toFloat())
             }
             widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.EXACTLY -> {
                 setMeasuredDimension(
-                    minContentWidth,
-                    heightSize.coerceAtLeast(minContentHeight)
+                    MIN_SIZE.dp.toInt(),
+                    heightSize.coerceAtLeast(MIN_SIZE.dp.toInt())
                 )
+                chartSide = widthSize
+                    .toFloat()
+                    .coerceAtLeast(MIN_SIZE.dp)
+                    .coerceAtMost(heightSize.toFloat())
             }
             widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY -> {
                 setMeasuredDimension(
-                    widthSize.coerceAtLeast(minContentWidth),
-                    heightSize.coerceAtLeast(minContentHeight)
+                    widthSize.coerceAtLeast(MIN_SIZE.dp.toInt()),
+                    heightSize.coerceAtLeast(MIN_SIZE.dp.toInt())
                 )
+                chartSide = widthSize
+                    .toFloat()
+                    .coerceAtLeast(MIN_SIZE.dp)
+                    .coerceAtMost(heightSize.toFloat())
             }
             else -> {
                 // nothing to do
@@ -111,16 +124,14 @@ class PieChartView : View {
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawColor(Color.LTGRAY)
         this.categoriesToDraw.forEach {
             canvas.drawPath(it.value.path, it.value.paint)
         }
-
         canvas.drawText(
             "$totalAmount $",
             width / 2f,
-            height / 2f,
-            totalAmountTextValuePaint
+            height / 2f + 7.dp,
+            totalAmountTextPaint
         )
     }
 
@@ -143,8 +154,10 @@ class PieChartView : View {
     fun updateData(data: Map<String, Int>) {
         this.data.putAll(data)
         totalAmount = data.map { it.value }.sum()
-        categoriesToDraw.populate(data)
-        invalidate()
+        doOnLayout {
+            categoriesToDraw.populate(data)
+            invalidate()
+        }
     }
 
     fun setOnCategoryClickListener(
@@ -164,7 +177,6 @@ class PieChartView : View {
         data.forEach {
             val category = CategoryVisualisationModel(
                 categoryAmount = it.value,
-                totalAmount = totalAmount,
                 startAngle = startAngle
             )
             startAngle = category.endAngle
@@ -204,22 +216,27 @@ class PieChartView : View {
     // represents the category visualisation data to pass into onDraw()
     private inner class CategoryVisualisationModel(
         categoryAmount: Int,
-        totalAmount: Int,
         val startAngle: Float
     ) {
         val path: Path = Path()
         val paint: Paint = Paint()
         val endAngle: Float
         init {
-            val rectF = RectF(24.dp, 24.dp, 236.dp, 236.dp)
+            val verticalCenter = height / 2
+            val horizontalCenter = width / 2
+            val left = horizontalCenter - chartSide / 2 + CONTENT_PADDING.dp + SECTOR_WIDTH.dp / 2f
+            val top = verticalCenter - chartSide / 2 + CONTENT_PADDING.dp + SECTOR_WIDTH.dp / 2f
+            val right = horizontalCenter + chartSide / 2 - CONTENT_PADDING.dp - SECTOR_WIDTH.dp / 2f
+            val bottom = verticalCenter + chartSide / 2 - CONTENT_PADDING.dp - SECTOR_WIDTH.dp / 2f
+            val chartBaseRect = RectF(left, top, right, bottom)
             val sweepAngel = TOTAL_DEGREES * categoryAmount / totalAmount
             path.apply {
-                addArc(rectF, startAngle, sweepAngel)
+                addArc(chartBaseRect, startAngle, sweepAngel)
             }
             paint.apply {
                 this.color = generateRandomColor()
                 this.style = Paint.Style.STROKE
-                this.strokeWidth = 48.dp
+                this.strokeWidth = SECTOR_WIDTH.dp
             }
             endAngle = startAngle + sweepAngel
         }
@@ -247,7 +264,6 @@ class PieChartView : View {
         }
         override fun writeToParcel(parcelOut: Parcel, flags: Int) {
             super.writeToParcel(parcelOut, flags)
-            savedData.isEmpty().toString().log()
             parcelOut.writeMap(savedData)
         }
 
