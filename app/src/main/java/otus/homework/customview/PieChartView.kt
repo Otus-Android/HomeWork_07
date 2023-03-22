@@ -18,11 +18,12 @@ import androidx.core.view.doOnLayout
 import java.util.Random
 import kotlin.math.PI
 import kotlin.math.atan
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 private const val TOTAL_DEGREES = 360f
-private const val MIN_SIZE = 260
+private const val MIN_SIZE = 240
 private const val SECTOR_WIDTH = 48
 private const val CONTENT_PADDING = 8
 
@@ -85,42 +86,33 @@ class PieChartView : View {
                     MIN_SIZE.dp.toInt(),
                     MIN_SIZE.dp.toInt()
                 )
-                chartSide = MIN_SIZE.dp
             }
             widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.AT_MOST -> {
                 setMeasuredDimension(
                     widthSize.coerceAtLeast(MIN_SIZE.dp.toInt()),
                     MIN_SIZE.dp.toInt()
                 )
-                chartSide = widthSize
-                    .toFloat()
-                    .coerceAtLeast(MIN_SIZE.dp)
-                    .coerceAtMost(heightSize.toFloat())
             }
             widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.EXACTLY -> {
                 setMeasuredDimension(
                     MIN_SIZE.dp.toInt(),
                     heightSize.coerceAtLeast(MIN_SIZE.dp.toInt())
                 )
-                chartSide = widthSize
-                    .toFloat()
-                    .coerceAtLeast(MIN_SIZE.dp)
-                    .coerceAtMost(heightSize.toFloat())
             }
             widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY -> {
                 setMeasuredDimension(
                     widthSize.coerceAtLeast(MIN_SIZE.dp.toInt()),
                     heightSize.coerceAtLeast(MIN_SIZE.dp.toInt())
                 )
-                chartSide = widthSize
-                    .toFloat()
-                    .coerceAtLeast(MIN_SIZE.dp)
-                    .coerceAtMost(heightSize.toFloat())
             }
             else -> {
                 // nothing to do
             }
         }
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        chartSide = min(width, height).toFloat()
     }
 
     override fun onDraw(canvas: Canvas) {

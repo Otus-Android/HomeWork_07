@@ -11,11 +11,14 @@ import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.view.doOnLayout
 
-private const val MIN_SIZE_DP = 300
+private const val MIN_WIDTH_DP = 380
+private const val MIN_HEIGHT_DP = 300
 private const val SIDES_RATIO = 1.7f
 private const val GRID_LINE_STEP_DP = 23
 private const val CHART_PADDING_DP = 32
@@ -30,6 +33,7 @@ class LineChartView : View {
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int
     ) : super(context, attrs, defStyleAttr)
+
 
     private val Int.dp: Float
         get() = this * Resources.getSystem().displayMetrics.density
@@ -60,17 +64,17 @@ class LineChartView : View {
         textAlign = Paint.Align.CENTER
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
-    private val scaleMarksPaint: Paint = Paint().apply {
+    private val axisMarksPaint: Paint = Paint().apply {
         textSize = 10.dp
         color = Color.DKGRAY
         textAlign = Paint.Align.CENTER
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
     }
-    private val scaleMarksBackgroundFillPaint: Paint = Paint().apply {
+    private val axisMarksBackgroundFillPaint: Paint = Paint().apply {
         color = Color.WHITE
         style = Paint.Style.FILL
     }
-    private val scaleMarksBackgroundStrokePaint: Paint = Paint().apply {
+    private val axisMarksBackgroundStrokePaint: Paint = Paint().apply {
         color = Color.GRAY
         style = Paint.Style.STROKE
     }
@@ -79,7 +83,8 @@ class LineChartView : View {
     private val pointPath: Path = Path()
     private val chartAreaRect = RectF()
     private val categoryNameRect = Rect()
-    private val scaleMarks: MutableList<ScaleMarkModel> = mutableListOf()
+    private val axisMarks: MutableList<AxisMark> = mutableListOf()
+    private val spendingByTimeData: MutableMap<String, Int> = mutableMapOf()
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthMode = MeasureSpec.getMode(widthMeasureSpec)
@@ -91,67 +96,75 @@ class LineChartView : View {
         when {
             widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.AT_MOST -> {
                 setMeasuredDimension(
-                    MIN_SIZE_DP.dp.toInt(),
-                    (MIN_SIZE_DP.dp / SIDES_RATIO).toInt()
+                    MIN_WIDTH_DP.dp.toInt(),
+                    MIN_HEIGHT_DP.dp.toInt()
                 )
             }
             widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.AT_MOST -> {
                 setMeasuredDimension(
-                    widthSize.coerceAtLeast(MIN_SIZE_DP.dp.toInt()),
-                    heightSize.coerceAtLeast((widthSize / SIDES_RATIO).toInt())
+                    widthSize.coerceAtLeast(MIN_WIDTH_DP.dp.toInt()),
+                    MIN_HEIGHT_DP.dp.toInt()
                 )
-                /*chartSide = widthSize
-                    .toFloat()
-                    .coerceAtLeast(MIN_SIZE.dp)
-                    .coerceAtMost(heightSize.toFloat())*/
             }
             widthMode == MeasureSpec.AT_MOST && heightMode == MeasureSpec.EXACTLY -> {
                 setMeasuredDimension(
-                    widthSize.coerceAtLeast(MIN_SIZE_DP.dp.toInt()),
-                    heightSize.coerceAtLeast((widthSize / SIDES_RATIO).toInt())
+                    MIN_WIDTH_DP.dp.toInt(),
+                    heightSize.coerceAtLeast(MIN_HEIGHT_DP.dp.toInt())
                 )
-                /*chartSide = widthSize
-                    .toFloat()
-                    .coerceAtLeast(MIN_SIZE.dp)
-                    .coerceAtMost(heightSize.toFloat())*/
             }
             widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY -> {
                 setMeasuredDimension(
-                    widthSize.coerceAtLeast(MIN_SIZE_DP.dp.toInt()),
-                    heightSize.coerceAtLeast((widthSize / SIDES_RATIO).toInt())
+                    widthSize.coerceAtLeast(MIN_WIDTH_DP.dp.toInt()),
+                    heightSize.coerceAtLeast(MIN_HEIGHT_DP.dp.toInt())
                 )
-                /*chartSide = widthSize
-                    .toFloat()
-                    .coerceAtLeast(MIN_SIZE.dp)
-                    .coerceAtMost(heightSize.toFloat())*/
             }
             else -> {
                 // nothing to do
             }
         }
     }
+    override fun onSaveInstanceState(): Parcelable {
+        return LineChartSavedState(super.onSaveInstanceState())
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable) {
+        if (state !is LineChartView.LineChartSavedState) {
+            return super.onRestoreInstanceState(state)
+        }
+        super.onRestoreInstanceState(state.superState)
+        setData(
+            categoryName = state.savedCategoryName,
+            spendingByTimeData = state.savedSpendingByTimeData
+        )
+    }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        // set bounds of the chart
         chartAreaRect.left = CHART_PADDING_DP.dp
         chartAreaRect.top = CHART_PADDING_DP.dp
         chartAreaRect.right = width - CHART_PADDING_DP.dp
         chartAreaRect.bottom = height - CHART_PADDING_DP.dp
     }
 
+    // onDraw() not contained any objects creating or a hard calculations.
+    // It only draws prepared data from the class properties only
     override fun onDraw(canvas: Canvas) {
-        //canvas.drawColor(Color.GRAY)
 
+        // draw horizontal grid lines
         var verticalOffset = chartAreaRect.bottom
-        var horizontalOffset = chartAreaRect.left
         while (verticalOffset > chartAreaRect.top) {
             canvas.drawLine(chartAreaRect.left, verticalOffset, chartAreaRect.right, verticalOffset, gridLinesPaint)
             verticalOffset -= GRID_LINE_STEP_DP.dp
         }
+
+        // draw vertical grid lines
+        var horizontalOffset = chartAreaRect.left
         while (horizontalOffset < chartAreaRect.right) {
             canvas.drawLine(horizontalOffset, chartAreaRect.top, horizontalOffset, chartAreaRect.bottom, gridLinesPaint)
             horizontalOffset += GRID_LINE_STEP_DP.dp
         }
 
+        // draw horizontal axis
         canvas.drawLine(
             chartAreaRect.left,
             chartAreaRect.bottom,
@@ -159,6 +172,8 @@ class LineChartView : View {
             chartAreaRect.bottom,
             scaleLinesPaint
         )
+
+        // draw vertical axis
         canvas.drawLine(
             chartAreaRect.left,
             chartAreaRect.bottom,
@@ -166,8 +181,14 @@ class LineChartView : View {
             chartAreaRect.top,
             scaleLinesPaint
         )
+
+        // draw the chart line
         canvas.drawPath(linePath, chartLinePaint)
+
+        // draw line-chart rounded markers
         canvas.drawPath(pointPath, chartPointPaint)
+
+        // draw the the category name
         canvas.drawText(
             categoryName,
             categoryNameRect.width() / 2f + CHART_PADDING_DP.dp,
@@ -175,52 +196,61 @@ class LineChartView : View {
             categoryNamePaint
         )
 
-        scaleMarks.forEachIndexed { index, value ->
-            if (index.isOdd()) {
-                scaleMarksPaint.getTextBounds(
-                    value.markText,
-                    0, value.markText.length,
-                    value.rect
-                )
-                val textWidth = value.rect.width() + 4.dp
-                val textHeight = value.rect.height() + 4.dp
-                val textBackgroundLeft = value.markTextXPos
-                val textBackgroundTop = value.markTextYPos - textHeight
-                val textBackgroundRight = value.markTextXPos + textWidth
-                val textBackgroundBottom = value.markTextYPos
-                canvas.drawRoundRect(
-                    textBackgroundLeft,
-                    textBackgroundTop,
-                    textBackgroundRight,
-                    textBackgroundBottom,
-                    SCALE_MARKS_CORNER_RADIUS_DP.dp,
-                    SCALE_MARKS_CORNER_RADIUS_DP.dp,
-                    scaleMarksBackgroundFillPaint
-                )
-                canvas.drawRoundRect(
-                    textBackgroundLeft,
-                    textBackgroundTop,
-                    textBackgroundRight,
-                    textBackgroundBottom,
-                    SCALE_MARKS_CORNER_RADIUS_DP.dp,
-                    SCALE_MARKS_CORNER_RADIUS_DP.dp,
-                    scaleMarksBackgroundStrokePaint
-                )
-                canvas.drawText(
-                    value.markText,
-                    value.markTextXPos + textWidth / 2,
-                    value.markTextYPos - 3.dp,
-                    scaleMarksPaint
-                )
-            } else {
-                canvas.drawText(
-                    value.markText,
-                    value.markTextXPos,
-                    value.markTextYPos,
-                    scaleMarksPaint
-                )
-            }
+        // draw whether X and Y axis marks
+        // depending on class type
+        axisMarks.forEach {
+            when(it) {
+                is AxisMark.AxisXMark -> {
+                    canvas.drawText(
+                        it.markText,
+                        it.markTextXPos,
+                        it.markTextYPos,
+                        axisMarksPaint
+                    )
+                }
+                is AxisMark.AxisYMark -> {
+                    axisMarksPaint.getTextBounds(
+                        it.markText,
+                        0, it.markText.length,
+                        it.rect
+                    )
+                    val textWidth = it.rect.width() + 4.dp
+                    val textHeight = it.rect.height() + 4.dp
+                    val textBackgroundLeft = it.markTextXPos
+                    val textBackgroundTop = it.markTextYPos - textHeight
+                    val textBackgroundRight = it.markTextXPos + textWidth
+                    val textBackgroundBottom = it.markTextYPos
 
+                    // draw marks background fill
+                    canvas.drawRoundRect(
+                        textBackgroundLeft,
+                        textBackgroundTop,
+                        textBackgroundRight,
+                        textBackgroundBottom,
+                        SCALE_MARKS_CORNER_RADIUS_DP.dp,
+                        SCALE_MARKS_CORNER_RADIUS_DP.dp,
+                        axisMarksBackgroundFillPaint
+                    )
+
+                    // draw marks background stroke
+                    canvas.drawRoundRect(
+                        textBackgroundLeft,
+                        textBackgroundTop,
+                        textBackgroundRight,
+                        textBackgroundBottom,
+                        SCALE_MARKS_CORNER_RADIUS_DP.dp,
+                        SCALE_MARKS_CORNER_RADIUS_DP.dp,
+                        axisMarksBackgroundStrokePaint
+                    )
+                    // draw marks values
+                    canvas.drawText(
+                        it.markText,
+                        it.markTextXPos + textWidth / 2,
+                        it.markTextYPos - 3.dp,
+                        axisMarksPaint
+                    )
+                }
+            }
         }
     }
 
@@ -229,56 +259,101 @@ class LineChartView : View {
         spendingByTimeData: Map<String, Int>
     ) {
         this.categoryName = categoryName
-
+        this.spendingByTimeData.putAll(spendingByTimeData)
         doOnLayout {
-            categoryNamePaint.getTextBounds(categoryName, 0, categoryName.length, categoryNameRect)
-            val maxAmount = spendingByTimeData.maxBy { it.value }.value
-            val stepVertical = chartAreaRect.height() / maxAmount
-            val stepHorizontal = chartAreaRect.width() / spendingByTimeData.size
-            var initHorizontalPos = chartAreaRect.left
-
-            linePath.apply {
-                spendingByTimeData.forEach {
-                    val x = initHorizontalPos
-                    val y = chartAreaRect.bottom - stepVertical * it.value
-                    if (x == chartAreaRect.left) moveTo(x, y) else lineTo(x, y)
-                    initHorizontalPos += stepHorizontal
-                    scaleMarks.add(
-                        ScaleMarkModel(
-                            markText = it.key,
-                            markTextXPos = x,
-                            markTextYPos = chartAreaRect.bottom + CHART_PADDING_DP.dp / 2
-                        )
-                    )
-                    scaleMarks.add(
-                        ScaleMarkModel(
-                            markText = "${it.value} $",
-                            markTextXPos = x,
-                            markTextYPos = y - 10.dp
-                        )
-                    )
-                    pointPath.apply {
-                        addOval(
-                            x - CHART_POINT_RADIUS_DP.dp,
-                            y - CHART_POINT_RADIUS_DP.dp,
-                            x + CHART_POINT_RADIUS_DP.dp,
-                            y + CHART_POINT_RADIUS_DP.dp,
-                            Path.Direction.CW
-                        )
-                    }
-                }
-            }
+            prepare()
             invalidate()
         }
     }
-    private fun Int.isOdd(): Boolean {
-        return this % 2 != 0
-    }
-    private inner class ScaleMarkModel(
-        val markText: String,
-        val markTextXPos: Float,
-        val markTextYPos: Float,
-        val rect: Rect = Rect()
-    )
 
+    //populates path data and markers coordinates
+    private fun prepare() {
+        categoryNamePaint.getTextBounds(categoryName, 0, categoryName.length, categoryNameRect)
+        val maxAmount = spendingByTimeData.maxBy { it.value }.value
+        val stepVertical = chartAreaRect.height() / maxAmount
+        val stepHorizontal = chartAreaRect.width() / spendingByTimeData.size
+        var initHorizontalPos = chartAreaRect.left
+        linePath.apply {
+            spendingByTimeData.forEach {
+                val x = initHorizontalPos
+                val y = chartAreaRect.bottom - stepVertical * it.value
+                if (x == chartAreaRect.left) moveTo(x, y) else lineTo(x, y)
+                initHorizontalPos += stepHorizontal
+                axisMarks.add(
+                    AxisMark.AxisXMark(
+                        markText = it.key,
+                        markTextXPos = x,
+                        markTextYPos = chartAreaRect.bottom + CHART_PADDING_DP.dp / 2
+                    )
+                )
+                axisMarks.add(
+                    AxisMark.AxisYMark(
+                        markText = "${it.value} $",
+                        markTextXPos = x + 4.dp,
+                        markTextYPos = y - 10.dp
+                    )
+                )
+                pointPath.apply {
+                    addOval(
+                        x - CHART_POINT_RADIUS_DP.dp,
+                        y - CHART_POINT_RADIUS_DP.dp,
+                        x + CHART_POINT_RADIUS_DP.dp,
+                        y + CHART_POINT_RADIUS_DP.dp,
+                        Path.Direction.CW
+                    )
+                }
+            }
+        }
+    }
+
+    // marker sealed interface
+    private sealed interface AxisMark {
+
+        // represent X marks
+        data class AxisXMark(
+            val markText: String,
+            val markTextXPos: Float,
+            val markTextYPos: Float,
+            val rect: Rect = Rect()
+        ) : AxisMark
+
+        // represent Y marks
+        data class AxisYMark(
+            val markText: String,
+            val markTextXPos: Float,
+            val markTextYPos: Float,
+            val rect: Rect = Rect()
+        ) : AxisMark
+    }
+
+    private inner class LineChartSavedState : BaseSavedState {
+
+        val savedSpendingByTimeData = mutableMapOf<String, Int>()
+        var savedCategoryName = categoryName
+
+        constructor(source: Parcelable?) : super(source) {
+            savedSpendingByTimeData.putAll(spendingByTimeData)
+        }
+        private constructor(parcelIn: Parcel) : super(parcelIn) {
+            parcelIn.readMap(savedSpendingByTimeData, ClassLoader.getSystemClassLoader())
+            savedCategoryName = parcelIn.readString().toString()
+        }
+        override fun writeToParcel(parcelOut: Parcel, flags: Int) {
+            super.writeToParcel(parcelOut, flags)
+            parcelOut.writeMap(savedSpendingByTimeData)
+            parcelOut.writeString(savedCategoryName)
+        }
+
+        @JvmField
+        val CREATOR: Parcelable.Creator<LineChartSavedState?> =
+            object : Parcelable.Creator<LineChartSavedState?> {
+                override fun createFromParcel(parcelIn: Parcel): LineChartSavedState {
+                    return LineChartSavedState(parcelIn)
+                }
+
+                override fun newArray(size: Int): Array<LineChartSavedState?> {
+                    return arrayOfNulls(size)
+                }
+            }
+    }
 }

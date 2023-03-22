@@ -1,4 +1,6 @@
 package otus.homework.customview
+
+// pojo from json
 data class PurchaseDto(
     val id: Int,
     val name: String,
