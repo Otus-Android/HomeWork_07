@@ -2,33 +2,33 @@ package otus.homework.customview
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.google.gson.Gson
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import otus.homework.customview.custom_views.PieChart
-import otus.homework.customview.model.Payload
-import java.nio.charset.Charset
+import otus.homework.customview.extensions.getPayloadsFromJson
 
 class MainActivity : AppCompatActivity() {
+
+    private val pieChartView by lazy(LazyThreadSafetyMode.NONE) {
+        findViewById<PieChart>(R.id.pie_chart)
+    }
+
+    private val floatingButton by lazy(LazyThreadSafetyMode.NONE) {
+        findViewById<FloatingActionButton>(R.id.floating_button)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val payloads = getPayloadsFromJson()
+        initPieChart()
 
-        findViewById<PieChart>(R.id.pie_chart).setPayloadsData(payloads)
+        floatingButton.setOnClickListener {
+            startActivity(SecondActivity.getNewIntent(this))
+        }
     }
 
-    private fun getPayloadsFromJson(): List<Payload> {
-        return try {
-            val jsonString = resources.openRawResource(R.raw.payload).use {
-                val buffer = ByteArray(it.available())
-                it.read(buffer)
-                it.close()
-                String(buffer, Charset.forName("UTF-8"))
-            }
-            Gson().fromJson(jsonString, Array<Payload>::class.java).asList()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return emptyList()
-        }
+    private fun initPieChart() {
+        val payloads = getPayloadsFromJson(R.raw.payload)
+        pieChartView.setPayloadsData(payloads)
     }
 }

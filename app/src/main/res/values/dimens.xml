@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="default_padding">16dp</dimen>
+
+    // Pie Chart
     <dimen name="min_pie_chart_size">100dp</dimen>
     <dimen name="text_spacing">8dp</dimen>
     <dimen name="segment_text_border_inset">3dp</dimen>
@@ -9,4 +12,12 @@
     <dimen name="segment_text_size">12sp</dimen>
     <dimen name="segment_text_expanded_size">16sp</dimen>
     <dimen name="total_text_size">24sp</dimen>
+
+    // Line Chart
+    <dimen name="chart_line_width">3dp</dimen>
+    <dimen name="grid_line_width">2dp</dimen>
+    <dimen name="chart_inset">12dp</dimen>
+    <dimen name="point_radius">4dp</dimen>
+
+    <dimen name="axis_text_size">12sp</dimen>
 </resources>

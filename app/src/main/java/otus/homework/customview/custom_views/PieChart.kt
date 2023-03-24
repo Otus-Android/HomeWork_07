@@ -819,7 +819,7 @@ class PieChart @JvmOverloads constructor(
     }
 
     // ========================== SAVED_RESTORE_STATE ==============================
-    override fun onSaveInstanceState(): Parcelable? {
+    override fun onSaveInstanceState(): Parcelable {
         return SavedState(super.onSaveInstanceState())
     }
 

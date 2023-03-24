@@ -2,4 +2,6 @@
     <string name="app_name">Custom View</string>
     <string name="value_with_percent">%s%%</string>
     <string name="total_x">Total:</string>
+
+    <string name="next">Далее</string>
 </resources>
