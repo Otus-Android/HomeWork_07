@@ -24,15 +24,20 @@ fun Context.getExpensesFromRawFile(): List<Outlay> {
         )
     }
 }
-fun getPieChartColors(): Array<Int> {
+fun Context.getPieChartColors(): Array<Int> {
     return arrayOf(
-        Color.BLACK,
-        Color.WHITE,
-        Color.BLUE,
-        Color.GREEN,
-        Color.RED,
-        Color.YELLOW,
-        Color.GRAY,
-        Color.DKGRAY,
+        getColor(R.color.purple_200),
+        getColor(R.color.purple_500),
+        getColor(R.color.purple_700),
+        getColor(R.color.teal_200),
+        getColor(R.color.teal_700),
+        getColor(R.color.black),
+        getColor(R.color.white),
+        getColor(R.color.orange),
+        getColor(R.color.red),
+        getColor(R.color.green),
+        getColor(R.color.purple_200),
     )
 }
+fun Int.dp(context: Context) = context.resources.displayMetrics.density * this
+fun Float.dp(context: Context) = context.resources.displayMetrics.density * this
