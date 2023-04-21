@@ -1,4 +1,4 @@
-package otus.homework.customview.piechart
+package otus.homework.customview.view.piechart
 
 import android.graphics.PointF
 import android.os.Parcelable

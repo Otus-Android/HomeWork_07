@@ -1,4 +1,4 @@
-package otus.homework.customview.piechart
+package otus.homework.customview.view.piechart
 
 import android.content.Context
 import android.graphics.Canvas
@@ -12,6 +12,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import otus.homework.customview.Expense
 import otus.homework.customview.R
+import otus.homework.customview.view.PaintGenerator.getPaint
 import java.lang.Integer.max
 import java.lang.Integer.min
 import kotlin.math.atan2
@@ -62,12 +63,12 @@ class PieChartView @JvmOverloads constructor(
         val heightSize = calculateSize(heightMeasureSpec)
 
         size = min(widthSize, heightSize)
-
-        oval.top = arcWidth / 2
-        oval.bottom = size.toFloat() - arcWidth / 2
-        oval.left = arcWidth / 2
-        oval.right = size.toFloat() - arcWidth / 2
-
+        oval.apply {
+            top = arcWidth / 2
+            bottom = size.toFloat() - arcWidth / 2
+            left = arcWidth / 2
+            right = size.toFloat() - arcWidth / 2
+        }
         setMeasuredDimension(size, size)
     }
 
@@ -162,31 +163,6 @@ class PieChartView @JvmOverloads constructor(
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> callback()
         }
         return this
-    }
-
-    private val paintList =
-        listOf(
-            ContextCompat.getColor(context, R.color.pie_chart_color_0),
-            ContextCompat.getColor(context, R.color.pie_chart_color_1),
-            ContextCompat.getColor(context, R.color.pie_chart_color_2),
-            ContextCompat.getColor(context, R.color.pie_chart_color_3),
-            ContextCompat.getColor(context, R.color.pie_chart_color_4),
-            ContextCompat.getColor(context, R.color.pie_chart_color_5),
-            ContextCompat.getColor(context, R.color.pie_chart_color_6),
-            ContextCompat.getColor(context, R.color.pie_chart_color_7),
-            ContextCompat.getColor(context, R.color.pie_chart_color_8),
-            ContextCompat.getColor(context, R.color.pie_chart_color_9)
-        ).map { paintColor ->
-            Paint().apply {
-                color = paintColor
-                style = Paint.Style.STROKE
-                strokeWidth = context.resources
-                    .getDimensionPixelSize(R.dimen.pie_chart_stroke_width).toFloat()
-            }
-        }
-
-    private fun getPaint(index: Int): Paint {
-        return paintList[index % paintList.size]
     }
 
     companion object {
