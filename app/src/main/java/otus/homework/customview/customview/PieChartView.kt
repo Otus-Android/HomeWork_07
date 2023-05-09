@@ -2,16 +2,13 @@ package otus.homework.customview.customview
 
 import android.content.Context
 import android.graphics.*
-import android.graphics.Paint.ANTI_ALIAS_FLAG
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import otus.homework.customview.Outlay
-import otus.homework.customview.R
-import otus.homework.customview.dp
-import otus.homework.customview.getPieChartColors
-import kotlin.math.*
+import otus.homework.customview.*
+import otus.homework.customview.model.ExpensesByCategory
+import otus.homework.customview.model.ExpensesByCategoryState
 
 class PieChartView @JvmOverloads constructor(
     context: Context,
@@ -20,7 +17,7 @@ class PieChartView @JvmOverloads constructor(
     defStyleRes: Int = 0
 ) : View(context, attrs, defStyleAttr, defStyleRes)  {
     private val sectionColors = context.getPieChartColors()
-    private val items = mutableListOf<Outlay>()
+    private var items = mutableListOf<ExpensesByCategory>()
     private var pathsSections = listOf<Path>()
     private var amountItems = items.size
 
@@ -34,13 +31,14 @@ class PieChartView @JvmOverloads constructor(
     private var horizontalOffset = 0f
     private var verticalOffset = 0f
 
-    var touchListener : ((Outlay) -> Unit)? = null
+    var touchListener : ((ExpensesByCategory) -> Unit)? = null
 
     private val paint = Paint().apply {
         style = Paint.Style.FILL
         isAntiAlias = true
     }
-    fun insertItems(newItems: List<Outlay>){
+
+    fun insertItems(newItems: Set<ExpensesByCategory>){
         items.clear()
         amountItems = newItems.sumOf { it.amount }
         items.addAll(newItems)
@@ -116,7 +114,17 @@ class PieChartView @JvmOverloads constructor(
         }
     }
 
-    override fun onSaveInstanceState(): Parcelable? {
-        return super.onSaveInstanceState()
+    override fun onSaveInstanceState(): Parcelable {
+        return ExpensesByCategoryState(super.onSaveInstanceState()).apply {
+            this.itemsList = items
+        }
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is ExpensesByCategoryState) {
+            items = state.itemsList.toMutableList()
+            return
+        }
+        super.onRestoreInstanceState(state)
     }
 }
