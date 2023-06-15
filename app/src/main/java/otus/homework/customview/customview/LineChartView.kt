@@ -119,7 +119,6 @@ class LineChartView@JvmOverloads constructor(
     override fun onRestoreInstanceState(state: Parcelable?) {
         if (state is ExpensesState) {
             mDataPoints = state.points
-            return
         }
         super.onRestoreInstanceState(state)
     }

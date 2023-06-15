@@ -13,7 +13,6 @@ import java.text.SimpleDateFormat
 class MainActivity : AppCompatActivity() {
 
     private val expenses by lazy { ExpensesRepository(this).getExpenses() }
-    private val dateFormat = SimpleDateFormat("dd.MM.yyyy")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,7 +21,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.total).text = getString(R.string.total, expenses.sumOf { it.amount }.toString())
         findViewById<PieChartView>(R.id.pie).touchListener = { exp ->
             findViewById<LineChartView>(R.id.lineChart).run {
-                visibility = View.VISIBLE
                 setData(expenses.getPointsLineChart(exp.category))
                 postInvalidate()
             }
@@ -38,10 +36,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun List<Expenses>.getPointsLineChart(category: String): List<Float>{
-
-        val k = filter { it.category == category }
-        val g = k.map { it.amount.toFloat() / 100 }
-        println()
-        return g//listOf(8f,6f,1f,9f,5f,10f,3f,4f,7f,2f)
+        return filter { it.category == category }.map { it.amount.toFloat() / 100 }
     }
 }

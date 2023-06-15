@@ -123,7 +123,6 @@ class PieChartView @JvmOverloads constructor(
     override fun onRestoreInstanceState(state: Parcelable?) {
         if (state is ExpensesByCategoryState) {
             items = state.itemsList.toMutableList()
-            return
         }
         super.onRestoreInstanceState(state)
     }
