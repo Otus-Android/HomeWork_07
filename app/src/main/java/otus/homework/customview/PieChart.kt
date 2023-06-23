@@ -11,6 +11,7 @@ import android.util.TypedValue
 import android.view.View
 import androidx.annotation.AttrRes
 import kotlin.math.PI
+import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -18,17 +19,16 @@ import kotlin.math.sin
 
 private const val TAG = "PieChart"
 
-//private const val BASE_CONTENT_SIZE_DP = 200F
 private const val CHART_THICKNESS_DP = 60f
-private const val CHART_DIAMETER = 200F
+private const val CHART_DIAMETER = 100F
 
 class PieChart @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr: Int = 0
 ): View(context, attrs, defStyleAttr) {
 
-    private var baseContentSizePx: Int = TypedValue.applyDimension(
+    private var minChartSizePx: Int = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP,
-        CHART_DIAMETER + CHART_THICKNESS_DP / 2,
+        CHART_DIAMETER + CHART_THICKNESS_DP,
         resources.displayMetrics
     ).roundToInt()
 
@@ -39,6 +39,9 @@ class PieChart @JvmOverloads constructor(
     )
 
     private var halfThicknessPx = thicknessPx / 2
+
+
+    private var legendSizePx: Int = 0
 
     private var diameterPx = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP,
@@ -87,6 +90,7 @@ class PieChart @JvmOverloads constructor(
     private var selectListener: ((category: String) -> Unit)? = null
 
     private val chartRect = RectF(halfThicknessPx, halfThicknessPx, diameterPx + halfThicknessPx, diameterPx + halfThicknessPx)
+    private var chartSizePx = minChartSizePx
 
     private var legendLineHeight: Float
     private var percentHalfWidth: Float
@@ -100,12 +104,6 @@ class PieChart @JvmOverloads constructor(
             this.recycle()
         }
 
-        baseContentSizePx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            CHART_DIAMETER + CHART_THICKNESS_DP,
-            resources.displayMetrics
-        ).roundToInt()
-
         val fontMetrics = textPaint.fontMetrics
         legendLineHeight = fontMetrics.descent - fontMetrics.ascent
         percentHalfWidth = textPaint.measureText("100%") / 2
@@ -114,7 +112,6 @@ class PieChart @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-//        canvas.drawColor(Color.GREEN)
 
         var fullAngle = 0f
         for (i in 0..sectors.lastIndex) {
@@ -129,9 +126,6 @@ class PieChart @JvmOverloads constructor(
             textPaint.color = color
             canvas.drawText(category, 0f, chartRect.bottom + halfThicknessPx + (i + 1) * legendLineHeight, textPaint)
         }
-
-        canvas.drawLine(chartRect.left, chartRect.centerY(), chartRect.right, chartRect.centerY(), Paint().apply { color = Color.BLACK })
-
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -142,20 +136,31 @@ class PieChart @JvmOverloads constructor(
         val hMode = MeasureSpec.getMode(heightMeasureSpec)
         val hSize = MeasureSpec.getSize(heightMeasureSpec)
 
+        val width: Int
+        val height: Int
+        if (wMode == MeasureSpec.EXACTLY && hSize - legendSizePx > wSize) {
+            chartRect.right = wSize - halfThicknessPx
+            chartRect.bottom = wSize - halfThicknessPx
+            chartSizePx = wSize
+            width = wSize
+            height = View.resolveSize(legendSizePx + wSize, heightMeasureSpec)
+        } else {
+            width = View.resolveSize(minChartSizePx, widthMeasureSpec)
+            height = View.resolveSize(minChartSizePx + legendSizePx, heightMeasureSpec)
+            chartSizePx = minChartSizePx
+            chartRect.right = diameterPx + halfThicknessPx
+            chartRect.bottom = diameterPx + halfThicknessPx
+        }
 
-        val width = calculateDimension(wMode, wSize)
-        val height = calculateDimension(hMode, hSize)
-
-//        val width = View.resolveSize(baseContentSizePx, widthMeasureSpec)
-//        val height = View.resolveSize(baseContentSizePx, heightMeasureSpec)
-
-        setMeasuredDimension(width, height + (legendLineHeight * sectors.size).roundToInt())
+        setMeasuredDimension(width, height)
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
 
         Log.d(TAG, "called onSizeChanged()")
+
+        calculatePercentAngles()
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -167,8 +172,8 @@ class PieChart @JvmOverloads constructor(
     private fun calculateDimension(mode: Int, size: Int): Int {
         return when (mode) {
             MeasureSpec.EXACTLY -> size
-            MeasureSpec.AT_MOST -> min(baseContentSizePx, size)
-            MeasureSpec.UNSPECIFIED -> baseContentSizePx
+            MeasureSpec.AT_MOST -> min(minChartSizePx, size)
+            MeasureSpec.UNSPECIFIED -> minChartSizePx
             else -> size
         }
     }
@@ -199,21 +204,33 @@ class PieChart @JvmOverloads constructor(
             .sortedByDescending { it.sum }
             .take(10)
 
+        calculatePercentAngles()
+
+        legendSizePx = ceil(legendLineHeight * result.size).toInt()
+
+        val isSizeChange = sectors.size != result.size
+        sectors = result
+
+        if (isSizeChange) {
+            requestLayout()
+        } else {
+            invalidate()
+        }
+
+//        val result = mutableListOf<Pair<Float, String>>()
+//        for ((category, charge) in categoryies.entries) {
+//            result
+//        }
+    }
+
+    private fun calculatePercentAngles() {
         var fullAngle = 0.0
-        for (sector in result) {
+        for (sector in sectors) {
             val textHalfWidth = textPaint.measureText(sector.percentText) / 2
             val radian = (fullAngle + sector.angle / 2) / 180.0 * PI
             sector.percentX = (chartRect.centerX() + cos(radian) * (chartRect.width() / 2) - textHalfWidth).toFloat()
             sector.percentY = (chartRect.centerY() + sin(radian) * (chartRect.height() / 2) + percentHalfHeight).toFloat()
             fullAngle += sector.angle
         }
-
-        sectors = result
-        invalidate()
-
-//        val result = mutableListOf<Pair<Float, String>>()
-//        for ((category, charge) in categoryies.entries) {
-//            result
-//        }
     }
 }
