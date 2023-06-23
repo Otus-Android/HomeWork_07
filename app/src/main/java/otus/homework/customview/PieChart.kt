@@ -4,20 +4,29 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Point
+import android.graphics.PointF
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.AttrRes
+import androidx.core.view.GestureDetectorCompat
 import kotlin.math.PI
+import kotlin.math.atan
+import kotlin.math.atan2
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 private const val TAG = "PieChart"
+private const val DEBUG_TAG = TAG
 
 private const val CHART_THICKNESS_DP = 60f
 private const val CHART_DIAMETER = 100F
@@ -25,6 +34,8 @@ private const val CHART_DIAMETER = 100F
 class PieChart @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr: Int = 0
 ): View(context, attrs, defStyleAttr) {
+
+    private var detector: GestureDetectorCompat
 
     private var minChartSizePx: Int = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP,
@@ -40,8 +51,9 @@ class PieChart @JvmOverloads constructor(
 
     private var halfThicknessPx = thicknessPx / 2
 
-
     private var legendSizePx: Int = 0
+
+    private var gesturePoint = PointF(-1f, -1f)
 
     private var diameterPx = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP,
@@ -87,14 +99,56 @@ class PieChart @JvmOverloads constructor(
 
     private var sectors = listOf<Sector>()
 
-    private var selectListener: ((category: String) -> Unit)? = null
+    private var selectListener: OnSelectListener? = null
 
-    private val chartRect = RectF(halfThicknessPx, halfThicknessPx, diameterPx + halfThicknessPx, diameterPx + halfThicknessPx)
+    private val chartRect = RectF(halfThicknessPx, halfThicknessPx, diameterPx - thicknessPx, diameterPx - thicknessPx)
     private var chartSizePx = minChartSizePx
 
     private var legendLineHeight: Float
     private var percentHalfWidth: Float
     private var percentHalfHeight: Float
+
+    private val gestureCallback = object : GestureDetector.SimpleOnGestureListener() {
+        override fun onSingleTapUp(event: MotionEvent): Boolean {
+            Log.d(DEBUG_TAG, "onSingleTapUp: $event")
+
+            val height = chartRect.bottom + halfThicknessPx
+            if (event.y > height) return true
+
+            val radius = height / 2
+            val x = event.x - chartRect.centerX()
+            val y = event.y - chartRect.centerY()
+            if (x * x + y * y > radius * radius) return true
+
+            gesturePoint.set(event.x, event.y)
+            invalidate()
+
+            var rad = atan2(y, x)
+            if (y < 0) {
+                rad += (PI * 2).toFloat()
+            }
+            val angle = 180 * rad / PI
+
+            Log.d(TAG, "rad: $rad, angle: $angle")
+
+            var tempAngle = angle
+            for (sector in sectors) {
+                if (tempAngle < sector.angle) {
+                    Log.d(TAG, "sector: $sector")
+                    selectListener?.onSelect(this@PieChart, sector.category)
+                    break
+                }
+                tempAngle -= sector.angle
+            }
+
+            return true
+        }
+
+        override fun onDown(event: MotionEvent): Boolean {
+            Log.d(DEBUG_TAG, "onDown: $event")
+            return true
+        }
+    }
 
     init {
         // Load attributes
@@ -108,6 +162,14 @@ class PieChart @JvmOverloads constructor(
         legendLineHeight = fontMetrics.descent - fontMetrics.ascent
         percentHalfWidth = textPaint.measureText("100%") / 2
         percentHalfHeight = legendLineHeight / 2
+
+        detector = GestureDetectorCompat(context, gestureCallback)
+    }
+
+    val gesturePaint = Paint().apply {
+        this.color = Color.WHITE;
+        this.strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 4f, resources.displayMetrics);
+        this.style = Paint.Style.FILL_AND_STROKE
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -126,6 +188,12 @@ class PieChart @JvmOverloads constructor(
             textPaint.color = color
             canvas.drawText(category, 0f, chartRect.bottom + halfThicknessPx + (i + 1) * legendLineHeight, textPaint)
         }
+
+        if (gesturePoint.x >= 0) {
+//            textPaint.color = Color.BLACK
+            canvas.drawPoint(gesturePoint.x, gesturePoint.y, gesturePaint)
+        }
+
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -178,7 +246,7 @@ class PieChart @JvmOverloads constructor(
         }
     }
 
-    fun setOnSelectListener(selectListener: ((category: String) -> Unit)?) {
+    fun setOnSelectListener(selectListener: OnSelectListener?) {
         this.selectListener = selectListener
     }
 
@@ -216,11 +284,6 @@ class PieChart @JvmOverloads constructor(
         } else {
             invalidate()
         }
-
-//        val result = mutableListOf<Pair<Float, String>>()
-//        for ((category, charge) in categoryies.entries) {
-//            result
-//        }
     }
 
     private fun calculatePercentAngles() {
@@ -232,5 +295,19 @@ class PieChart @JvmOverloads constructor(
             sector.percentY = (chartRect.centerY() + sin(radian) * (chartRect.height() / 2) + percentHalfHeight).toFloat()
             fullAngle += sector.angle
         }
+    }
+
+
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return if (detector.onTouchEvent(event)) {
+            true
+        } else {
+            super.onTouchEvent(event)
+        }
+    }
+
+    fun interface OnSelectListener {
+        fun onSelect(view: PieChart, category: String)
     }
 }

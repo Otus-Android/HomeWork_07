@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Custom View</string>
+    <string name="category_selected">Category selected: %s</string>
 </resources>
