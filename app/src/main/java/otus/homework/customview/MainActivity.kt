@@ -2,20 +2,22 @@ package otus.homework.customview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import otus.homework.customview.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var pieChart: PieChart
     @OptIn(ExperimentalSerializationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        val binding = ActivityMainBinding.inflate(layoutInflater)
 
-        pieChart = findViewById(R.id.pie_cart)
-        pieChart.setOnSelectListener { _, category ->
+        setContentView(binding.root)
+        binding.pieChart.setOnSelectListener { _, category ->
+            binding.selectedCategory.text = category
             Toast.makeText(this, getString(R.string.category_selected, category), Toast.LENGTH_SHORT).show()
         }
 
@@ -24,6 +26,6 @@ class MainActivity : AppCompatActivity() {
 
         println(charges)
 
-        pieChart.setCharges(charges)
+        binding.pieChart.setCharges(charges)
     }
 }
