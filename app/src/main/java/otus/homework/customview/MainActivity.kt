@@ -27,5 +27,6 @@ class MainActivity : AppCompatActivity() {
         println(charges)
 
         binding.pieChart.setCharges(charges)
+        binding.graph.setCharges(charges)
     }
 }
