@@ -113,7 +113,6 @@ class PieChart @JvmOverloads constructor(
             Log.d(DEBUG_TAG, "onSingleTapUp: $event")
 
             val height = chartRect.bottom + halfThicknessPx
-            if (event.y > height) return true
 
             val radius = height / 2
             val x = event.x - chartRect.centerX()
