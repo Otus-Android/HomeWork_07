@@ -25,10 +25,6 @@ class Graph @JvmOverloads constructor(
     private val BASE_SIZE_PX = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, BASE_SIZE_DP, context.resources.displayMetrics).roundToInt()
     private val graphIndentPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, GRAPH_INDENT_DP, context.resources.displayMetrics)
 
-    init {
-
-    }
-
     private var maxAmountText = ""
     private var startDateText = ""
     private var endDateText = ""
@@ -72,8 +68,6 @@ class Graph @JvmOverloads constructor(
             invalidate()
             return
         }
-
-//        val maxAmount = dateToPointMap.values.maxOf { it.amount }// ?: maxAmount
 
         dataPoints = dateToPointMap.values
             .sortedBy { it.timeProportion }
