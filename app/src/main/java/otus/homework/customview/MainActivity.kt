@@ -23,30 +23,27 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
 
+        setContentView(binding.root)
+
         val stream = resources.openRawResource(R.raw.payload)
         val charges = Json.decodeFromStream<List<Charge>>(stream)
 
-        setContentView(binding.root)
+        val startDate = LocalDate.of(2021, Month.JUNE, 8)
+        val endDate = startDate.plusDays(7)
+        val maxAmount = 12000
+
         binding.pieChart.setOnSelectListener { _, category ->
             binding.selectedCategory.text = category
             Toast.makeText(this, getString(R.string.category_selected, category), Toast.LENGTH_SHORT).show()
             binding.graph.setCharges(
                 charges.filter { it.category == category },
-                LocalDate.of(2021, Month.JUNE, 1),
-                LocalDate.of(2021, Month.JUNE, 14)
+                startDate,
+                endDate,
+                maxAmount
             )
         }
 
-//        val endDate = charges.maxOfOrNull { it.time }?.secondsToLocalDate()
-//        val startDate = charges.minOfOrNull { it.time }?.secondsToLocalDate()
-//
-//        Log.d(TAG, "startDate: $startDate, endDate: $endDate")
-
         binding.pieChart.setCharges(charges)
-        binding.graph.setCharges(
-            charges,
-            LocalDate.of(2021, Month.JUNE, 1),
-            LocalDate.of(2021, Month.JUNE, 14)
-        )
+        binding.graph.setCharges(charges, startDate, endDate, maxAmount)
     }
 }

@@ -13,6 +13,7 @@ import kotlin.math.roundToInt
 
 private const val BASE_SIZE_DP = 200f
 private const val BASE_POINT_SIZE_DP = 4f
+private const val GRAPH_INDENT_DP = 4f
 
 class Graph @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr: Int = 0
@@ -20,6 +21,7 @@ class Graph @JvmOverloads constructor(
 
     private val BASE_SIZE_PX = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, BASE_SIZE_DP, context.resources.displayMetrics).roundToInt()
     private val basePointSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, BASE_POINT_SIZE_DP, context.resources.displayMetrics)
+    private val graphIndentPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, GRAPH_INDENT_DP, context.resources.displayMetrics)
 
     init {
 
@@ -38,27 +40,13 @@ class Graph @JvmOverloads constructor(
         var amount: Int = 0,
     )
 
-    fun setCharges(charges: List<Charge>, startDate: LocalDate, endDate: LocalDate) {
-        if (charges.isEmpty()) {
-            dataPoints.clear()
-            return
-        }
-
+    fun setCharges(charges: List<Charge>, startDate: LocalDate, endDate: LocalDate, maxAmount: Int) {
         val daysCount = endDate.toEpochDay() - startDate.toEpochDay()
-
-//        val max = charges.maxOf { it.amount }
-        val sorted = charges.sortedBy { it.time }
-        val minTime = charges.first().time
-        val diffTime = charges.last().time - minTime
-
-        val minDate = minTime.fromEpochSecondToLocalDate()
 
         val dateToPointMap = mutableMapOf<LocalDate, DataPoint>()
         for (charge in charges) {
             val date = charge.time.fromEpochSecondToLocalDate()
-//            if (startDate.isBefore(date) || endDate.isAfter(date)) continue
-
-//            val amountProportion = charge.amount.toFloat() / max
+            if (startDate.isAfter(date) || endDate.isBefore(date)) continue
 
             val point: DataPoint = dateToPointMap.get(date) ?: run {
                 val dayNum = date.toEpochDay() - startDate.toEpochDay()
@@ -74,22 +62,24 @@ class Graph @JvmOverloads constructor(
             point.amount += charge.amount
         }
 
-        val max = dateToPointMap.values.maxOf { it.amount }
+        if (dateToPointMap.isEmpty()) {
+            dataPoints.clear()
+            invalidate()
+            return
+        }
+
+//        val maxAmount = dateToPointMap.values.maxOf { it.amount }// ?: maxAmount
 
         dataPoints = dateToPointMap.values
             .sortedBy { it.timeProportion }
-            .onEach { it.amount.toFloat() / max }
+            .onEach {
+                it.proportion = it.amount.toFloat() / maxAmount
+                it.proportionPx = (height - 2 * graphIndentPx) * it.proportion + graphIndentPx
+                it.timeProportionPx = (width - 2 * graphIndentPx) * it.timeProportion + graphIndentPx
+            }
             .toMutableList()
 
-//        dataPoints = sorted.map {
-//            DataPoint(
-//                it.amount.toFloat() / max,
-//                0f,
-//                (it.time - minTime).toFloat() / diffTime,
-//                0f,
-//            ) }.toMutableList()
-
-        requestLayout()
+        invalidate()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -104,12 +94,12 @@ class Graph @JvmOverloads constructor(
         setMeasuredDimension(width, height)
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
+    override fun onSizeChanged(width: Int, height: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(width, height, oldw, oldh)
 
         for (dataPoint in dataPoints) {
-            dataPoint.proportionPx = h * dataPoint.proportion
-            dataPoint.timeProportionPx = w * dataPoint.timeProportion
+            dataPoint.proportionPx = (height - 2 * graphIndentPx) * dataPoint.proportion + graphIndentPx
+            dataPoint.timeProportionPx = (width - 2 * graphIndentPx) * dataPoint.timeProportion + graphIndentPx
         }
     }
 
@@ -117,6 +107,14 @@ class Graph @JvmOverloads constructor(
         this.color = Color.BLACK
         this.strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, context.resources.displayMetrics)
         this.style = Paint.Style.FILL_AND_STROKE
+        this.isAntiAlias = true
+    }
+
+    private val onePointPaint = Paint().apply {
+        this.color = Color.BLACK
+        this.strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, context.resources.displayMetrics)
+        this.style = Paint.Style.FILL_AND_STROKE
+        this.isAntiAlias = true
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -127,13 +125,19 @@ class Graph @JvmOverloads constructor(
             0 -> Unit
             1 -> {
                 val point = dataPoints.first()
-                canvas.drawPoint(point.timeProportionPx, point.proportionPx, pointsPaint)
+                canvas.drawPoint(point.timeProportionPx, point.proportionPx, onePointPaint)
             }
             else -> {
                 for (i in 0 until dataPoints.lastIndex) {
                     pointX += dataPoints[i].timeProportionPx
 
-                    canvas.drawLine(pointX, dataPoints[i].proportionPx, pointX + dataPoints[i + 1].timeProportionPx, dataPoints[i + 1].proportionPx, pointsPaint)
+                    canvas.drawLine(
+                        pointX,
+                        dataPoints[i].proportionPx,
+                        pointX + dataPoints[i + 1].timeProportionPx,
+                        dataPoints[i + 1].proportionPx,
+                        pointsPaint
+                    )
                 }
             }
         }
