@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name = "Custom View"
+rootProject.name = "Otus Custom View"
