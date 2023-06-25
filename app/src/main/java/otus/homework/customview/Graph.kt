@@ -10,18 +10,19 @@ import android.util.TypedValue
 import android.view.View
 import androidx.annotation.AttrRes
 import org.threeten.bp.LocalDate
+import org.threeten.bp.format.DateTimeFormatter
+import org.threeten.bp.format.FormatStyle
 import kotlin.math.roundToInt
 
 private const val BASE_SIZE_DP = 200f
-private const val BASE_POINT_SIZE_DP = 4f
 private const val GRAPH_INDENT_DP = 4f
 
 class Graph @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr: Int = 0
 ): View(context, attrs, defStyleAttr) {
+    private var DATE_FORMATTER = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
 
     private val BASE_SIZE_PX = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, BASE_SIZE_DP, context.resources.displayMetrics).roundToInt()
-    private val basePointSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, BASE_POINT_SIZE_DP, context.resources.displayMetrics)
     private val graphIndentPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, GRAPH_INDENT_DP, context.resources.displayMetrics)
 
     init {
@@ -29,6 +30,8 @@ class Graph @JvmOverloads constructor(
     }
 
     private var maxAmountText = ""
+    private var startDateText = ""
+    private var endDateText = ""
 
 
     private var dataPoints = mutableListOf<DataPoint>()
@@ -82,6 +85,8 @@ class Graph @JvmOverloads constructor(
             .toMutableList()
 
         maxAmountText = context.getString(R.string.graph_max_amount, maxAmount)
+        startDateText = DATE_FORMATTER.format(startDate)
+        endDateText = DATE_FORMATTER.format(endDate)
 
         invalidate()
     }
@@ -141,10 +146,14 @@ class Graph @JvmOverloads constructor(
 
         canvas.drawLine(graphIndentPx, graphIndentPx, width - graphIndentPx, graphIndentPx, linePaint)
         canvas.drawLine(graphIndentPx, height - graphIndentPx, width - graphIndentPx, height - graphIndentPx, linePaint)
+        canvas.drawLine(graphIndentPx, graphIndentPx, graphIndentPx, height - graphIndentPx, linePaint)
+        canvas.drawLine(width - graphIndentPx, graphIndentPx, width - graphIndentPx, height - graphIndentPx, linePaint)
 
         val textWidth = lineTextPaint.measureText(maxAmountText)
 
         canvas.drawText(maxAmountText, width - graphIndentPx - textWidth, graphIndentPx + lineTextPaint.textSize, lineTextPaint)
+        canvas.drawText(startDateText, graphIndentPx, height - graphIndentPx * 2, lineTextPaint)
+        canvas.drawText(endDateText, width - graphIndentPx - lineTextPaint.measureText(endDateText), height - graphIndentPx * 2, lineTextPaint)
 
         var pointX = 0f
         when (dataPoints.size) {
