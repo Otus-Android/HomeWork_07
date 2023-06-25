@@ -153,13 +153,6 @@ class PieChart @JvmOverloads constructor(
     }
 
     init {
-        // Load attributes
-        context.obtainStyledAttributes(
-            attrs, R.styleable.PieChart, defStyleAttr, 0
-        ).apply {
-            this.recycle()
-        }
-
         val fontMetrics = textPaint.fontMetrics
         legendLineHeight = fontMetrics.descent - fontMetrics.ascent
         percentHalfWidth = textPaint.measureText("100%") / 2
@@ -192,7 +185,6 @@ class PieChart @JvmOverloads constructor(
         }
 
         if (gesturePoint.x >= 0) {
-//            textPaint.color = Color.BLACK
             canvas.drawPoint(gesturePoint.x, gesturePoint.y, gesturePaint)
         }
 
