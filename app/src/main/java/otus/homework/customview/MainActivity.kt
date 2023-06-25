@@ -33,14 +33,25 @@ class MainActivity : AppCompatActivity() {
         val maxAmount = 12000
 
         binding.pieChart.setOnSelectListener { _, category ->
-            binding.selectedCategory.text = category
-            Toast.makeText(this, getString(R.string.category_selected, category), Toast.LENGTH_SHORT).show()
-            binding.graph.setCharges(
-                charges.filter { it.category == category },
-                startDate,
-                endDate,
-                maxAmount
-            )
+            if (category.isNullOrEmpty()) {
+                binding.selectedCategory.setText(R.string.category_nothing)
+                Toast.makeText(this, R.string.category_nothing, Toast.LENGTH_SHORT).show()
+                binding.graph.setCharges(
+                    charges,
+                    startDate,
+                    endDate,
+                    maxAmount
+                )
+            } else {
+                binding.selectedCategory.text = category
+                Toast.makeText(this, getString(R.string.category_selected, category), Toast.LENGTH_SHORT).show()
+                binding.graph.setCharges(
+                    charges.filter { it.category == category },
+                    startDate,
+                    endDate,
+                    maxAmount
+                )
+            }
         }
 
         binding.pieChart.setCharges(charges)

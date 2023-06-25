@@ -118,7 +118,10 @@ class PieChart @JvmOverloads constructor(
             val radius = height / 2
             val x = event.x - chartRect.centerX()
             val y = event.y - chartRect.centerY()
-            if (x * x + y * y > radius * radius) return true
+            if (x * x + y * y > radius * radius) {
+                selectListener?.onSelect(this@PieChart, null)
+                return true
+            }
 
             gesturePoint.set(event.x, event.y)
             invalidate()
@@ -297,8 +300,6 @@ class PieChart @JvmOverloads constructor(
         }
     }
 
-
-
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return if (detector.onTouchEvent(event)) {
             true
@@ -308,6 +309,6 @@ class PieChart @JvmOverloads constructor(
     }
 
     fun interface OnSelectListener {
-        fun onSelect(view: PieChart, category: String)
+        fun onSelect(view: PieChart, category: String?)
     }
 }

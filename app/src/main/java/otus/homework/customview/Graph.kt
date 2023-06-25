@@ -73,9 +73,9 @@ class Graph @JvmOverloads constructor(
         dataPoints = dateToPointMap.values
             .sortedBy { it.timeProportion }
             .onEach {
-                it.proportion = it.amount.toFloat() / maxAmount
-                it.proportionPx = (height - 2 * graphIndentPx) * it.proportion + graphIndentPx
-                it.timeProportionPx = (width - 2 * graphIndentPx) * it.timeProportion + graphIndentPx
+                it.proportion = 1f - it.amount.toFloat() / maxAmount
+                it.proportionPx = if (height == 0) 0f else (height - 2 * graphIndentPx) * it.proportion + graphIndentPx
+                it.timeProportionPx = if (width == 0) 0f else (width - 2 * graphIndentPx) * it.timeProportion + graphIndentPx
             }
             .toMutableList()
 
