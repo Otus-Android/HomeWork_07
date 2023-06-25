@@ -37,7 +37,6 @@
 
         <otus.homework.customview.Graph
             android:id="@+id/graph"
-            android:background="@drawable/border_shape"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"

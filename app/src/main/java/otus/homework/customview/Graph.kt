@@ -3,6 +3,7 @@ package otus.homework.customview
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -27,6 +28,7 @@ class Graph @JvmOverloads constructor(
 
     }
 
+    private var maxAmountText = ""
 
 
     private var dataPoints = mutableListOf<DataPoint>()
@@ -79,6 +81,8 @@ class Graph @JvmOverloads constructor(
             }
             .toMutableList()
 
+        maxAmountText = context.getString(R.string.graph_max_amount, maxAmount)
+
         invalidate()
     }
 
@@ -117,8 +121,30 @@ class Graph @JvmOverloads constructor(
         this.isAntiAlias = true
     }
 
+    private val linePaint = Paint().apply {
+        this.color = Color.GRAY
+        this.style = Paint.Style.STROKE
+        this.pathEffect = DashPathEffect(floatArrayOf(10f, 10f), 0f)
+        this.isAntiAlias = true
+    }
+
+    private val lineTextPaint = Paint().apply {
+        this.color = Color.GRAY
+        this.style = Paint.Style.FILL
+        this.isAntiAlias = true
+        this.textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12f, context.resources.displayMetrics)
+        this.strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, context.resources.displayMetrics)
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+
+        canvas.drawLine(graphIndentPx, graphIndentPx, width - graphIndentPx, graphIndentPx, linePaint)
+        canvas.drawLine(graphIndentPx, height - graphIndentPx, width - graphIndentPx, height - graphIndentPx, linePaint)
+
+        val textWidth = lineTextPaint.measureText(maxAmountText)
+
+        canvas.drawText(maxAmountText, width - graphIndentPx - textWidth, graphIndentPx + lineTextPaint.textSize, lineTextPaint)
 
         var pointX = 0f
         when (dataPoints.size) {
