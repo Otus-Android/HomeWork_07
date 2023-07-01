@@ -5,6 +5,6 @@ import kotlinx.parcelize.Parcelize
 
 
 @Parcelize
-data class ListData  (
-    var data:Map<String, Int>
-): Parcelable
+data class ListData(
+    var data: Map<String, Int>
+) : Parcelable
