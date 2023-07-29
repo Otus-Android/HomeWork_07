@@ -7,4 +7,15 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="pie_0">@android:color/holo_blue_bright</color>
+    <color name="pie_1">@android:color/holo_blue_dark</color>
+    <color name="pie_2">@android:color/holo_green_dark</color>
+    <color name="pie_3">@android:color/holo_green_light</color>
+    <color name="pie_4">@android:color/holo_orange_dark</color>
+    <color name="pie_5">@android:color/holo_orange_light</color>
+    <color name="pie_6">@android:color/holo_purple</color>
+    <color name="pie_7">@android:color/holo_red_dark</color>
+    <color name="pie_8">@android:color/holo_red_light</color>
+    <color name="pie_9">@android:color/darker_gray</color>
 </resources>
