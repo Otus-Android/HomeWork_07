@@ -14,7 +14,7 @@ import kotlin.math.atan2
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-const val TAG = "PieChartView"
+private const val TAG = "PieChartView"
 
 class PieChartView(context: Context, attributeSet: AttributeSet):
     View(context, attributeSet) {
@@ -198,7 +198,7 @@ class PieChartView(context: Context, attributeSet: AttributeSet):
         if (!isDescription) textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
 
-    fun setDataChart(list: List<PayLoadModel>) {
+    fun setValues(list: List<PayLoadModel>) {
         dataList = list
         calculatePercentageOfData()
     }

@@ -7,14 +7,36 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonBack"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:text="@string/buttonBackText"
+        android:visibility="gone">
+
+    </com.google.android.material.button.MaterialButton>
+
     <otus.homework.customview.PieChartView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/PieChartView"
+        android:id="@+id/pieChartView"
         app:pieChartColors="@array/pieChartColorArray"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/buttonBack"
+        app:layout_constraintBottom_toTopOf="@+id/barChartView">
 
     </otus.homework.customview.PieChartView>
+
+    <otus.homework.customview.BarChartView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/barChartView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pieChartView">
+
+    </otus.homework.customview.BarChartView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
