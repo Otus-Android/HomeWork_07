@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="PieChartView">
+        <attr name="pieChartColors" format="reference"/>
+        <attr name="pieChartTextAmount" format="string"/>
+    </declare-styleable>
+
+    <declare-styleable name="BarChartView">
+        <attr name="baseColor" format="color"/>
+        <attr name="threshold" format="integer"/>
+        <attr name="barWidth" format="dimension"/>
+    </declare-styleable>
+
+</resources>
