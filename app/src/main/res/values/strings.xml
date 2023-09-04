@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Custom View</string>
+    <string name="app_name">HW_Canvas</string>
+    <string name="BtnShowFullJson">Full JSON</string>
+    <string name="BtnShowMySectors">My sectors</string>
 </resources>

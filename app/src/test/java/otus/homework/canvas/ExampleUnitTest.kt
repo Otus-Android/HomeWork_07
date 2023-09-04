@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.canvas
 
 import org.junit.Test
 
