@@ -1,9 +1,11 @@
 import android.content.Context
-import android.graphics.Color
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import otus.homework.canvas.LineGraphData
 import otus.homework.canvas.PieChartSectorData
 import otus.homework.canvas.R
+import java.text.SimpleDateFormat
 
 class JsonData(private val context: Context) {
 
@@ -27,18 +29,43 @@ class JsonData(private val context: Context) {
     }
 
     fun getPieChartSectorData(): List<PieChartSectorData>? {
-        val jonDataArray = getJsonData() ?: return null
+        val jsonDataArray = getJsonData() ?: return null
+        val pieChartSectorDataMap = mutableMapOf<String, PieChartSectorData>()
+        for (data in jsonDataArray) {
+            if (pieChartSectorDataMap.containsKey(data.category)) {
+                pieChartSectorDataMap[data.category]?.angle = pieChartSectorDataMap[data.category]?.angle!! + data.amount.toFloat()
+            }
+            else {
+                pieChartSectorDataMap += data.category to
+                        PieChartSectorData(
+                            angle = data.amount.toFloat(),
+                            text = data.category,
+                            category = data.category
+                        )
+            }
+        }
         val pieChartSectorData = mutableListOf<PieChartSectorData>()
-        for (data in jonDataArray) {
-            pieChartSectorData.add(
-                PieChartSectorData(
-                    angle = data.amount.toFloat(),
-                    radius = data.time.toFloat(),
-                    text = data.name,
-                    category = data.category,
-                )
-            )
+        for ((key, value) in pieChartSectorDataMap) {
+            pieChartSectorData += value
         }
         return pieChartSectorData
+    }
+
+
+    //private fun timeToString_(time: Int) = "$time" // TODO
+    private fun timeToString(time: Float) = SimpleDateFormat.getDateTimeInstance().format(time.toInt())
+
+    fun getLineGraphData(): MutableMap<String, List<LineGraphData>>? {
+        val jsonDataArray = getJsonData() ?: return null
+        var lineGraphData = mutableMapOf<String, MutableList<LineGraphData>>()
+        for (data in jsonDataArray) {
+            val addData = LineGraphData(data.time.toFloat(), data.amount.toFloat(), ::timeToString)
+            if (lineGraphData.containsKey(data.category)) {
+                lineGraphData[data.category]!!.add(addData)
+            } else {
+                lineGraphData += data.category to mutableListOf(addData)
+            }
+        }
+        return lineGraphData as MutableMap<String, List<LineGraphData>>
     }
 }

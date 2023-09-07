@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<otus.homework.canvas.LinearAutoChangeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    app:baseOrientation="vertical"
     tools:context=".MainActivity">
 
     <otus.homework.canvas.PieChartView
@@ -16,11 +18,11 @@
         app:padding="20dp"
         app:defaultWidth="10dp" />
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <otus.homework.canvas.LinearAutoChangeLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:baseOrientation="horizontal">
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -30,9 +32,14 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/BtnShowMySectors"
+            android:text="@string/BtnShowMyData"
             android:textAllCaps="false"
-            android:onClick="onMySectors"/>
-    </LinearLayout>
+            android:onClick="onMyData"/>
+    </otus.homework.canvas.LinearAutoChangeLayout>
 
-</LinearLayout>
+    <otus.homework.canvas.LineGraphView
+        android:id="@+id/LineGraphView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</otus.homework.canvas.LinearAutoChangeLayout>

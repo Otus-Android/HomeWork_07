@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">HW_Canvas</string>
     <string name="BtnShowFullJson">Full JSON</string>
-    <string name="BtnShowMySectors">My sectors</string>
+    <string name="BtnShowMyData">My DATA</string>
 </resources>

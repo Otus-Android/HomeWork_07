@@ -7,4 +7,8 @@
         <attr name="startAngle" format="float"/>
         <attr name="padding" format="dimension"/>
     </declare-styleable>
+
+    <declare-styleable name="LinearAutoChangeLayout">
+        <attr name="baseOrientation" format="string"/>
+    </declare-styleable>
 </resources>

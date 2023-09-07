@@ -56,9 +56,9 @@ class PieChartView @JvmOverloads constructor(
         val widthSize = MeasureSpec.getSize(widthMeasureSpec)
         val heightMod = MeasureSpec.getMode(heightMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
-        Log.d("***[", "widthMod=${widthMod.modToString()} widthSize=$widthSize heightMod=${heightMod.modToString()} heightSize=$heightSize")
+        //Log.d("***[", "widthMod=${widthMod.modToString()} widthSize=$widthSize heightMod=${heightMod.modToString()} heightSize=$heightSize")
         val size = minOf(widthSize,heightSize)
-        setMeasuredDimension(size,size)
+        setMeasuredDimension(size,size) // Что бы круг был круглым, а квадрат квадратным :)
     }
 
     fun getNumSector(x: Float, y: Float): Int? {

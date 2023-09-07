@@ -8,18 +8,18 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="aquamarine">#7FFFD4</color>
-    <color name="plum">#DDA0DD</color>
-    <color name="moccasin">#FFE4B5</color>
-    <color name="lightSkyBlue">#87CEFA</color>
-    <color name="lightSalmon">#FFA07A</color>
-    <color name="rosyBrown">#BC8F8F</color>
-    <color name="mediumPurple">#9370DB</color>
-    <color name="lightSlateGray">#778899</color>
+    <color name="aquamarine">#07FAA8</color>
+    <color name="plum">#E437E4</color>
+    <color name="moccasin">#F8A91F</color>
+    <color name="lightSkyBlue">#23A9FB</color>
+    <color name="lightSalmon">#F65E22</color>
+    <color name="rosyBrown">#C12D2D</color>
+    <color name="mediumPurple">#6227DC</color>
+    <color name="lightSlateGray">#1C5E9F</color>
     <color name="olive">#808000</color>
-    <color name="lightGreen">#90EE90</color>
-    <color name="gray">#808080</color>
-    <color name="burlyWood">#DEB887</color>
+    <color name="lightGreen">#1AEF1A</color>
+    <color name="gray">#5C0B0B</color>
+    <color name="burlyWood">#704106</color>
 
     <integer-array name="presetColors">
         <item>@color/aquamarine</item>
