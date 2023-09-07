@@ -7,4 +7,32 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="aquamarine">#07FAA8</color>
+    <color name="plum">#E437E4</color>
+    <color name="moccasin">#F8A91F</color>
+    <color name="lightSkyBlue">#23A9FB</color>
+    <color name="lightSalmon">#F65E22</color>
+    <color name="rosyBrown">#C12D2D</color>
+    <color name="mediumPurple">#6227DC</color>
+    <color name="lightSlateGray">#1C5E9F</color>
+    <color name="olive">#808000</color>
+    <color name="lightGreen">#1AEF1A</color>
+    <color name="gray">#5C0B0B</color>
+    <color name="burlyWood">#704106</color>
+
+    <integer-array name="presetColors">
+        <item>@color/aquamarine</item>
+        <item>@color/plum</item>
+        <item>@color/moccasin</item>
+        <item>@color/lightSkyBlue</item>
+        <item>@color/lightSalmon</item>
+        <item>@color/rosyBrown</item>
+        <item>@color/mediumPurple</item>
+        <item>@color/lightSlateGray</item>
+        <item>@color/olive</item>
+        <item>@color/lightGreen</item>
+        <item>@color/gray</item>
+        <item>@color/burlyWood</item>
+    </integer-array>
 </resources>

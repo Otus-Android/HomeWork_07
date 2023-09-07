@@ -1,19 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<otus.homework.canvas.LinearAutoChangeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:baseOrientation="vertical"
     tools:context=".MainActivity">
 
-    <TextView
+    <otus.homework.canvas.PieChartView
+        android:id="@+id/PieChartView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:backgroundColor="#B6FAA7"
+        app:defaultGap="0.363636363636367dp"
+        app:padding="20dp"
+        app:defaultWidth="10dp" />
+
+    <otus.homework.canvas.LinearAutoChangeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal"
+        app:baseOrientation="horizontal">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/BtnShowFullJson"
+            android:textAllCaps="false"
+            android:onClick="onFull"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/BtnShowMyData"
+            android:textAllCaps="false"
+            android:onClick="onMyData"/>
+    </otus.homework.canvas.LinearAutoChangeLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <otus.homework.canvas.LineGraphView
+        android:id="@+id/LineGraphView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</otus.homework.canvas.LinearAutoChangeLayout>
