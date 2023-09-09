@@ -1,10 +1,12 @@
 package otus.homework.customview
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import otus.homework.customview.DetailsActivity.Companion.KEY_LIST
 import otus.homework.customview.databinding.ActivityMainBinding
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -48,6 +50,19 @@ class MainActivity : AppCompatActivity() {
                     is PieChart.Category.OneCategory -> "${category.name} -> ${category.value}"
                 }
                 Toast.makeText(this@MainActivity, text, Toast.LENGTH_SHORT).show()
+
+                val list = data.filter {
+                    when (category) {
+                        is PieChart.Category.MultipleCategories -> it.category in category.names
+                        is PieChart.Category.OneCategory -> it.category == category.name
+                    }
+                }.map { DetailsChart.PayItem(it.amount, it.time) }
+
+
+
+                val intent = Intent(this@MainActivity, DetailsActivity::class.java)
+                intent.putExtra(KEY_LIST, Gson().toJson(list))
+                startActivity(intent)
             }
         }
 
