@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Custom View</string>
+
+    <string-array name="custom_view_variants">
+        <item>Pie Chart</item>
+        <item>Detailed Category</item>
+    </string-array>
 </resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="pie_chart_min_size_default">150dp</dimen>
+    <dimen name="pie_chart_text_min_size_default">10sp</dimen>
+</resources>

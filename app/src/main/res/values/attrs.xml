@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <declare-styleable name="PieChartView">
+        <attr name="minSize" format="dimension"/>
+        <attr name="centerTextSize" format="dimension"/>
+        <attr name="centerTextColor" format="color"/>
+
+    </declare-styleable>
+    
+</resources>
