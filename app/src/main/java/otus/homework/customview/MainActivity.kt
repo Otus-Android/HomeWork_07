@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import otus.homework.customview.common.PayloadData
+import otus.homework.customview.linechart.LineChartItem
+import otus.homework.customview.linechart.LineChartView
 import otus.homework.customview.piechart.PieChartItem
 import otus.homework.customview.piechart.PieChartView
 import kotlin.math.roundToInt
@@ -19,6 +21,9 @@ class MainActivity : AppCompatActivity() {
     private val payloadData: List<PayloadData> by readPayloadData()
     private val pieChartItemList: List<PieChartItem> by lazy {
         mapPayloadDataToPieChartItem(payloadData)
+    }
+    private val lineChartItemList: List<LineChartItem> by lazy {
+        mapPayloadDataToLineChartItem(payloadData)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,13 +38,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val lineChartView = findViewById<LineChartView>(R.id.line_chart_view)
+
         findViewById<Spinner>(R.id.custom_view_variant).apply {
-            adapter = createSpinnerAdapter()
-            onItemSelectedListener = createSpinnerClickListener(pieChartView)
+            adapter =
+                createSpinnerAdapter()
+            onItemSelectedListener =
+                createSpinnerClickListener(pieChartView, lineChartView)
         }
 
         if (savedInstanceState == null) {
             pieChartView.setPieChartItems(pieChartItemList)
+            lineChartView.setLineChartItems(lineChartItemList)
         }
     }
 
@@ -51,6 +61,18 @@ class MainActivity : AppCompatActivity() {
                 name = it.name,
                 category = it.category,
                 amount = it.amount
+            )
+        }
+    }
+
+    private fun mapPayloadDataToLineChartItem(
+        payloadData: List<PayloadData>
+    ): List<LineChartItem> {
+        return payloadData.map {
+            LineChartItem(
+                category = it.category,
+                amount = it.amount,
+                time = it.time
             )
         }
     }
@@ -72,7 +94,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun createSpinnerClickListener(view: PieChartView): AdapterView.OnItemSelectedListener {
+    private fun createSpinnerClickListener(
+        pieChartView: PieChartView,
+        lineChartView: LineChartView
+    ): AdapterView.OnItemSelectedListener {
         return object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -80,13 +105,24 @@ class MainActivity : AppCompatActivity() {
                 selectedItemPosition: Int,
                 selectedId: Long
             ) {
-                when (selectedItemPosition) {
-                    0 -> view.visibility = ViewGroup.VISIBLE
-                    else -> view.visibility = ViewGroup.GONE
+                if (selectedItemPosition == 0) {
+                    enablePieChartView()
+                } else {
+                    enableLineChartView()
                 }
             }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {}
+            override fun onNothingSelected(p0: AdapterView<*>?) = Unit
+
+            private fun enablePieChartView() {
+                pieChartView.visibility = ViewGroup.VISIBLE
+                lineChartView.visibility = ViewGroup.GONE
+            }
+
+            private fun enableLineChartView() {
+                pieChartView.visibility = ViewGroup.GONE
+                lineChartView.visibility = ViewGroup.VISIBLE
+            }
         }
     }
 }
