@@ -13,7 +13,7 @@ import android.view.View
 import androidx.annotation.ColorInt
 import androidx.core.content.withStyledAttributes
 import otus.homework.customview.R
-import java.util.Random
+import otus.homework.customview.common.ColorUtils
 import kotlin.math.acos
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -150,7 +150,7 @@ class PieChartView @JvmOverloads constructor(
                 categoryItems,
                 currentAngle,
                 sweepAngle,
-                getRandomColor()
+                ColorUtils.getRandomColor()
             )
 
             currentAngle += sweepAngle
@@ -243,11 +243,6 @@ class PieChartView @JvmOverloads constructor(
         }
     }
 
-    private fun getRandomColor(): Int {
-        val rnd = Random()
-        return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
-    }
-
     private fun readAttrs(context: Context, attrs: AttributeSet?, defStyleAttr: Int) {
         context.withStyledAttributes(attrs, R.styleable.PieChartView, defStyleAttr) {
             minSize = getDimensionPixelSize(
@@ -257,7 +252,7 @@ class PieChartView @JvmOverloads constructor(
             )
             centerTextSize = getDimensionPixelSize(
                 R.styleable.PieChartView_centerTextSize,
-                resources.getDimensionPixelSize(R.dimen.pie_chart_text_min_size_default)
+                resources.getDimensionPixelSize(R.dimen.pie_chart_text_size_default)
             )
             centerTextColor = getColor(
                 R.styleable.PieChartView_centerTextColor,
