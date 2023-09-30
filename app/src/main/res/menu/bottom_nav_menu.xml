@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_pie_chart"
+        android:icon="@drawable/baseline_pie_chart_24"
+        android:title="@string/title_pie_chart"/>
+    <item
+        android:id="@+id/navigation_line_chart"
+        android:icon="@drawable/baseline_show_chart_24"
+        android:title="@string/title_line_chart"/>
+</menu>
