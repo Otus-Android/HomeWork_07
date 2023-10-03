@@ -32,9 +32,9 @@ class PieChart @JvmOverloads constructor(
     private var categoryList = emptyList<Category>()
 
     private val rectangle = RectF()
-    private val upper = 24
+    private val topPadding = 24
     private val defaultViewSize = 320
-    private var sum = 1
+    private var total = 1
     private var index = -1
 
     private val paintInner = Paint()
@@ -49,7 +49,7 @@ class PieChart @JvmOverloads constructor(
             style = Paint.Style.FILL
             textSize = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP,
-                24f,
+                14f,
                 resources.displayMetrics
             )
         }
@@ -74,7 +74,7 @@ class PieChart @JvmOverloads constructor(
 
     private var partByCategories = categoryList
         .groupBy { it.category }
-        .mapValues { entry -> ((entry.value.sumBy { it.amount }) * 360).toFloat() / sum }
+        .mapValues { entry -> ((entry.value.sumBy { it.amount }) * 360).toFloat() / total }
         .toList()
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -113,10 +113,10 @@ class PieChart @JvmOverloads constructor(
                 canvas?.drawArc(rectangle, start, s.second, true, paintList[i])
             }
             canvas?.drawArc(
-                rectangle.left + upper,
-                rectangle.top + upper,
-                rectangle.right - upper,
-                rectangle.bottom - upper,
+                rectangle.left + topPadding,
+                rectangle.top + topPadding,
+                rectangle.right - topPadding,
+                rectangle.bottom - topPadding,
                 start,
                 s.second,
                 true,
@@ -138,9 +138,13 @@ class PieChart @JvmOverloads constructor(
 
     private fun drawText(canvas: Canvas?) {
         if (index > 0) {
-            val textWidth = paintText.measureText(partByCategories[index - 1].first)
-            canvas?.drawText(
+            val text = "%s: %.1f".format(
                 partByCategories[index - 1].first,
+                partByCategories[index - 1].second
+            )
+            val textWidth = paintText.measureText(text)
+            canvas?.drawText(
+                text,
                 (rectangle.left + rectangle.right - textWidth) / 2,
                 (rectangle.top + rectangle.bottom) / 2,
                 paintText
@@ -212,10 +216,11 @@ class PieChart @JvmOverloads constructor(
 
     fun setData(categoryList: List<Category>) {
         this.categoryList = categoryList
-        sum = if (this.categoryList.sumOf { it.amount } > 0) this.categoryList.sumOf { it.amount } else 1
+        total =
+            if (this.categoryList.sumOf { it.amount } > 0) this.categoryList.sumOf { it.amount } else 1
         partByCategories = this.categoryList
             .groupBy { it.category }
-            .mapValues { entry -> ((entry.value.sumBy { it.amount }) * 360).toFloat() / sum }
+            .mapValues { entry -> ((entry.value.sumBy { it.amount }) * 360).toFloat() / total }
             .toList()
     }
 }

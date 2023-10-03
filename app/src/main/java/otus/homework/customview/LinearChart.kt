@@ -31,7 +31,6 @@ class LinearChart @JvmOverloads constructor(
     private val defaultViewSize = 240
     private val rectangle = RectF()
     private var padding = 100f
-    private var horizontalShift = 0f
     private var horizontalMultiply = 1f
     private var verticalMultiply = 1f
     private var paddingMultiply = 0.9f
@@ -105,11 +104,11 @@ class LinearChart @JvmOverloads constructor(
         val distinctCategories = categories.distinct()
         for (i in distinctCategories.indices) {
             path.reset()
-            path.moveTo(horizontalShift, rectangle.bottom)
+            path.moveTo(padding, rectangle.bottom)
             for (item in categoryByDateList) {
                 if (item.category == distinctCategories[i])
                     path.lineTo(
-                        horizontalShift + (item.time - startTimeStamp) * horizontalMultiply,
+                        padding + (item.time - startTimeStamp) * horizontalMultiply,
                         rectangle.bottom - item.sum * verticalMultiply
                     )
             }
@@ -139,15 +138,15 @@ class LinearChart @JvmOverloads constructor(
     private fun drawVerticalGridLines(canvas: Canvas?) {
         for (i in 0..time) {
             canvas?.drawLine(
-                horizontalShift + i * paddingMultiply * (rectangle.right - rectangle.left) / time,
+                padding + i * paddingMultiply * (rectangle.right - rectangle.left) / time,
                 rectangle.top,
-                horizontalShift + i * paddingMultiply * (rectangle.right - rectangle.left) / time,
+                padding + i * paddingMultiply * (rectangle.right - rectangle.left) / time,
                 rectangle.bottom,
                 paintGrid
             )
             canvas?.drawText(
                 (startTimeStamp + i).toString(),
-                horizontalShift + i * paddingMultiply * (rectangle.right - rectangle.left) / time,
+                padding + i * paddingMultiply * (rectangle.right - rectangle.left) / time,
                 rectangle.bottom + paintText.textSize, paintText
             )
         }
@@ -197,7 +196,6 @@ class LinearChart @JvmOverloads constructor(
         horizontalMultiply = paddingMultiply * (rectangle.right - rectangle.left) / time
         verticalMultiply = (rectangle.bottom - rectangle.top) / maxSum
         padding = maxOf(padding, paintText.measureText(maxSum.toString()) + 20)
-        horizontalShift = padding + (1 - paddingMultiply) * (rectangle.right - rectangle.left) / 2
         setMeasuredDimension(widthSize, heightSize)
     }
 
