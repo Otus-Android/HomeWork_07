@@ -45,7 +45,7 @@ class LinearChart @JvmOverloads constructor(
     private val paintText = Paint()
         .apply {
             color = ColorUtils.setAlphaComponent(Color.GRAY, 255)
-            textSize = 20.px.toFloat()
+            textSize = 14.px.toFloat()
         }
 
     private val paintGrid = Paint()
