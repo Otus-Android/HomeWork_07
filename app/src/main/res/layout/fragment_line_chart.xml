@@ -5,9 +5,10 @@
     android:layout_height="match_parent"
     tools:context=".LineChartFragment">
 
-    <TextView
+    <otus.homework.customview.LineChartView
+        android:id="@+id/line_chart_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="line chart test" />
+        android:layout_margin="10dp"/>
 
 </FrameLayout>
