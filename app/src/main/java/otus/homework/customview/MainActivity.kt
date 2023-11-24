@@ -2,10 +2,23 @@ package otus.homework.customview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import otus.homework.customview.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
+    private var _binding : ActivityMainBinding? = null
+    private val binding: ActivityMainBinding get() = _binding?:throw RuntimeException("binding = null")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        _binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        val list = listOf(800f,200f,10f,100f,50f,25f,24f,13f,88f,311f)
+        binding.myCustomView.setValues(list.sorted())
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 }
