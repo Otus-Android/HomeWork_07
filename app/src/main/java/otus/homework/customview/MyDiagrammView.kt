@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import kotlin.math.abs
 
 class MyDiagrammView @JvmOverloads constructor (
     context: Context,
@@ -14,7 +15,7 @@ class MyDiagrammView @JvmOverloads constructor (
     private val values = ArrayList<Float>()
 
     private var paddingByHeight = 0f
-    private val padding = 100f
+    private var padding = 0f
 
     private lateinit var paintBackground : Paint
     private lateinit var paintMyRed: Paint
@@ -49,21 +50,21 @@ class MyDiagrammView @JvmOverloads constructor (
         val wSize = MeasureSpec.getSize(widthMeasureSpec)
         val hSize = MeasureSpec.getSize(heightMeasureSpec)
 
-        when (wMode) {
+        println("$TAG wMode= ${MeasureSpec.toString(wMode)}  hMode=${MeasureSpec.toString(hMode)}  w=$wSize h=$hSize")
+        when (hMode) {
+
             MeasureSpec.EXACTLY -> {
-                println("$TAG EXACTLY $wSize $hSize")
-                paddingByHeight = (hSize - wSize).toFloat()/2
+                paddingByHeight = abs((hSize-wSize)).toFloat()/2
                 setMeasuredDimension(wSize, hSize)
             }
             MeasureSpec.AT_MOST -> {
-                println("$TAG AT_MOST $wSize $hSize")
-                val barWidth = 1f
-                val newW = Integer.min((values.size * barWidth).toInt(), wSize)
-                setMeasuredDimension(newW, hSize)
+                paddingByHeight = 0f
+                val newH = wSize.coerceAtMost(hSize)
+                val newW =  wSize.coerceAtMost(hSize)
+                setMeasuredDimension(newW, newH)
             }
             MeasureSpec.UNSPECIFIED -> {
                 val barWidth = 1f
-                println("$TAG UNSPECIFIED $wSize $hSize")
                 setMeasuredDimension((values.size * barWidth).toInt(), hSize)
             }
         }
@@ -75,7 +76,9 @@ class MyDiagrammView @JvmOverloads constructor (
        val worldHeight = height.toFloat()/2
        val worldWidth = width.toFloat()/2
 
-        canvas.drawRGB(255, 255, 255)
+        padding = worldWidth/5
+
+        canvas.drawRGB(255, 2, 32)
 
         if (values.size == 0) return
 
@@ -104,7 +107,7 @@ class MyDiagrammView @JvmOverloads constructor (
             }
         }
 
-        canvas.drawOval(worldWidth-300f,worldHeight+300f,worldWidth+300f,worldHeight-300f,paintBackground)
+        canvas.drawOval(worldWidth-padding*2,worldHeight+padding*2,worldWidth+padding*2,worldHeight-padding*2,paintBackground)
     }
 
     fun setValues(values : List<Float>) {
