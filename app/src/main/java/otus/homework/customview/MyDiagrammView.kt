@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import kotlin.math.abs
 
@@ -54,7 +55,11 @@ class MyDiagrammView @JvmOverloads constructor (
         when (hMode) {
 
             MeasureSpec.EXACTLY -> {
-                paddingByHeight = abs((hSize-wSize)).toFloat()/2
+                paddingByHeight = if (hSize>wSize){
+                    (hSize-wSize).toFloat()/2
+                }else{
+                    hSize.toFloat()/10
+                }
                 setMeasuredDimension(wSize, hSize)
             }
             MeasureSpec.AT_MOST -> {
@@ -76,9 +81,30 @@ class MyDiagrammView @JvmOverloads constructor (
        val worldHeight = height.toFloat()/2
        val worldWidth = width.toFloat()/2
 
-        padding = worldWidth/5
+        val circleLeft : Float
+        val circleTop : Float
+        val circleRight : Float
+        val circleBottom : Float
 
-        canvas.drawRGB(255, 2, 32)
+
+        if (worldHeight<worldWidth){
+            padding = paddingByHeight+(worldWidth-worldHeight)
+            circleTop = paddingByHeight
+            circleBottom = height.toFloat() - paddingByHeight
+            circleLeft = padding
+            circleRight = width.toFloat()-padding
+
+        } else {
+            padding = worldWidth / 5
+            circleLeft = padding
+            circleTop = padding + paddingByHeight
+            circleRight = width.toFloat() - padding
+            circleBottom = height.toFloat() - paddingByHeight - padding
+        }
+
+
+
+        canvas.drawRGB(255, 255, 255)
 
         if (values.size == 0) return
 
@@ -88,26 +114,43 @@ class MyDiagrammView @JvmOverloads constructor (
         var paintIndx = 0
         for (item in values){
             canvas.drawArc(
-                  padding,
-                padding + paddingByHeight,
-                width.toFloat()- padding,
-                height.toFloat() - paddingByHeight- padding,
+                  circleLeft,
+                circleTop,
+                circleRight,
+                circleBottom,
                 startAngle,
                 (item/onePercent)*3.6f,
                 true,
                 paint
             )
 
-            startAngle +=(item/onePercent)*3.6f
+            startAngle += (item / onePercent) * 3.6f
             paint = listOfPaints[paintIndx]
-            if (paintIndx == listOfPaints.lastIndex){
+            if (paintIndx == listOfPaints.lastIndex) {
                 paintIndx = 0
-            }else{
+            } else {
                 paintIndx++
             }
         }
+        if (worldHeight < worldWidth) {
+            canvas.drawOval(
+                worldWidth - paddingByHeight * 2,
+                worldHeight + paddingByHeight * 2,
+                worldWidth + paddingByHeight * 2,
+                worldHeight - paddingByHeight * 2,
+                paintBackground
+            )
+        } else {
+            canvas.drawOval(
+                worldWidth - padding * 2,
+                worldHeight + padding * 2,
+                worldWidth + padding * 2,
+                worldHeight - padding * 2,
+                paintBackground
+            )
+        }
 
-        canvas.drawOval(worldWidth-padding*2,worldHeight+padding*2,worldWidth+padding*2,worldHeight-padding*2,paintBackground)
+
     }
 
     fun setValues(values : List<Float>) {
