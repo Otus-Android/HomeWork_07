@@ -146,7 +146,7 @@ class MyDiagrammView @JvmOverloads constructor (
 
         if (values.size == 0) return
 
-        var startAngle = 45f
+        var startAngle = 0f
         var paint = listOfPaints[0]
 
         var paintIndx = 0
@@ -159,14 +159,35 @@ class MyDiagrammView @JvmOverloads constructor (
             val l =
                 sqrt((myX - worldWidth) * (myX - worldWidth) + (myY - worldHeight) * (myY - worldHeight))
             val R = worldWidth - circleLeft
-            val a = abs(atan2(myY - worldHeight, myX - worldWidth))
+
+            var a = atan2(myY - worldHeight, myX - worldWidth)
+            Log.i(TAG,"a= ${a * 180 / PI}")
+            if (a<0){
+                val d = 180 + a*180/PI
+                a = (((180+d).toFloat()/180)*PI).toFloat()
+            }
+//Returns the angle theta of the polar coordinates (r, theta)
+// that correspond to the rectangular coordinates (x, y)
+// by computing the arc tangent of the value y / x;
+// the returned value is an angle in the range from -PI to PI radians.
+            //atan2(0.0, 0.0) is 0.0
+            //atan2(0.0, x) is 0.0 for x > 0 and PI for x < 0
+            //atan2(-0.0, x) is -0.0 for 'x > 0 and -PI for x < 0
+            //atan2(y, +Inf) is 0.0 for 0 < y < +Inf and -0.0 for '-Inf < y < 0
+            //atan2(y, -Inf) is PI for 0 < y < +Inf and -PI for -Inf < y < 0
+            //atan2(y, 0.0) is PI/2 for y > 0 and -PI/2 for y < 0
+            //atan2(+Inf, x) is PI/2 for finite xy
+            //atan2(-Inf, x) is -PI/2 for finite x
+            //atan2(NaN, x) and atan2(y, NaN) is NaN
+
             val endAngle = (values[i] / onePercent) * 3.6f
+
             Log.i(
                 TAG,
-                "item=${i})  R=$R,  startAngle=${startAngle*PI/180}, endAngle=${(startAngle + endAngle)*PI/180}    l=$l, a=$a"
+                "item=${i})  R=$R,  startAngle=${startAngle*PI/180}, endAngle=${(startAngle + endAngle)*PI/180}    l=$l, a=$a  ang=${a}"
             )
             if ((l <= R) &&
-                (a >= startAngle*PI/180) && (a <= (startAngle + endAngle)*PI/180)
+                (a > startAngle*PI/180) && (a <= (startAngle + endAngle)*PI/180)
             ) {
 
                 val koef = 50f
@@ -176,9 +197,9 @@ class MyDiagrammView @JvmOverloads constructor (
                     circleRight + koef,
                     circleBottom + koef,
                     startAngle,
-                    (values[i] / onePercent) * 3.6f,
+                    endAngle,
                     true,
-                    paintStr
+                    paint
                 )
 
                 Log.i(TAG, " YES")
@@ -190,7 +211,7 @@ class MyDiagrammView @JvmOverloads constructor (
                     circleRight,
                     circleBottom,
                     startAngle,
-                    (values[i]/onePercent)*3.6f,
+                    endAngle,
                     true,
                     paint
                 )
@@ -248,20 +269,20 @@ class MyDiagrammView @JvmOverloads constructor (
 
 
             //lines
-//            for (item in values){
-//                canvas.drawArc(
-//                    circleLeft ,
-//                    circleTop,
-//                    circleRight,
-//                    circleBottom,
-//                    startAngle,
-//                    (item/onePercent)*3.6f,
-//                    true,
-//                    paintStr
-//                )
-//
-//                startAngle += (item / onePercent) * 3.6f
-//            }
+            for (item in values){
+                canvas.drawArc(
+                    circleLeft ,
+                    circleTop,
+                    circleRight,
+                    circleBottom,
+                    startAngle,
+                    (item/onePercent)*3.6f,
+                    true,
+                    paintStr
+                )
+
+                startAngle += (item / onePercent) * 3.6f
+            }
 //            white center
             canvas.drawOval(
                 left,
@@ -276,7 +297,7 @@ class MyDiagrammView @JvmOverloads constructor (
             myX-15f,myY+15f,myX+15f,myY-15f,paintMyRed
         )
 
-        canvas.drawOval(worldWidth-20f,worldHeight-20f,worldWidth+20f,worldHeight+20f,paintMyNight)
+//        canvas.drawOval(worldWidth-20f,worldHeight-20f,worldWidth+20f,worldHeight+20f,paintMyNight)
 
 
     }

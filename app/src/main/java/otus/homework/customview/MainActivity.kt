@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val list = listOf(50f,50f,40f,10f)
+        val list = listOf(50f,50f,40f,10f,55f,14f,25f)
         binding.myCustomView.setValues(list.sorted())
 
     }
