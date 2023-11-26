@@ -12,8 +12,12 @@ import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
 import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.atan
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 class MyDiagrammView @JvmOverloads constructor (
     context: Context,
@@ -142,7 +146,7 @@ class MyDiagrammView @JvmOverloads constructor (
 
         if (values.size == 0) return
 
-        var startAngle = -45f
+        var startAngle = 45f
         var paint = listOfPaints[0]
 
         var paintIndx = 0
@@ -150,34 +154,35 @@ class MyDiagrammView @JvmOverloads constructor (
 
         var count = 0
 
-        for (item in values) {
+        for (i in 0.. values.lastIndex) {
 
-            if (count != 10){
-
-
-            Log.i(TAG, " angle =${startAngle + ((item / onePercent) * 3.6f) / 2 - 180}")
-            val ang = startAngle + ((item / onePercent) * 3.6f) / 2 + 180
-            Log.i(TAG, " bisektrisa =${ang - 180}  angle= ${ang}")
-            val angRad = PI * ang / 180
-
-            val horiz = cos(angRad).toFloat() * 100f
-            val vert = sin(angRad).toFloat() * 100f
-
-            Log.i(TAG, " hor =${horiz}  vert= $vert   sum= ${horiz+vert}")
-
-            val koef = 50f
-            canvas.drawArc(
-                circleLeft - koef,
-                circleTop - koef,
-                circleRight + koef,
-                circleBottom + koef,
-                startAngle,
-                (item / onePercent) * 3.6f,
-                true,
-                paintStr
+            val l =
+                sqrt((myX - worldWidth) * (myX - worldWidth) + (myY - worldHeight) * (myY - worldHeight))
+            val R = worldWidth - circleLeft
+            val a = abs(atan2(myY - worldHeight, myX - worldWidth))
+            val endAngle = (values[i] / onePercent) * 3.6f
+            Log.i(
+                TAG,
+                "item=${i})  R=$R,  startAngle=${startAngle*PI/180}, endAngle=${(startAngle + endAngle)*PI/180}    l=$l, a=$a"
             )
-//        }
-//        else{
+            if ((l <= R) &&
+                (a >= startAngle*PI/180) && (a <= (startAngle + endAngle)*PI/180)
+            ) {
+
+                val koef = 50f
+                canvas.drawArc(
+                    circleLeft - koef,
+                    circleTop - koef,
+                    circleRight + koef,
+                    circleBottom + koef,
+                    startAngle,
+                    (values[i] / onePercent) * 3.6f,
+                    true,
+                    paintStr
+                )
+
+                Log.i(TAG, " YES")
+            } else {
 
                 canvas.drawArc(
                     circleLeft,
@@ -185,12 +190,26 @@ class MyDiagrammView @JvmOverloads constructor (
                     circleRight,
                     circleBottom,
                     startAngle,
-                    (item/onePercent)*3.6f,
+                    (values[i]/onePercent)*3.6f,
                     true,
                     paint
                 )
+
+
+                Log.i(TAG, " NO")
             }
-        startAngle += (item / onePercent) * 3.6f
+            Log.i(TAG, " ___________")
+
+
+
+//            val ang = startAngle + ((item / onePercent) * 3.6f) / 2 + 180
+
+//            val angRad = PI * ang / 180
+
+//            val horiz = cos(angRad).toFloat() * 100f
+//            val vert = sin(angRad).toFloat() * 100f
+
+            startAngle += (values[i] / onePercent) * 3.6f
 //
             if (paintIndx == listOfPaints.lastIndex) {
                 paintIndx = 0
@@ -199,7 +218,14 @@ class MyDiagrammView @JvmOverloads constructor (
             }
             paint = listOfPaints[paintIndx]
             count++
-        }
+
+//        }
+//        else{
+
+
+            }
+
+
 
 
         Log.i(TAG,"count = $count  vals = $values")
@@ -249,6 +275,8 @@ class MyDiagrammView @JvmOverloads constructor (
         canvas.drawOval(
             myX-15f,myY+15f,myX+15f,myY-15f,paintMyRed
         )
+
+        canvas.drawOval(worldWidth-20f,worldHeight-20f,worldWidth+20f,worldHeight+20f,paintMyNight)
 
 
     }
