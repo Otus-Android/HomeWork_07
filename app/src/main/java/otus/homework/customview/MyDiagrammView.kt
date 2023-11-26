@@ -152,7 +152,7 @@ class MyDiagrammView @JvmOverloads constructor (
 
         for (item in values) {
 
-            if (count == 3){
+            if (count != 10){
 
 
             Log.i(TAG, " angle =${startAngle + ((item / onePercent) * 3.6f) / 2 - 180}")
@@ -163,20 +163,21 @@ class MyDiagrammView @JvmOverloads constructor (
             val horiz = cos(angRad).toFloat() * 100f
             val vert = sin(angRad).toFloat() * 100f
 
-            Log.i(TAG, " hor =${horiz}  vert= $vert")
+            Log.i(TAG, " hor =${horiz}  vert= $vert   sum= ${horiz+vert}")
 
+            val koef = 50f
             canvas.drawArc(
-                circleLeft - vert / 2,
-                circleTop - vert / 2,
-                circleRight + vert / 2,
-                circleBottom + vert / 2,
+                circleLeft - koef,
+                circleTop - koef,
+                circleRight + koef,
+                circleBottom + koef,
                 startAngle,
                 (item / onePercent) * 3.6f,
                 true,
                 paintStr
             )
-        }
-        else{
+//        }
+//        else{
 
                 canvas.drawArc(
                     circleLeft,
@@ -236,13 +237,13 @@ class MyDiagrammView @JvmOverloads constructor (
 //                startAngle += (item / onePercent) * 3.6f
 //            }
 //            white center
-//            canvas.drawOval(
-//                left,
-//                top,
-//                right,
-//                bottom,
-//                paintBackground
-//            )
+            canvas.drawOval(
+                left,
+                top,
+                right,
+                bottom,
+                paintBackground
+            )
         }
 
         canvas.drawOval(
