@@ -153,12 +153,21 @@ class MyDiagrammView @JvmOverloads constructor (
 
 
         var count = 0
+        var chosenLeft : Float = 0f
+        var chosenRight: Float = 0f
+        var chosenTop: Float = 0f
+        var chosenBottom: Float = 0f
+        var chosenStartAngle = 0f
+        var chosenEAngle = 0f
+        var chosenPaint : Paint? = null
 
         for (i in 0.. values.lastIndex) {
 
             val l =
                 sqrt((myX - worldWidth) * (myX - worldWidth) + (myY - worldHeight) * (myY - worldHeight))
             val R = worldWidth - circleLeft
+
+
 
             var a = atan2(myY - worldHeight, myX - worldWidth)
             Log.i(TAG,"a= ${a * 180 / PI}")
@@ -182,6 +191,8 @@ class MyDiagrammView @JvmOverloads constructor (
 
             val endAngle = (values[i] / onePercent) * 3.6f
 
+
+
             Log.i(
                 TAG,
                 "item=${i})  R=$R,  startAngle=${startAngle*PI/180}, endAngle=${(startAngle + endAngle)*PI/180}    l=$l, a=$a  ang=${a}"
@@ -191,18 +202,83 @@ class MyDiagrammView @JvmOverloads constructor (
             ) {
 
                 val koef = 50f
-                canvas.drawArc(
-                    circleLeft - koef,
-                    circleTop - koef,
-                    circleRight + koef,
-                    circleBottom + koef,
-                    startAngle,
-                    endAngle,
-                    true,
-                    paint
+
+                val beta = ((startAngle + endAngle))/2
+
+                val dx = 100*cos(beta*PI/180).toFloat()
+                val dy = 100f*sin(beta*PI/180).toFloat()
+
+                val l = sqrt(dx*dx + dy*dy)
+
+//
+//        canvas.drawOval(
+//            worldWidth-dx,
+//            worldHeight,
+//            worldWidth,
+//            worldHeight,
+//            paintMyRed)
+
+
+                Log.i(
+                    TAG,
+                    "beta = $beta   dx=$dx,   dy=$dy  l=$l"
                 )
 
+//                canvas.drawArc(
+//                    circleLeft - koef,
+//                    circleTop - koef,
+//                    circleRight + koef,
+//                    circleBottom + koef,
+//                    startAngle,
+//                    endAngle,
+//                    true,
+//                    paint
+//                )
+
+                //remove
+//                canvas.drawArc(
+//                    circleLeft - koef  ,
+//                    circleTop - koef,
+//                    circleRight + koef,
+//                    circleBottom + koef,
+//                    startAngle,
+//                    endAngle/2,
+//                    true,
+//                    paintStr
+//                )
+
+//                canvas.drawOval(
+//                    circleLeft - koef -dx,
+//                    circleTop - koef-dy,
+//                    circleRight + koef-dx,
+//                    circleBottom + koef-dy,
+//                    paintStr
+//                )
+                    chosenLeft=circleLeft - 3.5f*koef -dx
+                chosenTop = circleTop - 3.5f*koef -dy
+                chosenRight = circleRight + 3.5f*koef - dx
+                chosenBottom = circleBottom + 3.5f*koef -dy
+
+                chosenPaint = paint
+
+                chosenStartAngle = startAngle
+                chosenEAngle = endAngle
+
+//good
+//                canvas.drawArc(
+//                    circleLeft - 4*koef -dx,
+//                    circleTop - 4*koef -dy,
+//                    circleRight + 4*koef - dx,
+//                    circleBottom + 4*koef -dy,
+//                    startAngle,
+//                    endAngle,
+//                    true,
+//                    paintStr
+//                )
+
+
                 Log.i(TAG, " YES")
+//                return
             } else {
 
                 canvas.drawArc(
@@ -283,6 +359,9 @@ class MyDiagrammView @JvmOverloads constructor (
 
                 startAngle += (item / onePercent) * 3.6f
             }
+
+
+
 //            white center
             canvas.drawOval(
                 left,
@@ -291,6 +370,29 @@ class MyDiagrammView @JvmOverloads constructor (
                 bottom,
                 paintBackground
             )
+
+            chosenPaint?.let {
+                canvas.drawArc(
+                    chosenLeft,
+                    chosenTop,
+                    chosenRight,
+                    chosenBottom,
+                    chosenStartAngle,
+                    chosenEAngle,
+                    true,
+                    chosenPaint
+                )
+
+                canvas.drawOval(
+                    left+50f,
+                    top-50f,
+                    right-50f,
+                    bottom+50f,
+                    paintBackground
+                )
+
+            }
+
         }
 
         canvas.drawOval(
