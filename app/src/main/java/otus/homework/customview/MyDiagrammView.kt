@@ -1,17 +1,24 @@
 package otus.homework.customview
 
+
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.Log
+import android.view.GestureDetector
+import android.view.GestureDetector.SimpleOnGestureListener
+import android.view.MotionEvent
 import android.view.View
-import kotlin.math.abs
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 class MyDiagrammView @JvmOverloads constructor (
     context: Context,
     attrs: AttributeSet? = null
-    ): View(context, attrs) {
+): View(context, attrs) {
 
     private val values = ArrayList<Float>()
 
@@ -30,10 +37,37 @@ class MyDiagrammView @JvmOverloads constructor (
     private lateinit var paintMyNight: Paint
     private lateinit var paintMyDeep: Paint
 
+    private lateinit var paintStr: Paint
+
     private val listOfPaints = mutableListOf<Paint>()
 
     private var onePercent: Float = 0.0f
 
+    private var scale: Float = 1f
+    private var myX: Float = 0f
+    private var myY: Float = 0f
+
+    private var count = 0
+
+    private val gestureDetector = GestureDetector(context, object :SimpleOnGestureListener(){
+        override fun onDown(e: MotionEvent?): Boolean {
+            scale+=2f
+            e?.let {
+                myX = e.x
+                myY = e.y
+            }
+            Log.i(TAG, "doubleClicked")
+
+            invalidate()
+            return true
+
+
+        }
+
+        override fun onDoubleTap(e: MotionEvent?): Boolean {
+            return super.onDoubleTap(e)
+        }
+    })
 
 
     init {
@@ -78,21 +112,21 @@ class MyDiagrammView @JvmOverloads constructor (
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-       val worldHeight = height.toFloat()/2
-       val worldWidth = width.toFloat()/2
+        val worldHeight = height.toFloat() / 2
+        val worldWidth = width.toFloat() / 2
 
-        val circleLeft : Float
-        val circleTop : Float
-        val circleRight : Float
-        val circleBottom : Float
+        val circleLeft: Float
+        val circleTop: Float
+        val circleRight: Float
+        val circleBottom: Float
 
 
-        if (worldHeight<worldWidth){
-            padding = paddingByHeight+(worldWidth-worldHeight)
+        if (worldHeight < worldWidth) {
+            padding = paddingByHeight + (worldWidth - worldHeight)
             circleTop = paddingByHeight
             circleBottom = height.toFloat() - paddingByHeight
             circleLeft = padding
-            circleRight = width.toFloat()-padding
+            circleRight = width.toFloat() - padding
 
         } else {
             padding = worldWidth / 5
@@ -112,26 +146,63 @@ class MyDiagrammView @JvmOverloads constructor (
         var paint = listOfPaints[0]
 
         var paintIndx = 0
-        for (item in values){
-            canvas.drawArc(
-                  circleLeft,
-                circleTop,
-                circleRight,
-                circleBottom,
-                startAngle,
-                (item/onePercent)*3.6f,
-                true,
-                paint
-            )
 
-            startAngle += (item / onePercent) * 3.6f
-            paint = listOfPaints[paintIndx]
+
+        var count = 0
+
+        for (item in values) {
+
+            if (count == 3){
+
+
+            Log.i(TAG, " angle =${startAngle + ((item / onePercent) * 3.6f) / 2 - 180}")
+            val ang = startAngle + ((item / onePercent) * 3.6f) / 2 + 180
+            Log.i(TAG, " bisektrisa =${ang - 180}  angle= ${ang}")
+            val angRad = PI * ang / 180
+
+            val horiz = cos(angRad).toFloat() * 100f
+            val vert = sin(angRad).toFloat() * 100f
+
+            Log.i(TAG, " hor =${horiz}  vert= $vert")
+
+            canvas.drawArc(
+                circleLeft - vert / 2,
+                circleTop - vert / 2,
+                circleRight + vert / 2,
+                circleBottom + vert / 2,
+                startAngle,
+                (item / onePercent) * 3.6f,
+                true,
+                paintStr
+            )
+        }
+        else{
+
+                canvas.drawArc(
+                    circleLeft,
+                    circleTop,
+                    circleRight,
+                    circleBottom,
+                    startAngle,
+                    (item/onePercent)*3.6f,
+                    true,
+                    paint
+                )
+            }
+        startAngle += (item / onePercent) * 3.6f
+//
             if (paintIndx == listOfPaints.lastIndex) {
                 paintIndx = 0
             } else {
                 paintIndx++
             }
+            paint = listOfPaints[paintIndx]
+            count++
         }
+
+
+        Log.i(TAG,"count = $count  vals = $values")
+
         if (worldHeight < worldWidth) {
             canvas.drawOval(
                 worldWidth - paddingByHeight * 2,
@@ -141,14 +212,42 @@ class MyDiagrammView @JvmOverloads constructor (
                 paintBackground
             )
         } else {
-            canvas.drawOval(
-                worldWidth - padding * 2,
-                worldHeight + padding * 2,
-                worldWidth + padding * 2,
-                worldHeight - padding * 2,
-                paintBackground
-            )
+
+            val left = worldWidth - padding * 3
+            val right = worldWidth + padding * 3
+            val top = worldHeight + padding * 3
+            val bottom = worldHeight - padding * 3
+
+
+
+            //lines
+//            for (item in values){
+//                canvas.drawArc(
+//                    circleLeft ,
+//                    circleTop,
+//                    circleRight,
+//                    circleBottom,
+//                    startAngle,
+//                    (item/onePercent)*3.6f,
+//                    true,
+//                    paintStr
+//                )
+//
+//                startAngle += (item / onePercent) * 3.6f
+//            }
+//            white center
+//            canvas.drawOval(
+//                left,
+//                top,
+//                right,
+//                bottom,
+//                paintBackground
+//            )
         }
+
+        canvas.drawOval(
+            myX-15f,myY+15f,myX+15f,myY-15f,paintMyRed
+        )
 
 
     }
@@ -170,57 +269,67 @@ class MyDiagrammView @JvmOverloads constructor (
             style = Paint.Style.FILL
         }
         paintMyRed=Paint().apply {
-              color = context.getColor(R.color.my_red)
+            color = context.getColor(R.color.my_red)
             style = Paint.Style.FILL
         }
         paintMyOrange=Paint().apply {
-              color = context.getColor(R.color.my_orange)
+            color = context.getColor(R.color.my_orange)
             style = Paint.Style.FILL
         }
         paintMySand=Paint().apply {
-              color = context.getColor(R.color.my_sand)
+            color = context.getColor(R.color.my_sand)
             style = Paint.Style.FILL
         }
         paintMyPeach=Paint().apply {
-              color = context.getColor(R.color.my_peach)
+            color = context.getColor(R.color.my_peach)
             style = Paint.Style.FILL
         }
         paintMyLemon=Paint().apply {
-              color = context.getColor(R.color.my_lemon)
+            color = context.getColor(R.color.my_lemon)
             style = Paint.Style.FILL
         }
         paintMyLime=Paint().apply {
-              color = context.getColor(R.color.my_lime)
+            color = context.getColor(R.color.my_lime)
             style = Paint.Style.FILL
         }
         paintMyWave=Paint().apply {
-              color = context.getColor(R.color.my_wave)
+            color = context.getColor(R.color.my_wave)
             style = Paint.Style.FILL
         }
         paintMyOcean=Paint().apply {
-              color = context.getColor(R.color.my_ocean)
+            color = context.getColor(R.color.my_ocean)
             style = Paint.Style.FILL
         }
         paintMyNight=Paint().apply {
-              color = context.getColor(R.color.my_night)
+            color = context.getColor(R.color.my_night)
             style = Paint.Style.FILL
         }
         paintMyDeep=Paint().apply {
-              color = context.getColor(R.color.my_deep)
+            color = context.getColor(R.color.my_deep)
             style = Paint.Style.FILL
+        }
+        paintStr=Paint().apply {
+            color = context.getColor(R.color.black)
+            style = Paint.Style.STROKE
+            strokeWidth = 2f
         }
 
         listOfPaints.run {
+            add(paintMyLime)
             add(paintMyRed)
-            add(paintMyOrange)
             add(paintMySand)
+            add(paintMyWave)
+            add(paintMyOrange)
+            add(paintMyOcean)
             add(paintMyPeach)
             add(paintMyLemon)
-            add(paintMyLime)
-            add(paintMyWave)
-            add(paintMyOcean)
             add(paintMyNight)
             add(paintMyDeep)
         }
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        gestureDetector.onTouchEvent(event)
+        return true
     }
 }
