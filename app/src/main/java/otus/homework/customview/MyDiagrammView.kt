@@ -24,7 +24,7 @@ class MyDiagrammView @JvmOverloads constructor (
     attrs: AttributeSet? = null
 ): View(context, attrs) {
 
-    private val values = ArrayList<Float>()
+    private val values = ArrayList<Expense>()
 
     private var paddingByHeight = 0f
     private var padding = 0f
@@ -76,7 +76,7 @@ class MyDiagrammView @JvmOverloads constructor (
 
     init {
         if (isInEditMode) {
-            setValues(listOf(4f, 2f, 1f, 5f, 0f, 2f))
+//            setValues(listOf(4f, 2f, 1f, 5f, 0f, 2f))
         }
         setup(
             context
@@ -176,7 +176,7 @@ class MyDiagrammView @JvmOverloads constructor (
                 a = (((180+d).toFloat()/180)*PI).toFloat()
             }
 
-            val endAngle = (values[i] / onePercent) * 3.6f
+            val endAngle = (values[i].amount / onePercent) * 3.6f
 
 
 
@@ -236,7 +236,7 @@ class MyDiagrammView @JvmOverloads constructor (
             Log.i(TAG, " ___________")
 
 
-            startAngle += (values[i] / onePercent) * 3.6f
+            startAngle += (values[i].amount / onePercent) * 3.6f
             if (paintIndx == listOfPaints.lastIndex) {
                 paintIndx = 0
             } else {
@@ -279,12 +279,12 @@ class MyDiagrammView @JvmOverloads constructor (
                     circleRight,
                     circleBottom,
                     startAngle,
-                    (item/onePercent)*3.6f,
+                    (item.amount/onePercent)*3.6f,
                     true,
                     paintStr
                 )
 
-                startAngle += (item / onePercent) * 3.6f
+                startAngle += (item.amount / onePercent) * 3.6f
             }
 
 
@@ -336,10 +336,12 @@ class MyDiagrammView @JvmOverloads constructor (
 
     }
 
-    fun setValues(values : List<Float>) {
+    fun setValues(values : List<Expense>) {
         this.values.clear()
         this.values.addAll(values)
-        val hundredPercent = this.values.sum()
+
+        var hundredPercent = 0f
+        values.forEach { hundredPercent+=it.amount }
         onePercent = hundredPercent/100
         requestLayout()
         invalidate()
