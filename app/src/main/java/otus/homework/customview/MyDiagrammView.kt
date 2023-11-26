@@ -175,27 +175,19 @@ class MyDiagrammView @JvmOverloads constructor (
                 val d = 180 + a*180/PI
                 a = (((180+d).toFloat()/180)*PI).toFloat()
             }
-//Returns the angle theta of the polar coordinates (r, theta)
-// that correspond to the rectangular coordinates (x, y)
-// by computing the arc tangent of the value y / x;
-// the returned value is an angle in the range from -PI to PI radians.
-            //atan2(0.0, 0.0) is 0.0
-            //atan2(0.0, x) is 0.0 for x > 0 and PI for x < 0
-            //atan2(-0.0, x) is -0.0 for 'x > 0 and -PI for x < 0
-            //atan2(y, +Inf) is 0.0 for 0 < y < +Inf and -0.0 for '-Inf < y < 0
-            //atan2(y, -Inf) is PI for 0 < y < +Inf and -PI for -Inf < y < 0
-            //atan2(y, 0.0) is PI/2 for y > 0 and -PI/2 for y < 0
-            //atan2(+Inf, x) is PI/2 for finite xy
-            //atan2(-Inf, x) is -PI/2 for finite x
-            //atan2(NaN, x) and atan2(y, NaN) is NaN
 
             val endAngle = (values[i] / onePercent) * 3.6f
 
 
 
+//            Log.i(
+//                TAG,
+//                "item=${i})  R=$R,  startAngle=${startAngle*PI/180}, endAngle=${(startAngle + endAngle)*PI/180}    l=$l, a=$a  ang=${a}"
+//            )
+
             Log.i(
                 TAG,
-                "item=${i})  R=$R,  startAngle=${startAngle*PI/180}, endAngle=${(startAngle + endAngle)*PI/180}    l=$l, a=$a  ang=${a}"
+                "item=${i})  R=$R,  startAngle=${startAngle}, endAngle=${ endAngle}    l=$l, a=$a  ang=${a}"
             )
             if ((l <= R) &&
                 (a > startAngle*PI/180) && (a <= (startAngle + endAngle)*PI/180)
@@ -203,82 +195,28 @@ class MyDiagrammView @JvmOverloads constructor (
 
                 val koef = 50f
 
-                val beta = ((startAngle + endAngle))/2
+                val beta = (((endAngle))/2+startAngle)
 
-                val dx = 100*cos(beta*PI/180).toFloat()
+                val dx = 100f*cos(beta*PI/180).toFloat()
                 val dy = 100f*sin(beta*PI/180).toFloat()
-
-                val l = sqrt(dx*dx + dy*dy)
-
-//
-//        canvas.drawOval(
-//            worldWidth-dx,
-//            worldHeight,
-//            worldWidth,
-//            worldHeight,
-//            paintMyRed)
-
 
                 Log.i(
                     TAG,
-                    "beta = $beta   dx=$dx,   dy=$dy  l=$l"
+                    "beta = $beta   dx=$dx,   dy=$dy "
                 )
 
-//                canvas.drawArc(
-//                    circleLeft - koef,
-//                    circleTop - koef,
-//                    circleRight + koef,
-//                    circleBottom + koef,
-//                    startAngle,
-//                    endAngle,
-//                    true,
-//                    paint
-//                )
+                chosenLeft = circleLeft - 20f
+                chosenTop = circleTop - 20f
+                chosenRight = circleRight + 20f
+                chosenBottom = circleBottom + 20f
 
-                //remove
-//                canvas.drawArc(
-//                    circleLeft - koef  ,
-//                    circleTop - koef,
-//                    circleRight + koef,
-//                    circleBottom + koef,
-//                    startAngle,
-//                    endAngle/2,
-//                    true,
-//                    paintStr
-//                )
-
-//                canvas.drawOval(
-//                    circleLeft - koef -dx,
-//                    circleTop - koef-dy,
-//                    circleRight + koef-dx,
-//                    circleBottom + koef-dy,
-//                    paintStr
-//                )
-                    chosenLeft=circleLeft - 3.5f*koef -dx
-                chosenTop = circleTop - 3.5f*koef -dy
-                chosenRight = circleRight + 3.5f*koef - dx
-                chosenBottom = circleBottom + 3.5f*koef -dy
 
                 chosenPaint = paint
 
-                chosenStartAngle = startAngle
-                chosenEAngle = endAngle
-
-//good
-//                canvas.drawArc(
-//                    circleLeft - 4*koef -dx,
-//                    circleTop - 4*koef -dy,
-//                    circleRight + 4*koef - dx,
-//                    circleBottom + 4*koef -dy,
-//                    startAngle,
-//                    endAngle,
-//                    true,
-//                    paintStr
-//                )
+                chosenStartAngle = startAngle-10f
+                chosenEAngle = endAngle+10f
 
 
-                Log.i(TAG, " YES")
-//                return
             } else {
 
                 canvas.drawArc(
@@ -298,16 +236,7 @@ class MyDiagrammView @JvmOverloads constructor (
             Log.i(TAG, " ___________")
 
 
-
-//            val ang = startAngle + ((item / onePercent) * 3.6f) / 2 + 180
-
-//            val angRad = PI * ang / 180
-
-//            val horiz = cos(angRad).toFloat() * 100f
-//            val vert = sin(angRad).toFloat() * 100f
-
             startAngle += (values[i] / onePercent) * 3.6f
-//
             if (paintIndx == listOfPaints.lastIndex) {
                 paintIndx = 0
             } else {
@@ -316,8 +245,6 @@ class MyDiagrammView @JvmOverloads constructor (
             paint = listOfPaints[paintIndx]
             count++
 
-//        }
-//        else{
 
 
             }
@@ -361,7 +288,6 @@ class MyDiagrammView @JvmOverloads constructor (
             }
 
 
-
 //            white center
             canvas.drawOval(
                 left,
@@ -382,24 +308,30 @@ class MyDiagrammView @JvmOverloads constructor (
                     true,
                     chosenPaint
                 )
-
-                canvas.drawOval(
-                    left+50f,
-                    top-50f,
-                    right-50f,
-                    bottom+50f,
-                    paintBackground
+                canvas.drawArc(
+                    chosenLeft,
+                    chosenTop,
+                    chosenRight,
+                    chosenBottom,
+                    chosenStartAngle,
+                    chosenEAngle,
+                    true,
+                    paintStr
                 )
 
+                canvas.drawOval(
+                    left+20f,
+                    top-20f,
+                    right-20f,
+                    bottom+20f,
+                    paintBackground
+                )
             }
-
         }
 
         canvas.drawOval(
             myX-15f,myY+15f,myX+15f,myY-15f,paintMyRed
         )
-
-//        canvas.drawOval(worldWidth-20f,worldHeight-20f,worldWidth+20f,worldHeight+20f,paintMyNight)
 
 
     }
