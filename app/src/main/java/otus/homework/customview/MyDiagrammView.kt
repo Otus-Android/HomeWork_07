@@ -1,9 +1,7 @@
 package otus.homework.customview
 
-
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.Log
@@ -11,13 +9,6 @@ import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.atan
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 class MyDiagrammView @JvmOverloads constructor (
     context: Context,
@@ -26,8 +17,8 @@ class MyDiagrammView @JvmOverloads constructor (
 
     private val values = ArrayList<Expense>()
 
-    private var paddingByHeight = 0f
-    private var padding = 0f
+    private val paddingParameter = 10f
+    private val widthOfCycleGraph = 100f
 
     private lateinit var paintBackground : Paint
     private lateinit var paintMyRed: Paint
@@ -47,25 +38,21 @@ class MyDiagrammView @JvmOverloads constructor (
 
     private var onePercent: Float = 0.0f
 
-    private var scale: Float = 1f
-    private var myX: Float = 0f
-    private var myY: Float = 0f
+    private var clickedPointX: Float = 0f
+    private var clickedPointY: Float = 0f
 
-    private var count = 0
+
 
     private val gestureDetector = GestureDetector(context, object :SimpleOnGestureListener(){
         override fun onDown(e: MotionEvent?): Boolean {
-            scale+=2f
             e?.let {
-                myX = e.x
-                myY = e.y
+                clickedPointX = e.x
+                clickedPointY = e.y
+
             }
-            Log.i(TAG, "doubleClicked")
 
             invalidate()
             return true
-
-
         }
 
         override fun onDoubleTap(e: MotionEvent?): Boolean {
@@ -93,15 +80,9 @@ class MyDiagrammView @JvmOverloads constructor (
         when (hMode) {
 
             MeasureSpec.EXACTLY -> {
-                paddingByHeight = if (hSize>wSize){
-                    (hSize-wSize).toFloat()/2
-                }else{
-                    hSize.toFloat()/10
-                }
                 setMeasuredDimension(wSize, hSize)
             }
             MeasureSpec.AT_MOST -> {
-                paddingByHeight = 0f
                 val newH = wSize.coerceAtMost(hSize)
                 val newW =  wSize.coerceAtMost(hSize)
                 setMeasuredDimension(newW, newH)
@@ -116,225 +97,208 @@ class MyDiagrammView @JvmOverloads constructor (
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        val worldHeight = height.toFloat() / 2
-        val worldWidth = width.toFloat() / 2
-
-        val circleLeft: Float
-        val circleTop: Float
-        val circleRight: Float
-        val circleBottom: Float
-
-
-        if (worldHeight < worldWidth) {
-            padding = paddingByHeight + (worldWidth - worldHeight)
-            circleTop = paddingByHeight
-            circleBottom = height.toFloat() - paddingByHeight
-            circleLeft = padding
-            circleRight = width.toFloat() - padding
-
-        } else {
-            padding = worldWidth / 5
-            circleLeft = padding
-            circleTop = padding + paddingByHeight
-            circleRight = width.toFloat() - padding
-            circleBottom = height.toFloat() - paddingByHeight - padding
-        }
-
-
-
         canvas.drawRGB(255, 255, 255)
 
-        if (values.size == 0) return
+        if (values.isEmpty()) return
 
-        var startAngle = 0f
-        var paint = listOfPaints[0]
+        val worldWidth = width.toFloat()
+        val worldHeight = height.toFloat()
+        val hCenter = worldHeight / 2
+        val wCenter = worldWidth / 2
 
-        var paintIndx = 0
+        val paddingWidth: Float
+        val paddingHeight: Float
 
-
-        var count = 0
-        var chosenLeft : Float = 0f
-        var chosenRight: Float = 0f
-        var chosenTop: Float = 0f
-        var chosenBottom: Float = 0f
-        var chosenStartAngle = 0f
-        var chosenEAngle = 0f
-        var chosenPaint : Paint? = null
-
-        for (i in 0.. values.lastIndex) {
-
-            val l =
-                sqrt((myX - worldWidth) * (myX - worldWidth) + (myY - worldHeight) * (myY - worldHeight))
-            val R = worldWidth - circleLeft
-
-
-
-            var a = atan2(myY - worldHeight, myX - worldWidth)
-            Log.i(TAG,"a= ${a * 180 / PI}")
-            if (a<0){
-                val d = 180 + a*180/PI
-                a = (((180+d).toFloat()/180)*PI).toFloat()
-            }
-
-            val endAngle = (values[i].amount / onePercent) * 3.6f
-
-
-
-//            Log.i(
-//                TAG,
-//                "item=${i})  R=$R,  startAngle=${startAngle*PI/180}, endAngle=${(startAngle + endAngle)*PI/180}    l=$l, a=$a  ang=${a}"
-//            )
-
-            Log.i(
-                TAG,
-                "item=${i})  R=$R,  startAngle=${startAngle}, endAngle=${ endAngle}    l=$l, a=$a  ang=${a}"
-            )
-            if ((l <= R) &&
-                (a > startAngle*PI/180) && (a <= (startAngle + endAngle)*PI/180)
-            ) {
-
-                val koef = 50f
-
-                val beta = (((endAngle))/2+startAngle)
-
-                val dx = 100f*cos(beta*PI/180).toFloat()
-                val dy = 100f*sin(beta*PI/180).toFloat()
-
-                Log.i(
-                    TAG,
-                    "beta = $beta   dx=$dx,   dy=$dy "
-                )
-
-                chosenLeft = circleLeft - 20f
-                chosenTop = circleTop - 20f
-                chosenRight = circleRight + 20f
-                chosenBottom = circleBottom + 20f
-
-
-                chosenPaint = paint
-
-                chosenStartAngle = startAngle-10f
-                chosenEAngle = endAngle+10f
-
-
-            } else {
-
-                canvas.drawArc(
-                    circleLeft,
-                    circleTop,
-                    circleRight,
-                    circleBottom,
-                    startAngle,
-                    endAngle,
-                    true,
-                    paint
-                )
-
-
-                Log.i(TAG, " NO")
-            }
-            Log.i(TAG, " ___________")
-
-
-            startAngle += (values[i].amount / onePercent) * 3.6f
-            if (paintIndx == listOfPaints.lastIndex) {
-                paintIndx = 0
-            } else {
-                paintIndx++
-            }
-            paint = listOfPaints[paintIndx]
-            count++
-
-
-
-            }
-
-
-
-
-        Log.i(TAG,"count = $count  vals = $values")
-
-        if (worldHeight < worldWidth) {
-            canvas.drawOval(
-                worldWidth - paddingByHeight * 2,
-                worldHeight + paddingByHeight * 2,
-                worldWidth + paddingByHeight * 2,
-                worldHeight - paddingByHeight * 2,
-                paintBackground
-            )
+        if (hCenter < wCenter) {
+            paddingHeight = worldHeight / paddingParameter
+            paddingWidth = wCenter - hCenter + paddingHeight
         } else {
-
-            val left = worldWidth - padding * 3
-            val right = worldWidth + padding * 3
-            val top = worldHeight + padding * 3
-            val bottom = worldHeight - padding * 3
-
-
-
-            //lines
-            for (item in values){
-                canvas.drawArc(
-                    circleLeft ,
-                    circleTop,
-                    circleRight,
-                    circleBottom,
-                    startAngle,
-                    (item.amount/onePercent)*3.6f,
-                    true,
-                    paintStr
-                )
-
-                startAngle += (item.amount / onePercent) * 3.6f
-            }
-
-
-//            white center
-            canvas.drawOval(
-                left,
-                top,
-                right,
-                bottom,
-                paintBackground
-            )
-
-            chosenPaint?.let {
-                canvas.drawArc(
-                    chosenLeft,
-                    chosenTop,
-                    chosenRight,
-                    chosenBottom,
-                    chosenStartAngle,
-                    chosenEAngle,
-                    true,
-                    chosenPaint
-                )
-                canvas.drawArc(
-                    chosenLeft,
-                    chosenTop,
-                    chosenRight,
-                    chosenBottom,
-                    chosenStartAngle,
-                    chosenEAngle,
-                    true,
-                    paintStr
-                )
-
-                canvas.drawOval(
-                    left+20f,
-                    top-20f,
-                    right-20f,
-                    bottom+20f,
-                    paintBackground
-                )
-            }
+            paddingWidth = worldWidth / paddingParameter
+            paddingHeight = hCenter - wCenter + paddingWidth
         }
 
-        canvas.drawOval(
-            myX-15f,myY+15f,myX+15f,myY-15f,paintMyRed
-        )
+        var startAngleG = 0f
+        var paintIndex = 0
+        var paint = listOfPaints[paintIndex]
 
+//        var chosenLeft : Float = 0f
+//        var chosenRight: Float = 0f
+//        var chosenTop: Float = 0f
+//        var chosenBottom: Float = 0f
+//        var chosenStartAngle = 0f
+//        var chosenEAngle = 0f
+//        var chosenPaint : Paint? = null
+
+        for (i in 0.. values.lastIndex) {
+//            val l =
+//                sqrt((clickedPointX - wCenter) * (clickedPointX - wCenter) + (clickedPointY - hCenter) * (clickedPointY - hCenter))
+//            val R = wCenter - arcLeft
+//
+//            var a = atan2(clickedPointY - hCenter, clickedPointX - wCenter)
+//            Log.i(TAG,"a= ${a * 180 / PI}")
+//            if (a<0){
+//                val d = 180 + a*180/PI
+//                a = (((180+d).toFloat()/180)*PI).toFloat()
+//            }
+//
+            val endAngleG = (values[i].amount / onePercent) * 3.6f
+//
+//
+//            Log.i(
+//                TAG,
+//                "item=${i})  R=$R,  startAngle=${startAngle}, endAngle=${ endAngle}    l=$l, a=$a  ang=${a}"
+//            )
+//
+//            val ROfWhiteCycle = (( wCenter + paddingByWidth * 3 - wCenter + paddingByWidth * 3)/2)
+//            if (((l <= R) && (l>=ROfWhiteCycle))&&
+//                (a > startAngle*PI/180) && (a <= (startAngle + endAngle)*PI/180)
+//            ) {
+//
+//                val koef = 50f
+//                val beta = (((endAngle))/2+startAngle)
+//                val dx = 100f*cos(beta*PI/180).toFloat()
+//                val dy = 100f*sin(beta*PI/180).toFloat()
+//                Log.i(
+//                    TAG,
+//                    "beta = $beta   dx=$dx,   dy=$dy "
+//                )
+//
+//                chosenLeft = arcLeft - 20f
+//                chosenTop = arcTop - 20f
+//                chosenRight = arcRight + 20f
+//                chosenBottom = arcBottom + 20f
+//
+//
+//                chosenPaint = paint
+//
+//                chosenStartAngle = startAngle-10f
+//                chosenEAngle = endAngle+10f
+//
+//
+//            } else {
+
+            canvas.drawArc(
+                paddingWidth,
+                paddingHeight,
+                worldWidth - paddingWidth,
+                worldHeight - paddingHeight,
+                startAngleG,
+                endAngleG,
+                true,
+                paint
+            )
+            canvas.drawArc(
+                paddingWidth,
+                paddingHeight,
+                worldWidth - paddingWidth,
+                worldHeight - paddingHeight,
+                startAngleG,
+                endAngleG,
+                true,
+                paintStr
+            )
+            startAngleG += endAngleG
+            if (paintIndex == listOfPaints.lastIndex) {
+                paintIndex = 0
+            } else {
+                paintIndex++
+            }
+            paint = listOfPaints[paintIndex]
+        }
+
+
+
+
+//        Log.i(TAG,"count = $count  vals = $values")
+//
+//        if (hCenter < wCenter) {
+//            canvas.drawOval(
+//                wCenter - paddingByHeight * 2,
+//                hCenter + paddingByHeight * 2,
+//                wCenter + paddingByHeight * 2,
+//                hCenter - paddingByHeight * 2,
+//                paintBackground
+//            )
+//        } else {
+//
+//            val left = wCenter - paddingByWidth * 3
+//            val right = wCenter + paddingByWidth * 3
+//            val top = hCenter + paddingByWidth * 3
+//            val bottom = hCenter - paddingByWidth * 3
+//
+//
+//            //lines
+//            for (item in values) {
+//                canvas.drawArc(
+//                    arcLeft,
+//                    arcTop,
+//                    arcRight,
+//                    arcBottom,
+//                    startAngle,
+//                    (item.amount / onePercent) * 3.6f,
+//                    true,
+//                    paintStr
+//                )
+//
+//                startAngle += (item.amount / onePercent) * 3.6f
+//            }
+
+
+//      white center
+        canvas.drawOval(
+            paddingWidth + widthOfCycleGraph,
+            paddingHeight + widthOfCycleGraph,
+            worldWidth - paddingWidth - widthOfCycleGraph,
+            worldHeight - paddingHeight - widthOfCycleGraph,
+            paintBackground
+        )
+        canvas.drawOval(
+            paddingWidth + widthOfCycleGraph,
+            paddingHeight + widthOfCycleGraph,
+            worldWidth - paddingWidth - widthOfCycleGraph,
+            worldHeight - paddingHeight - widthOfCycleGraph,
+            paintStr
+        )
+//
+//            chosenPaint?.let {
+//                canvas.drawArc(
+//                    chosenLeft,
+//                    chosenTop,
+//                    chosenRight,
+//                    chosenBottom,
+//                    chosenStartAngle,
+//                    chosenEAngle,
+//                    true,
+//                    chosenPaint
+//                )
+//                canvas.drawArc(
+//                    chosenLeft,
+//                    chosenTop,
+//                    chosenRight,
+//                    chosenBottom,
+//                    chosenStartAngle,
+//                    chosenEAngle,
+//                    true,
+//                    paintStr
+//                )
+//
+//                canvas.drawOval(
+//                    left+20f,
+//                    top-20f,
+//                    right-20f,
+//                    bottom+20f,
+//                    paintBackground
+//                )
+//            }
+//        }
+//
+//        canvas.drawOval(
+//            clickedPointX-15f,clickedPointY+15f,clickedPointX+15f,clickedPointY-15f,paintMyRed
+//        )
 
     }
+
+
 
     fun setValues(values : List<Expense>) {
         this.values.clear()
@@ -413,6 +377,8 @@ class MyDiagrammView @JvmOverloads constructor (
             add(paintMyDeep)
         }
     }
+
+
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         gestureDetector.onTouchEvent(event)
