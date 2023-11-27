@@ -125,13 +125,13 @@ class MyDiagrammView @JvmOverloads constructor (
         var paintIndex = 0
         var paint = listOfPaints[paintIndex]
 
-//        var chosenLeft : Float = 0f
-//        var chosenRight: Float = 0f
-//        var chosenTop: Float = 0f
-//        var chosenBottom: Float = 0f
-//        var chosenStartAngle = 0f
-//        var chosenEAngle = 0f
-//        var chosenPaint : Paint? = null
+        var chosenLeft : Float = 0f
+        var chosenRight: Float = 0f
+        var chosenTop: Float = 0f
+        var chosenBottom: Float = 0f
+        var chosenStartAngle = 0f
+        var chosenEAngle = 0f
+        var chosenPaint : Paint? = null
 
         for (i in 0..values.lastIndex) {
             val clickedXRelatevelyTheCenter = clickedPointX - wCenter
@@ -142,17 +142,13 @@ class MyDiagrammView @JvmOverloads constructor (
 
             var angleToCenterRad = atan2(clickedYRelatevelyTheCenter, clickedXRelatevelyTheCenter)
 
-//            Log.i(TAG, "a= ${angleToCenterRad * 180 / PI}")
-
             if (angleToCenterRad < 0) {
                 val angleToCenterG = (180 + angleToCenterRad * 180 / PI).toFloat()
                 angleToCenterRad = (((180 + angleToCenterG) / 180) * PI).toFloat()
             }
 
-//
             val endAngleG = (values[i].amount / onePercent) * 3.6f
-//
-//
+
             Log.i(
                 TAG,
                 "item=${i})  R=$graphRadius,  startAngle=${startAngleG}, endAngle=${ endAngleG}    l=$distanceToCenter, a=$angleToCenterRad  ang=${angleToCenterRad*180/PI}"
@@ -160,159 +156,189 @@ class MyDiagrammView @JvmOverloads constructor (
 
             val innerCycleRadius = (worldWidth - 2*paddingWidth - 2*widthOfCycleGraph) / 2
 
+            val startAngleRad = startAngleG * PI / 180
+            val endAngleRad = endAngleG * PI / 180
 
-
-            var startAngleRad = startAngleG * PI / 180
-            var endAngleRad = endAngleG * PI / 180
-
-
-
-            if (((distanceToCenter <= graphRadius) && (distanceToCenter >= innerCycleRadius)) &&
-                (angleToCenterRad > startAngleRad) && (angleToCenterRad <= (startAngleRad + endAngleRad))
+            if (checkIfTouchedInPieceOfGraph(
+                    distanceToCenter,
+                    graphRadius,
+                    innerCycleRadius,
+                    angleToCenterRad,
+                    startAngleRad,
+                    endAngleRad
+                )
             ) {
-//сюда попадаю_ надо заняться отрисовкой
-//                val koef = 50f
-//                val beta = (((endAngle))/2+startAngle)
-//                val dx = 100f*cos(beta*PI/180).toFloat()
-//                val dy = 100f*sin(beta*PI/180).toFloat()
-//                Log.i(
-//                    TAG,
-//                    "beta = $beta   dx=$dx,   dy=$dy "
-//                )
-//
-//                chosenLeft = arcLeft - 20f
-//                chosenTop = arcTop - 20f
-//                chosenRight = arcRight + 20f
-//                chosenBottom = arcBottom + 20f
+                chosenLeft = paddingWidth - 20f
+                chosenTop = paddingHeight - 20f
+                chosenRight = worldWidth - paddingWidth + 20f
+                chosenBottom = worldHeight - paddingHeight + 20f
+                chosenPaint = paint
+                chosenStartAngle = startAngleG - 10f
+                chosenEAngle = endAngleG + 20f
 
-//                chosenPaint = paint
-//
-//                chosenStartAngle = startAngle-10f
-//                chosenEAngle = endAngle+10f
-//
-//
             } else {
-
-                canvas.drawArc(
+                drawPieceOfGraph(
+                    canvas,
                     paddingWidth,
                     paddingHeight,
-                    worldWidth - paddingWidth,
-                    worldHeight - paddingHeight,
+                    worldWidth,
+                    worldHeight,
                     startAngleG,
                     endAngleG,
-                    true,
                     paint
                 )
-                canvas.drawArc(
-                    paddingWidth,
-                    paddingHeight,
-                    worldWidth - paddingWidth,
-                    worldHeight - paddingHeight,
-                    startAngleG,
-                    endAngleG,
-                    true,
-                    paintStr
-                )
-                startAngleG += endAngleG
-                if (paintIndex == listOfPaints.lastIndex) {
-                    paintIndex = 0
-                } else {
-                    paintIndex++
-                }
-                paint = listOfPaints[paintIndex]
             }
 
-
-//        Log.i(TAG,"count = $count  vals = $values")
-//
-//        if (hCenter < wCenter) {
-//            canvas.drawOval(
-//                wCenter - paddingByHeight * 2,
-//                hCenter + paddingByHeight * 2,
-//                wCenter + paddingByHeight * 2,
-//                hCenter - paddingByHeight * 2,
-//                paintBackground
-//            )
-//        } else {
-//
-//            val left = wCenter - paddingByWidth * 3
-//            val right = wCenter + paddingByWidth * 3
-//            val top = hCenter + paddingByWidth * 3
-//            val bottom = hCenter - paddingByWidth * 3
-//
-//
-//            //lines
-//            for (item in values) {
-//                canvas.drawArc(
-//                    arcLeft,
-//                    arcTop,
-//                    arcRight,
-//                    arcBottom,
-//                    startAngle,
-//                    (item.amount / onePercent) * 3.6f,
-//                    true,
-//                    paintStr
-//                )
-//
-//                startAngle += (item.amount / onePercent) * 3.6f
-//            }
+            startAngleG += endAngleG
+            if (paintIndex == listOfPaints.lastIndex) {
+                paintIndex = 0
+            } else {
+                paintIndex++
+            }
+            paint = listOfPaints[paintIndex]
 
 
-//      white center
-            canvas.drawOval(
-                paddingWidth + widthOfCycleGraph,
-                paddingHeight + widthOfCycleGraph,
-                worldWidth - paddingWidth - widthOfCycleGraph,
-                worldHeight - paddingHeight - widthOfCycleGraph,
-                paintBackground
+            drawInnerBackgroundCircles(
+                canvas,
+                paddingWidth,
+                paddingHeight,
+                worldWidth,
+                worldHeight
             )
-            canvas.drawOval(
-                paddingWidth + widthOfCycleGraph,
-                paddingHeight + widthOfCycleGraph,
-                worldWidth - paddingWidth - widthOfCycleGraph,
-                worldHeight - paddingHeight - widthOfCycleGraph,
-                paintStr
-            )
-//
-//            chosenPaint?.let {
-//                canvas.drawArc(
-//                    chosenLeft,
-//                    chosenTop,
-//                    chosenRight,
-//                    chosenBottom,
-//                    chosenStartAngle,
-//                    chosenEAngle,
-//                    true,
-//                    chosenPaint
-//                )
-//                canvas.drawArc(
-//                    chosenLeft,
-//                    chosenTop,
-//                    chosenRight,
-//                    chosenBottom,
-//                    chosenStartAngle,
-//                    chosenEAngle,
-//                    true,
-//                    paintStr
-//                )
-//
-//                canvas.drawOval(
-//                    left+20f,
-//                    top-20f,
-//                    right-20f,
-//                    bottom+20f,
-//                    paintBackground
-//                )
-//            }
-//        }
-//
-//        canvas.drawOval(
-//            clickedPointX-15f,clickedPointY+15f,clickedPointX+15f,clickedPointY-15f,paintMyRed
-//        )
 
+            drawChosenPiece(
+                chosenPaint,
+                canvas,
+                chosenLeft,
+                chosenTop,
+                chosenRight,
+                chosenBottom,
+                chosenStartAngle,
+                chosenEAngle
+            )
         }
     }
 
+    private fun checkIfTouchedInPieceOfGraph(
+        distanceToCenter: Float,
+        graphRadius: Float,
+        innerCycleRadius: Float,
+        angleToCenterRad: Float,
+        startAngleRad: Double,
+        endAngleRad: Double
+    ): Boolean {
+        return (((distanceToCenter <= graphRadius) && (distanceToCenter >= innerCycleRadius)) &&
+                (angleToCenterRad > startAngleRad) && (angleToCenterRad <= (startAngleRad + endAngleRad))
+                )
+    }
+
+    private fun drawPieceOfGraph(
+        canvas: Canvas,
+        paddingWidth: Float,
+        paddingHeight: Float,
+        worldWidth: Float,
+        worldHeight: Float,
+        startAngleG: Float,
+        endAngleG: Float,
+        paint: Paint
+    ) {
+        canvas.drawArc(
+            paddingWidth,
+            paddingHeight,
+            worldWidth - paddingWidth,
+            worldHeight - paddingHeight,
+            startAngleG,
+            endAngleG,
+            true,
+            paint
+        )
+        canvas.drawArc(
+            paddingWidth,
+            paddingHeight,
+            worldWidth - paddingWidth,
+            worldHeight - paddingHeight,
+            startAngleG,
+            endAngleG,
+            true,
+            paintStr
+        )
+    }
+
+    private fun drawInnerBackgroundCircles(
+        canvas: Canvas,
+        paddingWidth: Float,
+        paddingHeight: Float,
+        worldWidth: Float,
+        worldHeight: Float
+    ) {
+        canvas.drawOval(
+            paddingWidth + widthOfCycleGraph,
+            paddingHeight + widthOfCycleGraph,
+            worldWidth - paddingWidth - widthOfCycleGraph,
+            worldHeight - paddingHeight - widthOfCycleGraph,
+            paintBackground
+        )
+        canvas.drawOval(
+            paddingWidth + widthOfCycleGraph,
+            paddingHeight + widthOfCycleGraph,
+            worldWidth - paddingWidth - widthOfCycleGraph,
+            worldHeight - paddingHeight - widthOfCycleGraph,
+            paintStr
+        )
+    }
+
+    private fun drawChosenPiece(
+        chosenPaint: Paint?,
+        canvas: Canvas,
+        chosenLeft: Float,
+        chosenTop: Float,
+        chosenRight: Float,
+        chosenBottom: Float,
+        chosenStartAngle: Float,
+        chosenEAngle: Float
+    ) {
+        chosenPaint?.let {
+            canvas.drawArc(
+                chosenLeft,
+                chosenTop,
+                chosenRight,
+                chosenBottom,
+                chosenStartAngle,
+                chosenEAngle,
+                true,
+                chosenPaint
+            )
+            canvas.drawArc(
+                chosenLeft,
+                chosenTop,
+                chosenRight,
+                chosenBottom,
+                chosenStartAngle,
+                chosenEAngle,
+                true,
+                paintStr
+            )
+            val koef = 1.4f * widthOfCycleGraph
+            canvas.drawArc(
+                chosenLeft + koef,
+                chosenTop + koef,
+                chosenRight - koef,
+                chosenBottom - koef,
+                chosenStartAngle,
+                chosenEAngle,
+                true,
+                paintStr
+            )
+
+            canvas.drawOval(
+                chosenLeft + koef,
+                chosenTop + koef,
+                chosenRight - koef,
+                chosenBottom - koef,
+                paintBackground
+            )
+        }
+    }
 
 
     fun setValues(values : List<Expense>) {
