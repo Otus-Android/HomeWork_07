@@ -45,6 +45,9 @@ class MyDiagrammView @JvmOverloads constructor (
     private var clickedPointX: Float = 0f
     private var clickedPointY: Float = 0f
 
+    private var myPaddingWith: Float = 0f
+    private var chosenPiece: Expense? = null
+
 
 
     private val gestureDetector = GestureDetector(context, object :SimpleOnGestureListener(){
@@ -52,9 +55,49 @@ class MyDiagrammView @JvmOverloads constructor (
             e?.let {
                 clickedPointX = e.x
                 clickedPointY = e.y
+                val hCenter = height/2
+                val wCenter = width/2
 
+                val clickedXRelatevelyTheCenter = clickedPointX - wCenter
+                val clickedYRelatevelyTheCenter = clickedPointY - hCenter
+                val distanceToCenter =
+                    sqrt(clickedXRelatevelyTheCenter.pow(2) + clickedYRelatevelyTheCenter.pow(2))
+                val graphRadius = wCenter - myPaddingWith
+
+                var angleToCenterRad = atan2(clickedYRelatevelyTheCenter, clickedXRelatevelyTheCenter)
+
+                if (angleToCenterRad < 0) {
+                    val angleToCenterG = (180 + angleToCenterRad * 180 / PI).toFloat()
+                    angleToCenterRad = (((180 + angleToCenterG) / 180) * PI).toFloat()
+                }
+
+                var angleStart = 0f
+                for (i in 0 .. values.lastIndex){
+                    val angleRad: Float = (values[i].amount/onePercent)*3.6f*PI.toFloat()/180
+                    val angleEnd = angleStart+angleRad
+
+                    if ((angleToCenterRad>=angleStart)&&(angleToCenterRad<angleEnd)){
+                        val innerCycleRadius = (width - 2*myPaddingWith - 2*widthOfCycleGraph) / 2
+
+
+
+                        if (checkIfTouchedInPieceOfGraph(
+                                distanceToCenter,
+                                graphRadius,
+                                innerCycleRadius,
+                            )
+                        ){
+
+                            Log.i(TAG, "was chosen : ${values[i].name}")
+                            chosenPiece = values[i]
+                            invalidate()
+                            return true
+                        }
+                    }
+                    angleStart=angleEnd
+                }
+                chosenPiece = null
             }
-
             invalidate()
             return true
         }
@@ -113,6 +156,7 @@ class MyDiagrammView @JvmOverloads constructor (
         val paddingWidth: Float
         val paddingHeight: Float
 
+
         if (hCenter < wCenter) {
             paddingHeight = worldHeight / paddingParameter
             paddingWidth = wCenter - hCenter + paddingHeight
@@ -120,6 +164,7 @@ class MyDiagrammView @JvmOverloads constructor (
             paddingWidth = worldWidth / paddingParameter
             paddingHeight = hCenter - wCenter + paddingWidth
         }
+        myPaddingWith = paddingWidth
 
         var startAngleG = 0f
         var paintIndex = 0
@@ -134,60 +179,28 @@ class MyDiagrammView @JvmOverloads constructor (
         var chosenPaint : Paint? = null
 
         for (i in 0..values.lastIndex) {
-            val clickedXRelatevelyTheCenter = clickedPointX - wCenter
-            val clickedYRelatevelyTheCenter = clickedPointY - hCenter
-            val distanceToCenter =
-                sqrt(clickedXRelatevelyTheCenter.pow(2) + clickedYRelatevelyTheCenter.pow(2))
-            val graphRadius = wCenter - paddingWidth
-
-            var angleToCenterRad = atan2(clickedYRelatevelyTheCenter, clickedXRelatevelyTheCenter)
-
-            if (angleToCenterRad < 0) {
-                val angleToCenterG = (180 + angleToCenterRad * 180 / PI).toFloat()
-                angleToCenterRad = (((180 + angleToCenterG) / 180) * PI).toFloat()
-            }
-
             val endAngleG = (values[i].amount / onePercent) * 3.6f
-
-            Log.i(
-                TAG,
-                "item=${i})  R=$graphRadius,  startAngle=${startAngleG}, endAngle=${ endAngleG}    l=$distanceToCenter, a=$angleToCenterRad  ang=${angleToCenterRad*180/PI}"
-            )
-
-            val innerCycleRadius = (worldWidth - 2*paddingWidth - 2*widthOfCycleGraph) / 2
-
-            val startAngleRad = startAngleG * PI / 180
-            val endAngleRad = endAngleG * PI / 180
-
-            if (checkIfTouchedInPieceOfGraph(
-                    distanceToCenter,
-                    graphRadius,
-                    innerCycleRadius,
-                    angleToCenterRad,
-                    startAngleRad,
-                    endAngleRad
-                )
-            ) {
-                chosenLeft = paddingWidth - 20f
-                chosenTop = paddingHeight - 20f
-                chosenRight = worldWidth - paddingWidth + 20f
-                chosenBottom = worldHeight - paddingHeight + 20f
-                chosenPaint = paint
-                chosenStartAngle = startAngleG - 10f
-                chosenEAngle = endAngleG + 20f
-
-            } else {
-                drawPieceOfGraph(
-                    canvas,
-                    paddingWidth,
-                    paddingHeight,
-                    worldWidth,
-                    worldHeight,
-                    startAngleG,
-                    endAngleG,
-                    paint
-                )
+            chosenPiece?.let {
+                if (values[i] == it) {
+                    chosenLeft = paddingWidth - 20f
+                    chosenTop = paddingHeight - 20f
+                    chosenRight = worldWidth - paddingWidth + 20f
+                    chosenBottom = worldHeight - paddingHeight + 20f
+                    chosenPaint = paint
+                    chosenStartAngle = startAngleG - 10f
+                    chosenEAngle = endAngleG + 20f
+                }
             }
+            drawPieceOfGraph(
+                canvas,
+                paddingWidth,
+                paddingHeight,
+                worldWidth,
+                worldHeight,
+                startAngleG,
+                endAngleG,
+                paint
+            )
 
             startAngleG += endAngleG
             if (paintIndex == listOfPaints.lastIndex) {
@@ -196,7 +209,7 @@ class MyDiagrammView @JvmOverloads constructor (
                 paintIndex++
             }
             paint = listOfPaints[paintIndex]
-
+        }
 
             drawInnerBackgroundCircles(
                 canvas,
@@ -217,19 +230,13 @@ class MyDiagrammView @JvmOverloads constructor (
                 chosenEAngle
             )
         }
-    }
 
     private fun checkIfTouchedInPieceOfGraph(
         distanceToCenter: Float,
         graphRadius: Float,
         innerCycleRadius: Float,
-        angleToCenterRad: Float,
-        startAngleRad: Double,
-        endAngleRad: Double
     ): Boolean {
-        return (((distanceToCenter <= graphRadius) && (distanceToCenter >= innerCycleRadius)) &&
-                (angleToCenterRad > startAngleRad) && (angleToCenterRad <= (startAngleRad + endAngleRad))
-                )
+        return (distanceToCenter <= graphRadius) && (distanceToCenter >= innerCycleRadius)
     }
 
     private fun drawPieceOfGraph(
@@ -419,7 +426,9 @@ class MyDiagrammView @JvmOverloads constructor (
         }
     }
 
-
+    override fun setOnClickListener(l: OnClickListener?) {
+        super.setOnClickListener(l)
+    }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         gestureDetector.onTouchEvent(event)
