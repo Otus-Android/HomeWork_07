@@ -175,10 +175,7 @@ class MyDiagrammView @JvmOverloads constructor (
         var paintIndex = 0
         var paint = listOfPaints[paintIndex]
 
-        var chosenLeft : Float = 0f
-        var chosenRight: Float = 0f
-        var chosenTop: Float = 0f
-        var chosenBottom: Float = 0f
+
         var chosenStartAngle = 0f
         var chosenEAngle = 0f
         var chosenPaint : Paint? = null
@@ -187,10 +184,6 @@ class MyDiagrammView @JvmOverloads constructor (
             val endAngleG = (values[i].amount / onePercent) * 3.6f
             chosenPiece?.let {
                 if (values[i] == it) {
-                    chosenLeft = paddingWidth - widthOfCycleGraph/5
-                    chosenTop = paddingHeight - widthOfCycleGraph/5
-                    chosenRight = worldWidth - paddingWidth + widthOfCycleGraph/5
-                    chosenBottom = worldHeight - paddingHeight + widthOfCycleGraph/5
                     chosenPaint = paint
                     chosenStartAngle = startAngleG - 10f
                     chosenEAngle = endAngleG + 20f
@@ -228,12 +221,10 @@ class MyDiagrammView @JvmOverloads constructor (
             drawChosenPiece(
                 chosenPaint,
                 canvas,
-                chosenLeft,
-                chosenTop,
-                chosenRight,
-                chosenBottom,
                 chosenStartAngle,
-                chosenEAngle
+                chosenEAngle,
+                paddingWidth,
+                paddingHeight
             )
         }
 
@@ -308,13 +299,16 @@ class MyDiagrammView @JvmOverloads constructor (
     private fun drawChosenPiece(
         chosenPaint: Paint?,
         canvas: Canvas,
-        chosenLeft: Float,
-        chosenTop: Float,
-        chosenRight: Float,
-        chosenBottom: Float,
         chosenStartAngle: Float,
-        chosenEAngle: Float
+        chosenEAngle: Float,
+        paddingWidth: Float,
+        paddingHeight: Float
     ) {
+       val chosenLeft = paddingWidth - widthOfCycleGraph/5
+       val chosenTop = paddingHeight - widthOfCycleGraph/5
+       val chosenRight = width - paddingWidth + widthOfCycleGraph/5
+       val chosenBottom = height - paddingHeight + widthOfCycleGraph/5
+
         chosenPaint?.let {
             canvas.drawArc(
                 chosenLeft,
@@ -358,11 +352,16 @@ class MyDiagrammView @JvmOverloads constructor (
             )
         }
 
+        //нужно правильно управлять размером текста
+        val l = chosenRight - chosenLeft
+        val r = l/2
+        val h = r/2
+        val spaceForHeader = sqrt(3.0f)*r
 
 
         val textWidth = paintTextAmount.measureText(chosenPiece!!.name)
         val textStartX =
-        Log.i(TAG, "texWidth_____$textWidth")
+        Log.i(TAG, "texWidth_____$textWidth   spaceFor header = $spaceForHeader")
 
         canvas.drawText(chosenPiece!!.name,width/2f-120, height/2f+20f,paintTextAmount)
     }
