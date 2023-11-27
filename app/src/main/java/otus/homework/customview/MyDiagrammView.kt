@@ -3,12 +3,14 @@ package otus.homework.customview
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
+import androidx.annotation.RequiresApi
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.pow
@@ -37,6 +39,7 @@ class MyDiagrammView @JvmOverloads constructor (
     private lateinit var paintMyDeep: Paint
 
     private lateinit var paintTextMain: Paint
+    private lateinit var paintTextNameOfCategory: Paint
     private lateinit var paintTextAmount: Paint
 
     private lateinit var paintStr: Paint
@@ -228,9 +231,30 @@ class MyDiagrammView @JvmOverloads constructor (
             )
         }
 
+        //HEADER SUM ______
+        val diameter = worldWidth - paddingWidth - widthOfCycleGraph -paddingWidth - widthOfCycleGraph  //
+        val r = diameter/2
+        val hOfHeader =  height/2 - r/3
 
+        val spaceForHeader = sqrt(3.0f)*r
+        //   __________________
+        //   |                 |
+        //   |____headerText___|
+        //   |                 |
+        //   |_________________|
 
-        canvas.drawText("$sum $",wCenter-105f, hCenter-70f,paintTextMain)
+        val headerSum = "$sum $"
+        var textWidth = paintTextMain.measureText(headerSum)
+        Log.e(TAG,"sapcing    ${ paintTextMain.letterSpacing }")
+        while (textWidth>0.6f*spaceForHeader){
+            paintTextMain.textSize = paintTextMain.textSize - 1f
+            textWidth = paintTextMain.measureText(headerSum)
+        }
+        val startOfHeader = width/2f-textWidth/2
+
+        canvas.drawText(headerSum,startOfHeader, hOfHeader,paintTextMain)
+//______________________________________
+
         }
 
     private fun checkIfTouchedInPieceOfGraph(
@@ -294,7 +318,13 @@ class MyDiagrammView @JvmOverloads constructor (
             worldHeight - paddingHeight - widthOfCycleGraph,
             paintStr
         )
+
+
+
+
+
     }
+
 
     private fun drawChosenPiece(
         chosenPaint: Paint?,
@@ -351,19 +381,54 @@ class MyDiagrammView @JvmOverloads constructor (
                 paintBackground
             )
         }
+        chosenPiece?.let {
+            val koef =  widthOfCycleGraph/5+widthOfCycleGraph+widthOfCycleGraph/5
+            //нужно правильно управлять размером текста
+            val diameter = chosenRight - koef - chosenLeft - koef //
+            val r = diameter/2
+            val hOfName =  height/2f + r/12
 
-        //нужно правильно управлять размером текста
-        val l = chosenRight - chosenLeft
-        val r = l/2
-        val h = r/2
-        val spaceForHeader = sqrt(3.0f)*r
+            val spaceForHeader = sqrt(3.0f)*r
+            //   __________________
+            //   |                 |
+            //   |____headerText___|
+            //   |      name       |
+            //   |     amount      |
+            //   |_________________|
 
 
-        val textWidth = paintTextAmount.measureText(chosenPiece!!.name)
-        val textStartX =
-        Log.i(TAG, "texWidth_____$textWidth   spaceFor header = $spaceForHeader")
 
-        canvas.drawText(chosenPiece!!.name,width/2f-120, height/2f+20f,paintTextAmount)
+
+            val textName = it.name
+            paintTextNameOfCategory.textSize = 30f
+            var textNameWidth = paintTextNameOfCategory.measureText(textName)
+
+
+
+            while (textNameWidth>0.9f*diameter) {
+//                Log.i(TAG, "di = $diameter, tW= $textNameWidth")
+                paintTextNameOfCategory.textSize = paintTextNameOfCategory.textSize - 1f
+                    textNameWidth = paintTextNameOfCategory.measureText(textName)
+            }
+            Log.i(TAG, "di = $diameter, tW= $textNameWidth    textSize=${paintTextNameOfCategory.textSize}")
+
+            val startOfName = width/2f-textNameWidth/2f
+            canvas.drawText(textName,startOfName, hOfName,paintTextNameOfCategory)
+
+
+            val textAmount = "${it.amount} $"
+            var textAmountWidth = paintTextAmount.measureText(textAmount)
+            while (textAmountWidth>0.5f*diameter){
+                paintTextAmount.textSize = paintTextAmount.textSize - 1f
+                textAmountWidth = paintTextAmount.measureText(textAmount)
+            }
+
+            val hOfAmount = hOfName + (2* paintTextAmount.textSize)
+
+            val startOfAmount = width/2f-textAmountWidth/2f
+            canvas.drawText(textAmount,startOfAmount, hOfAmount,paintTextAmount)
+        }
+
     }
 
 
@@ -435,12 +500,17 @@ class MyDiagrammView @JvmOverloads constructor (
         paintTextMain = Paint().apply {
             color = context.getColor(R.color.black)
             style = Paint.Style.STROKE
-            textSize = 52f
+            textSize = 88f
         }
 
         paintTextAmount = Paint().apply {
             color = context.getColor(R.color.black)
-            style = Paint.Style.STROKE
+            style = Paint.Style.FILL
+            textSize = 30f
+        }
+        paintTextNameOfCategory = Paint().apply {
+            color = context.getColor(R.color.black)
+            style = Paint.Style.FILL
             textSize = 30f
         }
 
