@@ -9,6 +9,10 @@ import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
+import kotlin.math.PI
+import kotlin.math.atan2
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class MyDiagrammView @JvmOverloads constructor (
     context: Context,
@@ -129,31 +133,44 @@ class MyDiagrammView @JvmOverloads constructor (
 //        var chosenEAngle = 0f
 //        var chosenPaint : Paint? = null
 
-        for (i in 0.. values.lastIndex) {
-//            val l =
-//                sqrt((clickedPointX - wCenter) * (clickedPointX - wCenter) + (clickedPointY - hCenter) * (clickedPointY - hCenter))
-//            val R = wCenter - arcLeft
-//
-//            var a = atan2(clickedPointY - hCenter, clickedPointX - wCenter)
-//            Log.i(TAG,"a= ${a * 180 / PI}")
-//            if (a<0){
-//                val d = 180 + a*180/PI
-//                a = (((180+d).toFloat()/180)*PI).toFloat()
-//            }
+        for (i in 0..values.lastIndex) {
+            val clickedXRelatevelyTheCenter = clickedPointX - wCenter
+            val clickedYRelatevelyTheCenter = clickedPointY - hCenter
+            val distanceToCenter =
+                sqrt(clickedXRelatevelyTheCenter.pow(2) + clickedYRelatevelyTheCenter.pow(2))
+            val graphRadius = wCenter - paddingWidth
+
+            var angleToCenterRad = atan2(clickedYRelatevelyTheCenter, clickedXRelatevelyTheCenter)
+
+//            Log.i(TAG, "a= ${angleToCenterRad * 180 / PI}")
+
+            if (angleToCenterRad < 0) {
+                val angleToCenterG = (180 + angleToCenterRad * 180 / PI).toFloat()
+                angleToCenterRad = (((180 + angleToCenterG) / 180) * PI).toFloat()
+            }
+
 //
             val endAngleG = (values[i].amount / onePercent) * 3.6f
 //
 //
-//            Log.i(
-//                TAG,
-//                "item=${i})  R=$R,  startAngle=${startAngle}, endAngle=${ endAngle}    l=$l, a=$a  ang=${a}"
-//            )
-//
-//            val ROfWhiteCycle = (( wCenter + paddingByWidth * 3 - wCenter + paddingByWidth * 3)/2)
-//            if (((l <= R) && (l>=ROfWhiteCycle))&&
-//                (a > startAngle*PI/180) && (a <= (startAngle + endAngle)*PI/180)
-//            ) {
-//
+            Log.i(
+                TAG,
+                "item=${i})  R=$graphRadius,  startAngle=${startAngleG}, endAngle=${ endAngleG}    l=$distanceToCenter, a=$angleToCenterRad  ang=${angleToCenterRad*180/PI}"
+            )
+
+            val innerCycleRadius = (worldWidth - 2*paddingWidth - 2*widthOfCycleGraph) / 2
+
+
+
+            var startAngleRad = startAngleG * PI / 180
+            var endAngleRad = endAngleG * PI / 180
+
+
+
+            if (((distanceToCenter <= graphRadius) && (distanceToCenter >= innerCycleRadius)) &&
+                (angleToCenterRad > startAngleRad) && (angleToCenterRad <= (startAngleRad + endAngleRad))
+            ) {
+//сюда попадаю_ надо заняться отрисовкой
 //                val koef = 50f
 //                val beta = (((endAngle))/2+startAngle)
 //                val dx = 100f*cos(beta*PI/180).toFloat()
@@ -167,46 +184,43 @@ class MyDiagrammView @JvmOverloads constructor (
 //                chosenTop = arcTop - 20f
 //                chosenRight = arcRight + 20f
 //                chosenBottom = arcBottom + 20f
-//
-//
+
 //                chosenPaint = paint
 //
 //                chosenStartAngle = startAngle-10f
 //                chosenEAngle = endAngle+10f
 //
 //
-//            } else {
-
-            canvas.drawArc(
-                paddingWidth,
-                paddingHeight,
-                worldWidth - paddingWidth,
-                worldHeight - paddingHeight,
-                startAngleG,
-                endAngleG,
-                true,
-                paint
-            )
-            canvas.drawArc(
-                paddingWidth,
-                paddingHeight,
-                worldWidth - paddingWidth,
-                worldHeight - paddingHeight,
-                startAngleG,
-                endAngleG,
-                true,
-                paintStr
-            )
-            startAngleG += endAngleG
-            if (paintIndex == listOfPaints.lastIndex) {
-                paintIndex = 0
             } else {
-                paintIndex++
+
+                canvas.drawArc(
+                    paddingWidth,
+                    paddingHeight,
+                    worldWidth - paddingWidth,
+                    worldHeight - paddingHeight,
+                    startAngleG,
+                    endAngleG,
+                    true,
+                    paint
+                )
+                canvas.drawArc(
+                    paddingWidth,
+                    paddingHeight,
+                    worldWidth - paddingWidth,
+                    worldHeight - paddingHeight,
+                    startAngleG,
+                    endAngleG,
+                    true,
+                    paintStr
+                )
+                startAngleG += endAngleG
+                if (paintIndex == listOfPaints.lastIndex) {
+                    paintIndex = 0
+                } else {
+                    paintIndex++
+                }
+                paint = listOfPaints[paintIndex]
             }
-            paint = listOfPaints[paintIndex]
-        }
-
-
 
 
 //        Log.i(TAG,"count = $count  vals = $values")
@@ -245,20 +259,20 @@ class MyDiagrammView @JvmOverloads constructor (
 
 
 //      white center
-        canvas.drawOval(
-            paddingWidth + widthOfCycleGraph,
-            paddingHeight + widthOfCycleGraph,
-            worldWidth - paddingWidth - widthOfCycleGraph,
-            worldHeight - paddingHeight - widthOfCycleGraph,
-            paintBackground
-        )
-        canvas.drawOval(
-            paddingWidth + widthOfCycleGraph,
-            paddingHeight + widthOfCycleGraph,
-            worldWidth - paddingWidth - widthOfCycleGraph,
-            worldHeight - paddingHeight - widthOfCycleGraph,
-            paintStr
-        )
+            canvas.drawOval(
+                paddingWidth + widthOfCycleGraph,
+                paddingHeight + widthOfCycleGraph,
+                worldWidth - paddingWidth - widthOfCycleGraph,
+                worldHeight - paddingHeight - widthOfCycleGraph,
+                paintBackground
+            )
+            canvas.drawOval(
+                paddingWidth + widthOfCycleGraph,
+                paddingHeight + widthOfCycleGraph,
+                worldWidth - paddingWidth - widthOfCycleGraph,
+                worldHeight - paddingHeight - widthOfCycleGraph,
+                paintStr
+            )
 //
 //            chosenPaint?.let {
 //                canvas.drawArc(
@@ -296,6 +310,7 @@ class MyDiagrammView @JvmOverloads constructor (
 //            clickedPointX-15f,clickedPointY+15f,clickedPointX+15f,clickedPointY-15f,paintMyRed
 //        )
 
+        }
     }
 
 
