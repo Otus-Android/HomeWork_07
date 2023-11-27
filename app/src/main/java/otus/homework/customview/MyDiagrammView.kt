@@ -36,6 +36,9 @@ class MyDiagrammView @JvmOverloads constructor (
     private lateinit var paintMyNight: Paint
     private lateinit var paintMyDeep: Paint
 
+    private lateinit var paintTextMain: Paint
+    private lateinit var paintTextAmount: Paint
+
     private lateinit var paintStr: Paint
 
     private val listOfPaints = mutableListOf<Paint>()
@@ -47,6 +50,8 @@ class MyDiagrammView @JvmOverloads constructor (
 
     private var myPaddingWith: Float = 0f
     private var chosenPiece: Expense? = null
+
+    private var sum = 0f
 
 
 
@@ -182,10 +187,10 @@ class MyDiagrammView @JvmOverloads constructor (
             val endAngleG = (values[i].amount / onePercent) * 3.6f
             chosenPiece?.let {
                 if (values[i] == it) {
-                    chosenLeft = paddingWidth - 20f
-                    chosenTop = paddingHeight - 20f
-                    chosenRight = worldWidth - paddingWidth + 20f
-                    chosenBottom = worldHeight - paddingHeight + 20f
+                    chosenLeft = paddingWidth - widthOfCycleGraph/5
+                    chosenTop = paddingHeight - widthOfCycleGraph/5
+                    chosenRight = worldWidth - paddingWidth + widthOfCycleGraph/5
+                    chosenBottom = worldHeight - paddingHeight + widthOfCycleGraph/5
                     chosenPaint = paint
                     chosenStartAngle = startAngleG - 10f
                     chosenEAngle = endAngleG + 20f
@@ -219,6 +224,7 @@ class MyDiagrammView @JvmOverloads constructor (
                 worldHeight
             )
 
+        chosenPiece?.let {
             drawChosenPiece(
                 chosenPaint,
                 canvas,
@@ -229,6 +235,11 @@ class MyDiagrammView @JvmOverloads constructor (
                 chosenStartAngle,
                 chosenEAngle
             )
+        }
+
+
+
+        canvas.drawText("$sum $",wCenter-105f, hCenter-70f,paintTextMain)
         }
 
     private fun checkIfTouchedInPieceOfGraph(
@@ -325,7 +336,8 @@ class MyDiagrammView @JvmOverloads constructor (
                 true,
                 paintStr
             )
-            val koef = 1.4f * widthOfCycleGraph
+
+            val koef =  widthOfCycleGraph/5+widthOfCycleGraph+widthOfCycleGraph/5
             canvas.drawArc(
                 chosenLeft + koef,
                 chosenTop + koef,
@@ -345,6 +357,14 @@ class MyDiagrammView @JvmOverloads constructor (
                 paintBackground
             )
         }
+
+
+
+        val textWidth = paintTextAmount.measureText(chosenPiece!!.name)
+        val textStartX =
+        Log.i(TAG, "texWidth_____$textWidth")
+
+        canvas.drawText(chosenPiece!!.name,width/2f-120, height/2f+20f,paintTextAmount)
     }
 
 
@@ -353,7 +373,8 @@ class MyDiagrammView @JvmOverloads constructor (
         this.values.addAll(values)
 
         var hundredPercent = 0f
-        values.forEach { hundredPercent+=it.amount }
+        values.forEach { hundredPercent+=it.amount
+            sum+=it.amount }
         onePercent = hundredPercent/100
         requestLayout()
         invalidate()
@@ -410,6 +431,18 @@ class MyDiagrammView @JvmOverloads constructor (
             color = context.getColor(R.color.black)
             style = Paint.Style.STROKE
             strokeWidth = 2f
+        }
+
+        paintTextMain = Paint().apply {
+            color = context.getColor(R.color.black)
+            style = Paint.Style.STROKE
+            textSize = 52f
+        }
+
+        paintTextAmount = Paint().apply {
+            color = context.getColor(R.color.black)
+            style = Paint.Style.STROKE
+            textSize = 30f
         }
 
         listOfPaints.run {
