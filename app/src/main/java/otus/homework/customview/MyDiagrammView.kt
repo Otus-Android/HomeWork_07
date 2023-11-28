@@ -248,7 +248,7 @@ class MyDiagrammView @JvmOverloads constructor (
         //   |                 |
         //   |_________________|
 
-        val headerSum = "$sum $"
+        val headerSum = "$sum ₽"
         var textWidth = paintTextMain.measureText(headerSum)
         Log.e(TAG,"sapcing    ${ paintTextMain.letterSpacing }")
         while (textWidth>0.6f*spaceForHeader){
@@ -421,7 +421,7 @@ class MyDiagrammView @JvmOverloads constructor (
             canvas.drawText(textName,startOfName, hOfName,paintTextNameOfCategory)
 
 
-            val textAmount = "${it.amount} $"
+            val textAmount = "${it.amount} ₽"
             var textAmountWidth = paintTextAmount.measureText(textAmount)
             while (textAmountWidth>0.5f*diameter){
                 paintTextAmount.textSize = paintTextAmount.textSize - 1f
