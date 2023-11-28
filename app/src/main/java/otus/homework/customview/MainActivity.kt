@@ -1,6 +1,7 @@
 package otus.homework.customview
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -44,9 +45,14 @@ class MainActivity : AppCompatActivity() {
 
 
         val list = listOf(12f,53f,1f,12f,33f,33f,33f)
-        binding.myCustomView.setValues(expenses.sortedWith(comparator))
+        binding.myCustomView.setValues(expenses.sortedWith(comparator)) { exp ->
+            Log.i(TAG, "It is from activity ___ ${exp.name} was chosen")
+        }
 
     }
+
+
+
 
     override fun onDestroy() {
         super.onDestroy()

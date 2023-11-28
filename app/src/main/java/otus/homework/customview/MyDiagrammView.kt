@@ -26,6 +26,8 @@ class MyDiagrammView @JvmOverloads constructor (
     private val paddingParameter = 10f
     private val widthOfCycleGraph = 100f
 
+    private var callback: ((Expense) -> Unit)? = null
+
     private lateinit var paintBackground : Paint
     private lateinit var paintMyRed: Paint
     private lateinit var paintMyOrange: Paint
@@ -55,6 +57,8 @@ class MyDiagrammView @JvmOverloads constructor (
     private var chosenPiece: Expense? = null
 
     private var sum = 0f
+
+
 
 
 
@@ -97,6 +101,7 @@ class MyDiagrammView @JvmOverloads constructor (
                         ){
 
                             Log.i(TAG, "was chosen : ${values[i].name}")
+                            callback?.invoke(values[i])
                             chosenPiece = values[i]
                             invalidate()
                             return true
@@ -432,9 +437,11 @@ class MyDiagrammView @JvmOverloads constructor (
     }
 
 
-    fun setValues(values : List<Expense>) {
+    fun setValues(values : List<Expense>, _callback: (Expense)->Unit) {
         this.values.clear()
         this.values.addAll(values)
+
+        this.callback = _callback
 
         var hundredPercent = 0f
         values.forEach { hundredPercent+=it.amount
