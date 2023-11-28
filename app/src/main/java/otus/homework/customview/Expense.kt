@@ -9,7 +9,3 @@ data class Expense(
     val category: String,
     val time: Long
 ): Serializable
-
-class ListOfExpenses(
-    val expenses: ArrayList<Expense>
-): Serializable
