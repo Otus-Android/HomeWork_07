@@ -2,7 +2,7 @@ package otus.homework.customview
 
 import java.io.Serializable
 
-class Expense(
+data class Expense(
     val id: Int,
     val name: String,
     val amount: Int,

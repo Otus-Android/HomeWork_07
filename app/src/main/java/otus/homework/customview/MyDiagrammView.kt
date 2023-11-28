@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.os.Build
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
@@ -192,6 +193,7 @@ class MyDiagrammView @JvmOverloads constructor (
             val endAngleG = (values[i].amount / onePercent) * 3.6f
             chosenPiece?.let {
                 if (values[i] == it) {
+                    Log.i(TAG,"it is ____${chosenPiece!!.name}")
                     chosenPaint = paint
                     chosenStartAngle = startAngleG - 10f
                     chosenEAngle = endAngleG + 20f
@@ -415,6 +417,11 @@ class MyDiagrammView @JvmOverloads constructor (
                 paintTextNameOfCategory.textSize = paintTextNameOfCategory.textSize - 1f
                     textNameWidth = paintTextNameOfCategory.measureText(textName)
             }
+//            while (textNameWidth<0.5f*diameter) {
+////                Log.i(TAG, "di = $diameter, tW= $textNameWidth")
+//                paintTextNameOfCategory.textSize = paintTextNameOfCategory.textSize + 1f
+//                textNameWidth = paintTextNameOfCategory.measureText(textName)
+//            }
             Log.i(TAG, "di = $diameter, tW= $textNameWidth    textSize=${paintTextNameOfCategory.textSize}")
 
             val startOfName = width/2f-textNameWidth/2f
@@ -543,4 +550,31 @@ class MyDiagrammView @JvmOverloads constructor (
         gestureDetector.onTouchEvent(event)
         return true
     }
+
+    /**
+     * Восстановление данных из [AnalyticalPieChartState]
+     */
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        val analyticalPieChartState = state as? AnalyticalPieChartState
+        super.onRestoreInstanceState(analyticalPieChartState?.superState ?: state)
+
+        chosenPiece = analyticalPieChartState?.dataList
+    }
+
+    /**
+     * Сохранение [dataList] в собственный [AnalyticalPieChartState]
+     */
+    override fun onSaveInstanceState(): Parcelable {
+        val superState = super.onSaveInstanceState()
+        return AnalyticalPieChartState(superState, chosenPiece)
+    }
+}
+
+/**
+ * Собственный state для сохранения и восстановления данных
+ */
+class AnalyticalPieChartState(
+    private val superSavedState: Parcelable?,
+    val dataList: Expense?
+) : View.BaseSavedState(superSavedState), Parcelable {
 }
