@@ -22,11 +22,49 @@ class MainActivity : AppCompatActivity() {
 
         val expenses = getExpensesFromJson()
         if (expenses != null) {
-            val comparator =
-                Comparator<Expense> { o1, o2 -> if (o1.amount > o2.amount) 1 else if (o2.amount > o1.amount) -1 else 0 }
-            binding.myCustomView.setValues(expenses.sortedWith(comparator)) { exp ->
-                Log.i(TAG, "It is from activity ___ ${exp.name} was chosen")
+
+            /////
+            val listOfItems = mutableListOf<Item>()
+            var total = 0
+
+//            expenses.forEach {expense->
+//                listOfItems.add(Item(
+//                    expense.name,
+//                    expense.amount
+//                ))
+//                total+=expense.amount
+//            }
+            val map = mutableMapOf<String, Int>()
+            expenses.forEach {
+                if (!map.containsKey(it.category)) map[it.category] = 0
+                map[it.category] = map[it.category]!! + it.amount
+                total+=it.amount
             }
+            for((cat, amount) in map.entries){
+                listOfItems.add(Item(cat, amount))
+            }
+
+            val comparator1 =
+                Comparator<Item> { o1, o2 -> if (o1.amount > o2.amount) 1 else if (o2.amount > o1.amount) -1 else 0 }
+
+            val itemList = ItemList(
+                listOfItems.sortedWith(comparator1),
+                total
+            )
+
+
+
+
+
+            binding.myCustomView.setValues(itemList,{
+
+            })
+            ////
+//            val comparator =
+//                Comparator<Expense> { o1, o2 -> if (o1.amount > o2.amount) 1 else if (o2.amount > o1.amount) -1 else 0 }
+//            binding.myCustomView.setValues(expenses.sortedWith(comparator)) { exp ->
+//                Log.i(TAG, "It is from activity ___ ${exp.name} was chosen")
+//            }
         }
 
     }

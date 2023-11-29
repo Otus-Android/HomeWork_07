@@ -20,7 +20,9 @@ class MyDiagrammView @JvmOverloads constructor (
     attrs: AttributeSet? = null
 ): View(context, attrs) {
 
-    private val values = ArrayList<Expense>()
+//    private val values = ArrayList<Expense>()
+
+    private lateinit var myItems: ItemList
 
     private val paddingParameter = 10f
     private val widthOfCycleGraph = 100f
@@ -47,13 +49,14 @@ class MyDiagrammView @JvmOverloads constructor (
 
     private val listOfPaints = mutableListOf<Paint>()
 
-    private var onePercent: Float = 0.0f
+    private val onePercent: Float
+        get() = myItems.onePercent
 
     private var clickedPointX: Float = 0f
     private var clickedPointY: Float = 0f
 
     private var myPaddingWith: Float = 0f
-    private var chosenPiece: Expense? = null
+    private var chosenPiece: Item? = null
 
     private var sum = 0f
 
@@ -83,6 +86,7 @@ class MyDiagrammView @JvmOverloads constructor (
                 }
 
                 var angleStart = 0f
+                val values = myItems.pieces
                 for (i in 0 .. values.lastIndex){
                     val angleRad: Float = (values[i].amount/onePercent)*3.6f*PI.toFloat()/180
                     val angleEnd = angleStart+angleRad
@@ -99,7 +103,7 @@ class MyDiagrammView @JvmOverloads constructor (
                             )
                         ){
                             Log.d(TAG, "was chosen : ${values[i].name}")
-                            callback?.invoke(values[i])
+//                            callback?.invoke(values[i])
                             chosenPiece = values[i]
                             invalidate()
                             return true
@@ -121,9 +125,9 @@ class MyDiagrammView @JvmOverloads constructor (
 
     init {
         if (isInEditMode) {
-            setValues(listOf(Expense(12,"Cinema",250,"fun",0L))) {
-
-            }
+//            setValues(listOf(Expense(12,"Cinema",250,"fun",0L))) {
+//
+//            }
         }
         setup(
             context
@@ -148,7 +152,7 @@ class MyDiagrammView @JvmOverloads constructor (
             }
             MeasureSpec.UNSPECIFIED -> {
                 val barWidth = 1f
-                setMeasuredDimension((values.size * barWidth).toInt(), hSize)
+//                setMeasuredDimension((values.size * barWidth).toInt(), hSize)
             }
         }
     }
@@ -158,6 +162,7 @@ class MyDiagrammView @JvmOverloads constructor (
 
         canvas.drawRGB(255, 255, 255)
 
+        val values = myItems.pieces
         if (values.isEmpty()) return
 
         val worldWidth = width.toFloat()
@@ -398,7 +403,7 @@ class MyDiagrammView @JvmOverloads constructor (
     }
 
     private fun drawAmount(
-        it: Expense,
+        it: Item,
         diameter: Float,
         hOfName: Float,
         canvas: Canvas
@@ -415,16 +420,18 @@ class MyDiagrammView @JvmOverloads constructor (
     }
 
 
-    fun setValues(values : List<Expense>, _callback: (Expense)->Unit) {
-        this.values.clear()
-        this.values.addAll(values)
+    fun setValues(_itemList: ItemList, _callback: (Expense)->Unit) {
+//        this.values.clear()
+//        this.values.addAll(values)
+
+        myItems = _itemList
 
         this.callback = _callback
 
-        var hundredPercent = 0f
-        values.forEach { hundredPercent+=it.amount
-            sum+=it.amount }
-        onePercent = hundredPercent/100
+//        var hundredPercent = 0f
+//        values.forEach { hundredPercent+=it.amount
+//            sum+=it.amount }
+//        onePercent = hundredPercent/100
         requestLayout()
         invalidate()
     }
@@ -518,21 +525,21 @@ class MyDiagrammView @JvmOverloads constructor (
         return true
     }
 
-    override fun onRestoreInstanceState(state: Parcelable?) {
-        val analyticalPieChartState = state as? AnalyticalPieChartState
-        super.onRestoreInstanceState(analyticalPieChartState?.superState ?: state)
+//    override fun onRestoreInstanceState(state: Parcelable?) {
+//        val analyticalPieChartState = state as? AnalyticalPieChartState
+//        super.onRestoreInstanceState(analyticalPieChartState?.superState ?: state)
+//
+////        chosenPiece = analyticalPieChartState?.expense
+//    }
 
-        chosenPiece = analyticalPieChartState?.expense
-    }
-
-    override fun onSaveInstanceState(): Parcelable {
-        val superState = super.onSaveInstanceState()
-        return AnalyticalPieChartState(superState, chosenPiece)
-    }
+//    override fun onSaveInstanceState(): Parcelable {
+//        val superState = super.onSaveInstanceState()
+//        return AnalyticalPieChartState(superState, chosenPiece)
+//    }
 }
 
 class AnalyticalPieChartState(
     private val superSavedState: Parcelable?,
-    val expense: Expense?
+    val expense: Item?
 ) : View.BaseSavedState(superSavedState), Parcelable {
 }
