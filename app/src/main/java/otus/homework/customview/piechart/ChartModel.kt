@@ -1,10 +1,14 @@
-package otus.homework.customview
+package otus.homework.customview.piechart
 
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import otus.homework.customview.MainActivity
 import otus.homework.customview.MyApp.Companion.myResource
+import otus.homework.customview.PayLoad
 import java.nio.charset.Charset
+import java.util.*
+import java.util.Collections.emptyList
 
 class ChartModel : ViewModel() {
 
@@ -14,14 +18,12 @@ class ChartModel : ViewModel() {
     var scaleArc: List<Float>
     var checkedIndex: Int = -1
     private val sumData: Int
-    private val myData: List<PayLoad>
     private var startAngle = 0f
     private var sweepAngle = 0f
 
     init {
-        myData = loadData()
-        pieData = grafData()
-        sumData = pieData.map { it -> it.value }.sum()
+        pieData = pieGrafData()
+        sumData = pieData.map{it.value}.sum()
         pieData.forEach { _, i ->
             beginArc.add(startAngle)
             sweepAngle = (i * 360f) / sumData
@@ -29,10 +31,11 @@ class ChartModel : ViewModel() {
             System.out.println("startAngle $startAngle")
             startAngle += sweepAngle
         }
-        scaleArc = pieData.map { _ -> 1.0f }
+        scaleArc = emptyList()
+        scaleArc = pieData.map {_ ->  1.0f}
     }
 
-    fun grafData() = myData.groupingBy { it.category }
+    fun pieGrafData() = MainActivity.myData.groupingBy {it.category }
         .fold(0) { summ, category -> summ + category.amount }
 
     fun loadData(): List<PayLoad> {
@@ -44,7 +47,7 @@ class ChartModel : ViewModel() {
     }
 
     fun setScale(sector: Int) {
-        scaleArc = scaleArc.mapIndexed { index, scale ->
+        scaleArc = scaleArc.mapIndexed { index, _ ->
             if (index == sector)
                 1.05f
             else

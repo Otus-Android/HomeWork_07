@@ -1,4 +1,4 @@
-package otus.homework.customview
+package otus.homework.customview.piechart
 
 import android.content.Context
 import android.graphics.*
@@ -9,13 +9,16 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.lifecycle.MutableLiveData
+import otus.homework.customview.piechart.ChartModel
+import otus.homework.customview.piechart.TouchView
 import kotlin.math.pow
 
-class MyChartView : View {
+class PieChartView : View {
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attributeSet: AttributeSet?) : super(context, attributeSet)
 
     var chartModel = ChartModel()
+
     lateinit var cycleCenter: PointF
     var _clickSector = MutableLiveData<Int>(-1)
 
@@ -68,8 +71,9 @@ class MyChartView : View {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        val finalWidth = getMeasuredWidth() * 3 / 4
-        val finalHeight = getMeasuredWidth() * 3 / 4
+        val size = Math.min(getMeasuredWidth(), getMeasuredHeight())
+        val finalWidth = size
+        val finalHeight = size
         System.out.println("finalWidth $finalWidth finalHeight $finalHeight")
         setMeasuredDimension(finalWidth, finalHeight)
     }
@@ -81,36 +85,35 @@ class MyChartView : View {
         startLeft = width * 0.1f
         startTop = height * 0.1f
         // Шаблон
-            canvas.drawARGB(230, 400, 150, 50)
+        canvas.drawARGB(230, 400, 150, 50)
 // Сдвиг для правильного отображения в landscape
-            canvas.translate(0f, height / 4f)
+        canvas.translate(0f, height / 4f)
 // Рисование pieChart
-            cycleCenter =
-                PointF((midWidth + startLeft) / 2, (midHeight + startLeft) / 2 + height / 4f)
-            var j = 0
+        cycleCenter =
+            PointF((midWidth + startLeft) / 2, (midHeight + startLeft) / 2 + height / 4f)
+        var j = 0
 
-            chartModel.pieData.forEach { s, _ ->
-                pChart.color = color[j % color.size]
-                canvas.drawArc(
-                    startLeft - midWidth * (chartModel.scaleArc[j] - 1f),
-                    startTop - midHeight * (chartModel.scaleArc[j] - 1f),
-                    midWidth * chartModel.scaleArc[j],
-                    midHeight * chartModel.scaleArc[j],
-                    chartModel.beginArc.get(j), chartModel.lengthArc.get(j),
-                    false,
-                    pChart
-                )
+        chartModel.pieData.forEach { s, _ ->
+            pChart.color = color[j % color.size]
+            canvas.drawArc(
+                startLeft - midWidth * (chartModel.scaleArc[j] - 1f),
+                startTop - midHeight * (chartModel.scaleArc[j] - 1f),
+                midWidth * chartModel.scaleArc[j],
+                midHeight * chartModel.scaleArc[j],
+                chartModel.beginArc.get(j), chartModel.lengthArc.get(j),
+                false,
+                pChart
+            )
 // В таблицу наименований
-                canvas.translate(midWidth * 1.2f, j * 50f)
-                if(j == chartModel.checkedIndex ){
-                    textDraw(canvas, pText, pChart, s+" !!")
-                }
-                else{
-                   textDraw(canvas, pText, pChart, s)}
-
-                canvas.translate(-midWidth * 1.2f, -j * 50f)
-                j++
+            canvas.translate(midWidth * 1.2f, j * 50f)
+            if (j == chartModel.checkedIndex) {
+                textDraw(canvas, pText, pChart, s + " !!")
+            } else {
+                textDraw(canvas, pText, pChart, s)
             }
+            canvas.translate(-midWidth * 1.2f, -j * 50f)
+            j++
+        }
     }
 
     private fun textDraw(canvas: Canvas, p: Paint, pBack: Paint, text: String) {

@@ -1,25 +1,44 @@
 package otus.homework.customview
 
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
+import com.google.android.material.tabs.TabLayoutMediator
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import otus.homework.customview.databinding.ActivityMainBinding
+import java.nio.charset.Charset
 
 class MainActivity : AppCompatActivity() {
-    val chartModel: ChartModel by viewModels()
-
+    private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityMainBinding.inflate(layoutInflater)
-        val view = binding.root
-        binding.chartView.chartModel = chartModel
-        val touchDown = binding.chartView._clickSector
-        touchDown.observe(this, {
-            chartModel.setChecked(it)
-            chartModel.setScale(it)
-            binding.chartView.invalidate()
-        })
-        setContentView(view)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        configureTabLayout()
+        val adapter = TabPagerAdapter(this, binding.tabLayout.tabCount)
+        binding.viewPager.adapter = adapter
+        TabLayoutMediator(binding.tabLayout, binding.viewPager)
+        { tab, position ->
+            tab.text = MYTITLE.get(position)
+        }.attach()
+    }
+
+    private fun configureTabLayout() {
+        repeat(2) {
+            binding.tabLayout.addTab(binding.tabLayout.newTab())
+        }
+    }
+
+    companion object {
+        private val MYTITLE = listOf<String>("PIE CHART", "LINE CHART")
+        val myData = loadData()
+
+        fun loadData(): List<PayLoad> {
+            val gson = Gson()
+            val type = object : TypeToken<List<PayLoad>>() {}.type
+            MyApp.myResource.reset()
+            val myJson = MyApp.myResource.bufferedReader(Charset.defaultCharset())
+            return gson.fromJson(myJson, type)
+        }
     }
 }
