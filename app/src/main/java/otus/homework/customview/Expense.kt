@@ -18,9 +18,14 @@ class Item(
 class ItemList(
     val pieces: List<Item>,
     val total: Int,
+    val mode: CategoriesMode = CategoriesMode.CATEGORIES
 ){
     val onePercent: Float
         get() = total.toFloat()/100
 }
 
+enum class CategoriesMode{
+    CATEGORIES,
+    SEPARATE_ITEMS
+}
 

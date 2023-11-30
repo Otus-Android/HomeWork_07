@@ -58,25 +58,33 @@ class MyDiagrammView @JvmOverloads constructor (
     private var myPaddingWith: Float = 0f
     private var chosenPiece: Item? = null
 
-    private var sum = 0f
 
-
+    private var switchCatsCallback: ((CategoriesMode) -> Unit)? = null
 
 
 
     private val gestureDetector = GestureDetector(context, object :SimpleOnGestureListener(){
         override fun onDown(e: MotionEvent?): Boolean {
+
             e?.let {
                 clickedPointX = e.x
                 clickedPointY = e.y
                 val hCenter = height/2
                 val wCenter = width/2
 
+
                 val clickedXRelatevelyTheCenter = clickedPointX - wCenter
                 val clickedYRelatevelyTheCenter = clickedPointY - hCenter
                 val distanceToCenter =
                     sqrt(clickedXRelatevelyTheCenter.pow(2) + clickedYRelatevelyTheCenter.pow(2))
                 val graphRadius = wCenter - myPaddingWith
+
+                if (distanceToCenter < graphRadius-widthOfCycleGraph){
+                    switchCatsCallback!!.invoke(myItems.mode)
+                    chosenPiece = null
+                    invalidate()
+                     return true
+                }
 
                 var angleToCenterRad = atan2(clickedYRelatevelyTheCenter, clickedXRelatevelyTheCenter)
 
@@ -247,7 +255,7 @@ class MyDiagrammView @JvmOverloads constructor (
         val r = diameter/2
         val hOfHeader =  height/2 - r/3
         val spaceForHeader = sqrt(3.0f)*r
-        val headerSum = "$sum ₽"
+        val headerSum = "${myItems.total} ₽"
         var textWidth = paintTextMain.measureText(headerSum)
         while (textWidth>0.6f*spaceForHeader){
             paintTextMain.textSize = paintTextMain.textSize - 1f
@@ -419,14 +427,16 @@ class MyDiagrammView @JvmOverloads constructor (
         canvas.drawText(textAmount, startOfAmount, hOfAmount, paintTextAmount)
     }
 
-
-    fun setValues(_itemList: ItemList, _callback: (Expense)->Unit) {
+fun setCalbaccs( _switchCallback: (CategoriesMode)-> Unit){
+    this.switchCatsCallback = _switchCallback
+}
+    fun setValues(_itemList: ItemList,) {
 //        this.values.clear()
 //        this.values.addAll(values)
 
         myItems = _itemList
 
-        this.callback = _callback
+
 
 //        var hundredPercent = 0f
 //        values.forEach { hundredPercent+=it.amount

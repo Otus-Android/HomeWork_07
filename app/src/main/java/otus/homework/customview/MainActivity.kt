@@ -27,13 +27,14 @@ class MainActivity : AppCompatActivity() {
             val listOfItems = mutableListOf<Item>()
             var total = 0
 
-//            expenses.forEach {expense->
-//                listOfItems.add(Item(
-//                    expense.name,
-//                    expense.amount
-//                ))
-//                total+=expense.amount
-//            }
+            val listOfItemsSep = mutableListOf<Item>()
+            expenses.forEach {expense->
+                listOfItemsSep.add(Item(
+                    expense.name,
+                    expense.amount
+                ))
+            }
+
             val map = mutableMapOf<String, Int>()
             expenses.forEach {
                 if (!map.containsKey(it.category)) map[it.category] = 0
@@ -49,16 +50,31 @@ class MainActivity : AppCompatActivity() {
 
             val itemList = ItemList(
                 listOfItems.sortedWith(comparator1),
-                total
+                total,
+                CategoriesMode.CATEGORIES
             )
 
+            val itemListSep = ItemList(
+                listOfItemsSep.sortedWith(comparator1),
+                total,
+                CategoriesMode.SEPARATE_ITEMS
+            )
+            binding.myCustomView.setValues(itemList)
+
+        binding.myCustomView.setCalbaccs {
+        when(it){
+            CategoriesMode.CATEGORIES ->{
+                binding.myCustomView.setValues(itemListSep)
+            }
+            CategoriesMode.SEPARATE_ITEMS ->{
+                binding.myCustomView.setValues(itemList)
+
+            }
+        }
+    }
 
 
 
-
-            binding.myCustomView.setValues(itemList,{
-
-            })
             ////
 //            val comparator =
 //                Comparator<Expense> { o1, o2 -> if (o1.amount > o2.amount) 1 else if (o2.amount > o1.amount) -1 else 0 }
