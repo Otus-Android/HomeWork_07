@@ -87,12 +87,6 @@ class DetailsGraphView @JvmOverloads constructor(
         val heightPerValue = height.toFloat() / (2*maxValue)
 
         for (item in list) {
-//            rect.set(
-//                currentX,
-//                (height - heightPerValue * item),
-//                (currentX + widthPerView),
-//                height.toFloat(),
-//            )
             rect.set(
                 currentX,
                 0f,
@@ -103,6 +97,7 @@ class DetailsGraphView @JvmOverloads constructor(
             canvas.drawRect(rect, paintStroke)
             currentX += widthPerView
         }
+        canvas.drawLine(0f,0f, measuredWidth.toFloat(),0f,paintStroke)
     }
 
     fun setValues(values: List<Int>) {
@@ -134,7 +129,7 @@ class DetailsGraphView @JvmOverloads constructor(
         paintStroke = Paint().apply {
             color = Color.BLACK
             style = Paint.Style.STROKE
-            strokeWidth = 2.0f
+            strokeWidth = 5.0f
         }
         this.threshold = threshold
         this.barWidth = barWidth

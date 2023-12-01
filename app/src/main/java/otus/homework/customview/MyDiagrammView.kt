@@ -55,6 +55,7 @@ class MyDiagrammView @JvmOverloads constructor (
     private var chosenPiece: Item? = null
 
     var chooseCategoryCallback: ((Item)-> Unit)? = null
+    var switchCatsCallback: (()-> Unit)? = null
 
 
     private val gestureDetector = GestureDetector(context, object :SimpleOnGestureListener(){
@@ -72,12 +73,12 @@ class MyDiagrammView @JvmOverloads constructor (
                     sqrt(clickedXRelatevelyTheCenter.pow(2) + clickedYRelatevelyTheCenter.pow(2))
                 val graphRadius = wCenter - myPaddingWith
 //
-//                if (distanceToCenter < graphRadius-widthOfCycleGraph){
-//                    switchCatsCallback!!.invoke(myItems.mode)
-//                    chosenPiece = null
-//                    invalidate()
-//                     return true
-//                }
+                if (distanceToCenter < graphRadius-widthOfCycleGraph){
+                    switchCatsCallback!!.invoke()
+                    chosenPiece = null
+                    invalidate()
+                     return true
+                }
 
                 var angleToCenterRad = atan2(clickedYRelatevelyTheCenter, clickedXRelatevelyTheCenter)
 
@@ -249,15 +250,37 @@ class MyDiagrammView @JvmOverloads constructor (
         val r = diameter/2
         val hOfHeader =  height/2 - r/2
         val spaceForHeader = sqrt(3.0f)*r
-        val headerSum = "${myItems.total} ₽"
+        val text = if (chosenPiece!=null){
+            chosenPiece!!.amount
+        }else{
+            myItems.total
+        }
+        val headerSum = "$text ₽"
         var textWidth = paintTextMain.measureText(headerSum)
         while (textWidth>0.6f*spaceForHeader){
             paintTextMain.textSize = paintTextMain.textSize - 1f
             textWidth = paintTextMain.measureText(headerSum)
         }
-        Log.e(TAG,"sum text size    ${ paintTextMain.textSize }")
         val startOfHeader = width/2f-textWidth/2
         canvas.drawText(headerSum,startOfHeader, hOfHeader,paintTextMain)
+
+
+        val textName = if (chosenPiece!=null){
+            chosenPiece!!.name
+       }else{
+           "Всего"
+       }
+
+        paintTextNameOfCategory.textSize = 70f
+        var textNameWidth = paintTextNameOfCategory.measureText(textName)
+        while (textNameWidth>0.9f*diameter) {
+            paintTextNameOfCategory.textSize = paintTextNameOfCategory.textSize - 1f
+            textNameWidth = paintTextNameOfCategory.measureText(textName)
+        }
+        val hOfName =  height/2f - r/6
+        Log.d(TAG, "diameter = $diameter, tWidth= $textNameWidth, name textSize=${paintTextNameOfCategory.textSize}")
+        val startOfName = width/2f-textNameWidth/2f
+        canvas.drawText(textName,startOfName, hOfName,paintTextNameOfCategory)
         }
 
     private fun checkIfTouchedInPieceOfGraph(
@@ -385,48 +408,26 @@ class MyDiagrammView @JvmOverloads constructor (
             //   |     amount      |
             //   |_________________|
 
-            val koef =  widthOfCycleGraph/5+widthOfCycleGraph+widthOfCycleGraph/5
-            val diameter = chosenRight  - chosenLeft - 2*koef //
-            val r = diameter/2
-
-            val textName = expense.name
-            paintTextNameOfCategory.textSize = 70f
-            var textNameWidth = paintTextNameOfCategory.measureText(textName)
-            while (textNameWidth>0.9f*diameter) {
-                paintTextNameOfCategory.textSize = paintTextNameOfCategory.textSize - 1f
-                    textNameWidth = paintTextNameOfCategory.measureText(textName)
-            }
-            val hOfName =  height/2f - r/3
-            Log.d(TAG, "diameter = $diameter, tWidth= $textNameWidth, name textSize=${paintTextNameOfCategory.textSize}")
-            val startOfName = width/2f-textNameWidth/2f
-            canvas.drawText(textName,startOfName, hOfName,paintTextNameOfCategory)
+//            val koef =  widthOfCycleGraph/5+widthOfCycleGraph+widthOfCycleGraph/5
+//            val diameter = chosenRight  - chosenLeft - 2*koef //
+//            val r = diameter/2
+//
+//            val textName = expense.name
+//            paintTextNameOfCategory.textSize = 70f
+//            var textNameWidth = paintTextNameOfCategory.measureText(textName)
+//            while (textNameWidth>0.9f*diameter) {
+//                paintTextNameOfCategory.textSize = paintTextNameOfCategory.textSize - 1f
+//                    textNameWidth = paintTextNameOfCategory.measureText(textName)
+//            }
+//            val hOfName =  height/2f - r/6
+//            Log.d(TAG, "diameter = $diameter, tWidth= $textNameWidth, name textSize=${paintTextNameOfCategory.textSize}")
+//            val startOfName = width/2f-textNameWidth/2f
+//            canvas.drawText(textName,startOfName, hOfName,paintTextNameOfCategory)
             ////
-            drawAmount(expense, diameter, hOfName, canvas)
+//            drawAmount(expense, diameter, hOfName, canvas)
         }
     }
 
-    private fun drawAmount(
-        it: Item,
-        diameter: Float,
-        hOfName: Float,
-        canvas: Canvas,
-    ) {
-        val r = diameter/2
-        val textAmount = "${it.amount} ₽"
-        paintTextAmount.textSize = 60f
-        var textAmountWidth = paintTextAmount.measureText(textAmount)
-        while (textAmountWidth > 0.5f * diameter) {
-            paintTextAmount.textSize = paintTextAmount.textSize - 1f
-            textAmountWidth = paintTextAmount.measureText(textAmount)
-        }
-        val hOfAmount = hOfName + (paintTextNameOfCategory.textSize.coerceAtLeast(paintTextAmount.textSize))
-        val startOfAmount = width / 2f - textAmountWidth / 2f
-        canvas.drawText(textAmount, startOfAmount, hOfAmount, paintTextAmount)
-    }
-
-//fun setCalbaccs( _switchCallback: (CategoriesMode)-> Unit){
-//    this.switchCatsCallback = _switchCallback
-//}
     fun setValues(_itemList: ItemList,) {
 //        this.values.clear()
 //        this.values.addAll(values)
