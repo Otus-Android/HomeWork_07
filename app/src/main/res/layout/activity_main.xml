@@ -8,21 +8,23 @@
     tools:context=".MainActivity"
     android:orientation="vertical"
    >
-
-      <otus.homework.customview.MyDiagrammView
-          android:id="@+id/my_custom_view"
+      <otus.homework.customview.DiagramViewGroup
+          android:id="@+id/my_view_group"
           android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          app:layout_constraintBottom_toBottomOf="parent"
-          app:layout_constraintEnd_toEndOf="parent"
-          app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintTop_toTopOf="parent" />
+          android:layout_height="match_parent">
 
-      <otus.homework.customview.DetailsGraphView
-          android:id="@+id/my_custom_details_graph"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-            />
+            <otus.homework.customview.MyDiagrammView
+                android:id="@+id/my_custom_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+             />
+
+            <otus.homework.customview.DetailsGraphView
+                android:id="@+id/my_custom_details_graph"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+      </otus.homework.customview.DiagramViewGroup>
 
 
 

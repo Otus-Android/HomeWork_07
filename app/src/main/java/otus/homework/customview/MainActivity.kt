@@ -10,6 +10,7 @@ import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.util.Comparator
+import kotlin.random.Random
 
 
 class MainActivity : AppCompatActivity() {
@@ -23,7 +24,6 @@ class MainActivity : AppCompatActivity() {
         val expenses = getExpensesFromJson()
         if (expenses != null) {
 
-            /////
             val listOfItems = mutableListOf<Item>()
             var total = 0
 
@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             val map = mutableMapOf<String, Int>()
+
             expenses.forEach {
                 if (!map.containsKey(it.category)) map[it.category] = 0
                 map[it.category] = map[it.category]!! + it.amount
@@ -54,33 +55,19 @@ class MainActivity : AppCompatActivity() {
                 CategoriesMode.CATEGORIES
             )
 
-            val itemListSep = ItemList(
-                listOfItemsSep.sortedWith(comparator1),
-                total,
-                CategoriesMode.SEPARATE_ITEMS
-            )
-            binding.myCustomView.setValues(itemList)
 
-        binding.myCustomView.setCalbaccs {
-        when(it){
-            CategoriesMode.CATEGORIES ->{
-                binding.myCustomView.setValues(itemListSep)
+            binding.myCustomView.apply {
+                setValues(itemList)
+                chooseCategoryCallback =
+                    {
+                        item ->
+
+
+                        binding.myCustomDetailsGraph.setValues(listOf( Random.nextInt(100), Random.nextInt(100), Random.nextInt(100), Random.nextInt(100)))
+                    }
             }
-            CategoriesMode.SEPARATE_ITEMS ->{
-                binding.myCustomView.setValues(itemList)
-
-            }
-        }
-    }
 
 
-
-            ////
-//            val comparator =
-//                Comparator<Expense> { o1, o2 -> if (o1.amount > o2.amount) 1 else if (o2.amount > o1.amount) -1 else 0 }
-//            binding.myCustomView.setValues(expenses.sortedWith(comparator)) { exp ->
-//                Log.i(TAG, "It is from activity ___ ${exp.name} was chosen")
-//            }
         }
 
     }

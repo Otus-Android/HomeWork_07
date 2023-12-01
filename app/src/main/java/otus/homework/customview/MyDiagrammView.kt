@@ -26,7 +26,6 @@ class MyDiagrammView @JvmOverloads constructor (
     private val paddingParameter = 10f
     private val widthOfCycleGraph = 100f
 
-
     private lateinit var paintBackground : Paint
     private lateinit var paintMyRed: Paint
     private lateinit var paintMyOrange: Paint
@@ -52,13 +51,10 @@ class MyDiagrammView @JvmOverloads constructor (
 
     private var clickedPointX: Float = 0f
     private var clickedPointY: Float = 0f
-
     private var myPaddingWith: Float = 0f
     private var chosenPiece: Item? = null
 
-
-    private var switchCatsCallback: ((CategoriesMode) -> Unit)? = null
-
+    var chooseCategoryCallback: ((Item)-> Unit)? = null
 
 
     private val gestureDetector = GestureDetector(context, object :SimpleOnGestureListener(){
@@ -70,19 +66,18 @@ class MyDiagrammView @JvmOverloads constructor (
                 val hCenter = height/2
                 val wCenter = width/2
 
-
                 val clickedXRelatevelyTheCenter = clickedPointX - wCenter
                 val clickedYRelatevelyTheCenter = clickedPointY - hCenter
                 val distanceToCenter =
                     sqrt(clickedXRelatevelyTheCenter.pow(2) + clickedYRelatevelyTheCenter.pow(2))
                 val graphRadius = wCenter - myPaddingWith
-
-                if (distanceToCenter < graphRadius-widthOfCycleGraph){
-                    switchCatsCallback!!.invoke(myItems.mode)
-                    chosenPiece = null
-                    invalidate()
-                     return true
-                }
+//
+//                if (distanceToCenter < graphRadius-widthOfCycleGraph){
+//                    switchCatsCallback!!.invoke(myItems.mode)
+//                    chosenPiece = null
+//                    invalidate()
+//                     return true
+//                }
 
                 var angleToCenterRad = atan2(clickedYRelatevelyTheCenter, clickedXRelatevelyTheCenter)
 
@@ -111,6 +106,7 @@ class MyDiagrammView @JvmOverloads constructor (
                             Log.d(TAG, "was chosen : ${values[i].name}")
 //                            callback?.invoke(values[i])
                             chosenPiece = values[i]
+                            chooseCategoryCallback?.invoke(values[i])
                             invalidate()
                             return true
                         }
@@ -180,13 +176,13 @@ class MyDiagrammView @JvmOverloads constructor (
         val paddingHeight: Float
 
         if (hCenter < wCenter) {
-            paddingHeight = worldHeight / paddingParameter
-            paddingWidth = wCenter - hCenter + paddingHeight
+//            paddingHeight = worldHeight / paddingParameter
+//            paddingWidth = wCenter - hCenter + paddingHeight
         } else {
-            paddingWidth = worldWidth / paddingParameter
-            paddingHeight = hCenter - wCenter + paddingWidth
+//            paddingWidth = worldWidth / paddingParameter
+//            paddingHeight = hCenter - wCenter + paddingWidth
         }
-        myPaddingWith = paddingWidth
+        myPaddingWith = 0f
 
         var startAngleG = 0f
         var paintIndex = 0
@@ -207,8 +203,8 @@ class MyDiagrammView @JvmOverloads constructor (
             }
             drawPieceOfGraph(
                 canvas,
-                paddingWidth,
-                paddingHeight,
+                0f,
+                0f,
                 worldWidth,
                 worldHeight,
                 startAngleG,
@@ -226,8 +222,8 @@ class MyDiagrammView @JvmOverloads constructor (
         }
             drawInnerBackgroundCircles(
                 canvas,
-                paddingWidth,
-                paddingHeight,
+                0f,
+                0f,
                 worldWidth,
                 worldHeight
             )
@@ -238,8 +234,8 @@ class MyDiagrammView @JvmOverloads constructor (
                 canvas,
                 chosenStartAngle,
                 chosenEAngle,
-                paddingWidth,
-                paddingHeight
+                0f,
+                0f
             )
         }
 
@@ -249,9 +245,9 @@ class MyDiagrammView @JvmOverloads constructor (
         //   |_____20000 ₽_____|
         //   |                 |
         //   |_________________|
-        val diameter = worldWidth - paddingWidth - widthOfCycleGraph -paddingWidth - widthOfCycleGraph  //
+        val diameter = worldWidth - 0f - widthOfCycleGraph -0f - widthOfCycleGraph  //
         val r = diameter/2
-        val hOfHeader =  height/2 - r/3
+        val hOfHeader =  height/2 - r/2
         val spaceForHeader = sqrt(3.0f)*r
         val headerSum = "${myItems.total} ₽"
         var textWidth = paintTextMain.measureText(headerSum)
@@ -392,14 +388,15 @@ class MyDiagrammView @JvmOverloads constructor (
             val koef =  widthOfCycleGraph/5+widthOfCycleGraph+widthOfCycleGraph/5
             val diameter = chosenRight  - chosenLeft - 2*koef //
             val r = diameter/2
-            val hOfName =  height/2f + r/12
+
             val textName = expense.name
-            paintTextNameOfCategory.textSize = 130f
+            paintTextNameOfCategory.textSize = 70f
             var textNameWidth = paintTextNameOfCategory.measureText(textName)
             while (textNameWidth>0.9f*diameter) {
                 paintTextNameOfCategory.textSize = paintTextNameOfCategory.textSize - 1f
                     textNameWidth = paintTextNameOfCategory.measureText(textName)
             }
+            val hOfName =  height/2f - r/3
             Log.d(TAG, "diameter = $diameter, tWidth= $textNameWidth, name textSize=${paintTextNameOfCategory.textSize}")
             val startOfName = width/2f-textNameWidth/2f
             canvas.drawText(textName,startOfName, hOfName,paintTextNameOfCategory)
@@ -412,22 +409,24 @@ class MyDiagrammView @JvmOverloads constructor (
         it: Item,
         diameter: Float,
         hOfName: Float,
-        canvas: Canvas
+        canvas: Canvas,
     ) {
+        val r = diameter/2
         val textAmount = "${it.amount} ₽"
+        paintTextAmount.textSize = 60f
         var textAmountWidth = paintTextAmount.measureText(textAmount)
         while (textAmountWidth > 0.5f * diameter) {
             paintTextAmount.textSize = paintTextAmount.textSize - 1f
             textAmountWidth = paintTextAmount.measureText(textAmount)
         }
-        val hOfAmount = hOfName + (2 * paintTextAmount.textSize)
+        val hOfAmount = hOfName + (paintTextNameOfCategory.textSize.coerceAtLeast(paintTextAmount.textSize))
         val startOfAmount = width / 2f - textAmountWidth / 2f
         canvas.drawText(textAmount, startOfAmount, hOfAmount, paintTextAmount)
     }
 
-fun setCalbaccs( _switchCallback: (CategoriesMode)-> Unit){
-    this.switchCatsCallback = _switchCallback
-}
+//fun setCalbaccs( _switchCallback: (CategoriesMode)-> Unit){
+//    this.switchCatsCallback = _switchCallback
+//}
     fun setValues(_itemList: ItemList,) {
 //        this.values.clear()
 //        this.values.addAll(values)
