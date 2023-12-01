@@ -8,11 +8,7 @@
     tools:context=".MainActivity"
     android:orientation="vertical"
    >
-   <androidx.appcompat.widget.LinearLayoutCompat
-       android:layout_width="match_parent"
-       android:layout_height="match_parent"
-       android:orientation="vertical"
-      >
+
       <otus.homework.customview.MyDiagrammView
           android:id="@+id/my_custom_view"
           android:layout_width="match_parent"
@@ -22,8 +18,17 @@
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toTopOf="parent" />
 
+      <otus.homework.customview.DetailsGraphView
+          android:id="@+id/my_custom_details_graph"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+            />
 
-   </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+
+
+
 
 
 

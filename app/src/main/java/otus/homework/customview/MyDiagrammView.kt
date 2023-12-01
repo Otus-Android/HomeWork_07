@@ -20,14 +20,12 @@ class MyDiagrammView @JvmOverloads constructor (
     attrs: AttributeSet? = null
 ): View(context, attrs) {
 
-//    private val values = ArrayList<Expense>()
 
     private lateinit var myItems: ItemList
 
     private val paddingParameter = 10f
     private val widthOfCycleGraph = 100f
 
-    private var callback: ((Expense) -> Unit)? = null
 
     private lateinit var paintBackground : Paint
     private lateinit var paintMyRed: Paint
