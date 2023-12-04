@@ -165,6 +165,8 @@ class MyDiagrammView @JvmOverloads constructor (
 
         canvas.drawRGB(255, 255, 255)
 
+        Log.i("STATE", "chosen=${chosenPiece?.name}")
+
         val values = myItems.pieces
         if (values.isEmpty()) return
 
@@ -197,6 +199,7 @@ class MyDiagrammView @JvmOverloads constructor (
             val endAngleG = (values[i].amount / onePercent) * 3.6f
             chosenPiece?.let {
                 if (values[i] == it) {
+                    chooseCategoryCallback?.invoke(it)
                     chosenPaint = paint
                     chosenStartAngle = startAngleG - 10f
                     chosenEAngle = endAngleG + 20f
@@ -238,6 +241,8 @@ class MyDiagrammView @JvmOverloads constructor (
                 0f,
                 0f
             )
+
+
         }
 
 
@@ -533,17 +538,17 @@ class MyDiagrammView @JvmOverloads constructor (
         return true
     }
 
-//    override fun onRestoreInstanceState(state: Parcelable?) {
-//        val analyticalPieChartState = state as? AnalyticalPieChartState
-//        super.onRestoreInstanceState(analyticalPieChartState?.superState ?: state)
-//
-////        chosenPiece = analyticalPieChartState?.expense
-//    }
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        val analyticalPieChartState = state as? AnalyticalPieChartState
+        super.onRestoreInstanceState(analyticalPieChartState?.superState ?: state)
 
-//    override fun onSaveInstanceState(): Parcelable {
-//        val superState = super.onSaveInstanceState()
-//        return AnalyticalPieChartState(superState, chosenPiece)
-//    }
+        chosenPiece = analyticalPieChartState?.expense
+    }
+
+    override fun onSaveInstanceState(): Parcelable {
+        val superState = super.onSaveInstanceState()
+        return AnalyticalPieChartState(superState, chosenPiece)
+    }
 }
 
 class AnalyticalPieChartState(

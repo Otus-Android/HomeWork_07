@@ -118,7 +118,7 @@ class DayExpense(
 
 
 
-class Item(
+data class Item(
     val name: String,
     val amount: Int
 )
