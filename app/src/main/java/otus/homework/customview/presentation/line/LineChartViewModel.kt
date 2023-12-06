@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation.pie
+package otus.homework.customview.presentation.line
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -11,29 +11,26 @@ import kotlinx.coroutines.launch
 import otus.homework.customview.MyApplication
 import otus.homework.customview.data.ExpensesException
 import otus.homework.customview.domain.ExpensesInteractor
-import otus.homework.customview.presentation.pie.chart.models.PieData
-import otus.homework.customview.presentation.pie.chart.models.PieNode
 
-class PieChartViewModel(
+class LineChartViewModel(
     private val interactor: ExpensesInteractor
 ) : ViewModel() {
 
     val uiState get() = _uiState.asStateFlow()
-    private val _uiState: MutableStateFlow<PieChartUiState> = MutableStateFlow(PieChartUiState.IDLE)
+    private val _uiState: MutableStateFlow<LineChartUiState> = MutableStateFlow(LineChartUiState.IDLE)
 
     private val exceptionHandler = CoroutineExceptionHandler { _, e ->
-        _uiState.value = PieChartUiState.Error(e.toString())
+        _uiState.value = LineChartUiState.Error(e.toString())
     }
 
     fun loadExpenses() {
         viewModelScope.launch(exceptionHandler) {
-            _uiState.value = PieChartUiState.Loading
+            _uiState.value = LineChartUiState.Loading
             try {
                 val expenses = interactor.getExpenses()
-                val pieData = expenses.map { PieNode(it.amount.toFloat(), it.category) }
-                _uiState.value = PieChartUiState.Success(PieData(pieData))
+                _uiState.value = LineChartUiState.Success(expenses)
             } catch (e: ExpensesException) {
-                _uiState.value = PieChartUiState.Error(e.toString())
+                _uiState.value = LineChartUiState.Error(e.toString())
             }
         }
     }
@@ -46,7 +43,7 @@ class PieChartViewModel(
                 val application =
                     checkNotNull(extras[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
                 val diContainer = MyApplication.diContainer(application)
-                return PieChartViewModel(interactor = diContainer.interactor) as T
+                return LineChartViewModel(interactor = diContainer.interactor) as T
             }
         }
     }

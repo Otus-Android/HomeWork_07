@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation.pie
+package otus.homework.customview.presentation.line
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,14 +10,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
+import otus.homework.customview.databinding.FragmentLineChartBinding
 import otus.homework.customview.databinding.FragmentPieChartBinding
 
-class PieChartFragment : Fragment() {
+class LineChartFragment : Fragment() {
 
-    private var _binding: FragmentPieChartBinding? = null
+    private var _binding: FragmentLineChartBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: PieChartViewModel by viewModels { PieChartViewModel.Factory }
+    private val viewModel: LineChartViewModel by viewModels { LineChartViewModel.Factory }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,7 +33,7 @@ class PieChartFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentPieChartBinding.inflate(inflater, container, false)
+        _binding = FragmentLineChartBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -41,8 +42,9 @@ class PieChartFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect {
-                    if (it is PieChartUiState.Success) {
-                        binding.pieChartView.updateNodes(it.expenses)
+                    if (it is LineChartUiState.Success) {
+                        binding.lineChartView.updateNodes(it.expenses)
+                        binding.lineChartView.setDebugMode(true)
                     }
                 }
             }
@@ -56,6 +58,6 @@ class PieChartFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance() = PieChartFragment()
+        fun newInstance() = LineChartFragment()
     }
 }

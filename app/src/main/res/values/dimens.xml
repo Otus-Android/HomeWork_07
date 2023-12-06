@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="chart_0">0dp</dimen>
+    <dimen name="chart_1">1dp</dimen>
+    <dimen name="chart_2">2dp</dimen>
+    <dimen name="chart_4">4dp</dimen>
+    <dimen name="chart_6">6dp</dimen>
+    <dimen name="chart_8">8dp</dimen>
+    <dimen name="chart_10">10dp</dimen>
+    <dimen name="chart_12">12dp</dimen>
+    <dimen name="chart_14">14dp</dimen>
+    <dimen name="chart_18">18dp</dimen>
+    <dimen name="chart_20">20dp</dimen>
+
+    <dimen name="chart_text_size_8">8sp</dimen>
+    <dimen name="chart_text_size_16">16sp</dimen>
+    <dimen name="chart_text_size_24">24sp</dimen>
+</resources>

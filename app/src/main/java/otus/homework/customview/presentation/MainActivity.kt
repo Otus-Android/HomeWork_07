@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import otus.homework.customview.R
 import otus.homework.customview.databinding.ActivityMainBinding
+import otus.homework.customview.presentation.line.LineChartFragment
 import otus.homework.customview.presentation.pie.PieChartFragment
 
 class MainActivity : AppCompatActivity() {
@@ -20,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavigationView.setOnNavigationItemSelectedListener { menu ->
             when (menu.itemId) {
                 R.id.pie_chart_menu_item -> PieChartFragment.newInstance().replace()
-                R.id.line_chart_menu_item -> {}
+                R.id.line_chart_menu_item -> LineChartFragment.newInstance().replace()
             }
             true
         }
