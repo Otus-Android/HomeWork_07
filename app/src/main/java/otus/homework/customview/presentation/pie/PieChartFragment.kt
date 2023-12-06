@@ -11,21 +11,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import otus.homework.customview.databinding.FragmentPieChartBinding
+import otus.homework.customview.presentation.expenses.ExpensesUiState
+import otus.homework.customview.presentation.expenses.ExpensesViewModel
 
 class PieChartFragment : Fragment() {
 
     private var _binding: FragmentPieChartBinding? = null
     private val binding get() = _binding!!
 
+    private val sharedViewModel: ExpensesViewModel by viewModels({ requireActivity() }) { ExpensesViewModel.Factory }
     private val viewModel: PieChartViewModel by viewModels { PieChartViewModel.Factory }
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) {
-            viewModel.loadExpenses()
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,9 +35,20 @@ class PieChartFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect {
-                    if (it is PieChartUiState.Success) {
-                        binding.pieChartView.updateNodes(it.expenses)
+
+                launch {
+                    sharedViewModel.uiState.collect {
+                        if (it is ExpensesUiState.Success) {
+                            viewModel.load(it.expenses)
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.uiState.collect {
+                        if (it is PieChartUiState.Success) {
+                            binding.pieChartView.updateNodes(it.expenses)
+                        }
                     }
                 }
             }

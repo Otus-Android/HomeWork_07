@@ -1,6 +1,7 @@
-package otus.homework.customview.presentation
+package otus.homework.customview.presentation.expenses
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import otus.homework.customview.R
@@ -8,10 +9,10 @@ import otus.homework.customview.databinding.ActivityMainBinding
 import otus.homework.customview.presentation.line.LineChartFragment
 import otus.homework.customview.presentation.pie.PieChartFragment
 
-class MainActivity : AppCompatActivity() {
+class ExpensesActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-
+    private val viewModel: ExpensesViewModel by viewModels { ExpensesViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +25,10 @@ class MainActivity : AppCompatActivity() {
                 R.id.line_chart_menu_item -> LineChartFragment.newInstance().replace()
             }
             true
+        }
+
+        if (savedInstanceState == null) {
+            viewModel.loadExpenses()
         }
     }
 

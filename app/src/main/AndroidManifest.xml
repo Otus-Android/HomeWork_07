@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CustomView">
         <activity
-            android:name=".presentation.MainActivity"
+            android:name=".presentation.expenses.ExpensesActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

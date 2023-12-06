@@ -11,22 +11,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import otus.homework.customview.databinding.FragmentLineChartBinding
-import otus.homework.customview.databinding.FragmentPieChartBinding
+import otus.homework.customview.presentation.expenses.ExpensesUiState
+import otus.homework.customview.presentation.expenses.ExpensesViewModel
 
 class LineChartFragment : Fragment() {
 
     private var _binding: FragmentLineChartBinding? = null
     private val binding get() = _binding!!
 
+    private val sharedViewModel: ExpensesViewModel by viewModels({ requireActivity() }) { ExpensesViewModel.Factory }
     private val viewModel: LineChartViewModel by viewModels { LineChartViewModel.Factory }
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) {
-            viewModel.loadExpenses()
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,8 +35,8 @@ class LineChartFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect {
-                    if (it is LineChartUiState.Success) {
+                sharedViewModel.uiState.collect {
+                    if (it is ExpensesUiState.Success) {
                         binding.lineChartView.updateNodes(it.expenses)
                         binding.lineChartView.setDebugMode(true)
                     }

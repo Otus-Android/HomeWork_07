@@ -2,14 +2,11 @@ package otus.homework.customview.presentation.pie
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import otus.homework.customview.MyApplication
-import otus.homework.customview.data.ExpensesException
+import otus.homework.customview.domain.Expense
 import otus.homework.customview.domain.ExpensesInteractor
 import otus.homework.customview.presentation.pie.chart.models.PieData
 import otus.homework.customview.presentation.pie.chart.models.PieNode
@@ -21,21 +18,9 @@ class PieChartViewModel(
     val uiState get() = _uiState.asStateFlow()
     private val _uiState: MutableStateFlow<PieChartUiState> = MutableStateFlow(PieChartUiState.IDLE)
 
-    private val exceptionHandler = CoroutineExceptionHandler { _, e ->
-        _uiState.value = PieChartUiState.Error(e.toString())
-    }
-
-    fun loadExpenses() {
-        viewModelScope.launch(exceptionHandler) {
-            _uiState.value = PieChartUiState.Loading
-            try {
-                val expenses = interactor.getExpenses()
-                val pieData = expenses.map { PieNode(it.amount.toFloat(), it.category) }
-                _uiState.value = PieChartUiState.Success(PieData(pieData))
-            } catch (e: ExpensesException) {
-                _uiState.value = PieChartUiState.Error(e.toString())
-            }
-        }
+    fun load(expenses: List<Expense>) {
+        val pieData = expenses.map { PieNode(it.amount.toFloat(), it.category) }
+        _uiState.value = PieChartUiState.Success(PieData(pieData))
     }
 
     companion object {
