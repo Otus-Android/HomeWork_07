@@ -18,11 +18,14 @@ class DiagramViewGroup @JvmOverloads constructor(
 
 
         //тут тоже надо учесть margine
+//        val marg =  (cycleDiagram.layoutParams as LayoutParams).margine
+        val marg = 0
         cycleDiagram.layout(
-            l, t, r, b
+            l+marg, t+marg, r-marg, b-marg
         )
 
-        val cycleWidth = 100
+        val cycleWidth = (cycleDiagram.layoutParams as LayoutParams).diagramWidth2
+//        val cycleWidth = 100
         val diff = cycleDiagram.width - 2*cycleWidth - graph.measuredWidth
 
         graph.layout(
@@ -49,7 +52,8 @@ class DiagramViewGroup @JvmOverloads constructor(
                 MeasureSpec.AT_MOST
             )
         )
-        val widthOfCycleDiagramm = 200
+        val cycleWidth = (cycleDiagram.layoutParams as LayoutParams).diagramWidth2
+        val widthOfCycleDiagramm = cycleWidth*2
         val cyclePadding = width/10
         graph.measure(
             MeasureSpec.makeMeasureSpec(
@@ -67,4 +71,28 @@ class DiagramViewGroup @JvmOverloads constructor(
             cycleDiagram.measuredHeight)
 
     }
+
+
+
+    override fun generateLayoutParams(attrs: AttributeSet): ViewGroup.LayoutParams {
+        return LayoutParams(context, attrs)
+    }
+
+    class LayoutParams(context: Context, attrs: AttributeSet) :
+        ViewGroup.LayoutParams(context, attrs) {
+        var margine: Int = 0
+        var diagramWidth2: Int = 0
+
+        init {
+
+            val typedArray =
+                context.obtainStyledAttributes(attrs, R.styleable.DiagramViewGroup_Layout)
+            diagramWidth2 =
+                typedArray.getInt(R.styleable.DiagramViewGroup_Layout_layout_diagram_width, 100)
+            margine = typedArray.getInt(R.styleable.DiagramViewGroup_Layout_layout_all_margin, 100)
+            typedArray.recycle()
+
+        }
+    }
 }
+

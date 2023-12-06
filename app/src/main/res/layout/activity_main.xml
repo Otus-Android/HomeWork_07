@@ -17,7 +17,8 @@
                 android:id="@+id/my_custom_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:diagram_width="50"
+                app:layout_diagram_width="100"
+                app:layout_all_margin="100"
              />
 
             <otus.homework.customview.DetailsGraphView

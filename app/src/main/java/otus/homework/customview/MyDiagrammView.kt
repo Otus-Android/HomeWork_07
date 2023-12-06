@@ -60,8 +60,8 @@ class MyDiagrammView @JvmOverloads constructor (
     val typedArray: TypedArray
 
     init {
-        typedArray = context.obtainStyledAttributes(attrs,R.styleable.MyDiagrammView)
-        widthOfCycleGraph = typedArray.getInt(R.styleable.MyDiagrammView_diagram_width, 100)
+        typedArray = context.obtainStyledAttributes(attrs,R.styleable.DiagramViewGroup_Layout)
+        widthOfCycleGraph = typedArray.getInt(R.styleable.DiagramViewGroup_Layout_layout_diagram_width, 100)
         typedArray.recycle()
     }
 
@@ -157,9 +157,8 @@ class MyDiagrammView @JvmOverloads constructor (
                 setMeasuredDimension(wSize, hSize)
             }
             MeasureSpec.AT_MOST -> {
-                val newH = wSize.coerceAtMost(hSize)
-                val newW =  wSize.coerceAtMost(hSize)
-                setMeasuredDimension(newW, newH)
+                val size = wSize.coerceAtMost(hSize)
+                setMeasuredDimension(size, size)
             }
             MeasureSpec.UNSPECIFIED -> {
                 val barWidth = 1f
@@ -215,8 +214,8 @@ class MyDiagrammView @JvmOverloads constructor (
             }
             drawPieceOfGraph(
                 canvas,
-                0f,
-                0f,
+                50f,
+                50f,
                 worldWidth,
                 worldHeight,
                 startAngleG,
@@ -246,8 +245,8 @@ class MyDiagrammView @JvmOverloads constructor (
                 canvas,
                 chosenStartAngle,
                 chosenEAngle,
-                0f,
-                0f
+                50f,
+                50f
             )
 
 
@@ -366,10 +365,14 @@ class MyDiagrammView @JvmOverloads constructor (
         paddingWidth: Float,
         paddingHeight: Float
     ) {
-       val chosenLeft = paddingWidth - widthOfCycleGraph/5
-       val chosenTop = paddingHeight - widthOfCycleGraph/5
-       val chosenRight = width - paddingWidth + widthOfCycleGraph/5
-       val chosenBottom = height - paddingHeight + widthOfCycleGraph/5
+        val chosenLeft = paddingWidth - widthOfCycleGraph/10
+        val chosenTop = paddingHeight - widthOfCycleGraph/10
+        val chosenRight = width - paddingWidth + widthOfCycleGraph/10
+        val chosenBottom = height - paddingHeight + widthOfCycleGraph/10
+//       val chosenLeft = paddingWidth - widthOfCycleGraph/5
+//       val chosenTop = paddingHeight - widthOfCycleGraph/5
+//       val chosenRight = width - paddingWidth + widthOfCycleGraph/5
+//       val chosenBottom = height - paddingHeight + widthOfCycleGraph/5
 
         chosenPaint?.let {
             canvas.drawArc(
@@ -393,7 +396,8 @@ class MyDiagrammView @JvmOverloads constructor (
                 paintStr
             )
 
-            val koef =  widthOfCycleGraph/5+widthOfCycleGraph+widthOfCycleGraph/5
+            val koef = paddingWidth+widthOfCycleGraph.dp/2
+//                widthOfCycleGraph/5+widthOfCycleGraph+widthOfCycleGraph/5
             canvas.drawArc(
                 chosenLeft + koef,
                 chosenTop + koef,
