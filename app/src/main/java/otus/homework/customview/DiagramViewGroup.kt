@@ -9,11 +9,13 @@ class DiagramViewGroup @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
 ) : ViewGroup(context, attrs) {
-    val margine = 100
+
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         require(childCount == 2)
         val cycleDiagram = getChildAt(0)
         val graph = getChildAt(1)
+
+
 
         //тут тоже надо учесть margine
         cycleDiagram.layout(

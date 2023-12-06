@@ -1,6 +1,7 @@
 package otus.homework.customview
 
 import android.content.Context
+import android.content.res.TypedArray
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.os.Parcelable
@@ -23,8 +24,7 @@ class MyDiagrammView @JvmOverloads constructor (
 
     private lateinit var myItems: ItemList
 
-    private val paddingParameter = 10f
-    private val widthOfCycleGraph = 100f
+    private val widthOfCycleGraph : Int
 
     private lateinit var paintBackground : Paint
     private lateinit var paintMyRed: Paint
@@ -56,6 +56,14 @@ class MyDiagrammView @JvmOverloads constructor (
 
     var chooseCategoryCallback: ((Item)-> Unit)? = null
     var switchCatsCallback: (()-> Unit)? = null
+
+    val typedArray: TypedArray
+
+    init {
+        typedArray = context.obtainStyledAttributes(attrs,R.styleable.MyDiagrammView)
+        widthOfCycleGraph = typedArray.getInt(R.styleable.MyDiagrammView_diagram_width, 100)
+        typedArray.recycle()
+    }
 
 
     private val gestureDetector = GestureDetector(context, object :SimpleOnGestureListener(){
