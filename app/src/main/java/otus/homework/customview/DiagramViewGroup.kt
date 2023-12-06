@@ -2,6 +2,7 @@ package otus.homework.customview
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.ViewGroup
 
 
@@ -12,27 +13,27 @@ class DiagramViewGroup @JvmOverloads constructor(
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         require(childCount == 2)
-        val cycleDiagram = getChildAt(0)
-        val graph = getChildAt(1)
+        val ring = getChildAt(0)
+        val bars = getChildAt(1)
 
+        val margin =  (ring.layoutParams as LayoutParams).margin
 
-
-        //тут тоже надо учесть margine
-//        val marg =  (cycleDiagram.layoutParams as LayoutParams).margine
-        val marg = 0
-        cycleDiagram.layout(
-            l+marg, t+marg, r-marg, b-marg
+        ring.layout(
+            l+margin, t+margin, r-margin, b-margin
         )
+        val ringWidth = (width/3).dp
+        log("onLayout()__ margin = $margin,   ringWidth = $ringWidth")
 
-        val cycleWidth = (cycleDiagram.layoutParams as LayoutParams).diagramWidth2
-//        val cycleWidth = 100
-        val diff = cycleDiagram.width - 2*cycleWidth - graph.measuredWidth
+        val diff = ring.width - 2*ringWidth - bars.measuredWidth
 
-        graph.layout(
-            cycleDiagram.left+cycleWidth+diff/2,
-            cycleDiagram.top+cycleDiagram.height/2,
-            cycleDiagram.right-cycleWidth-diff/2,
-            cycleDiagram.bottom-cycleWidth
+//        val r = ringWidth/5
+        bars.layout(
+            width/2,
+
+//            ring.left.dp+ringWidth+diff/2,
+            ring.top+ring.height/2,
+            ring.right-ringWidth-diff/2,
+            ring.bottom-ringWidth
         )
 
     }
@@ -52,12 +53,13 @@ class DiagramViewGroup @JvmOverloads constructor(
                 MeasureSpec.AT_MOST
             )
         )
-        val cycleWidth = (cycleDiagram.layoutParams as LayoutParams).diagramWidth2
-        val widthOfCycleDiagramm = cycleWidth*2
+//        val cycleWidth = (cycleDiagram.layoutParams as LayoutParams).diagramWidth2
+
+        val ringWidth = width.dp/3
         val cyclePadding = width/10
         graph.measure(
             MeasureSpec.makeMeasureSpec(
-                MeasureSpec.getSize((cycleDiagram.measuredWidth-2*widthOfCycleDiagramm-cyclePadding*2)),
+                MeasureSpec.getSize((cycleDiagram.measuredWidth-2*ringWidth-cyclePadding*2)),
                 MeasureSpec.EXACTLY
             ),
             MeasureSpec.makeMeasureSpec(
@@ -80,19 +82,25 @@ class DiagramViewGroup @JvmOverloads constructor(
 
     class LayoutParams(context: Context, attrs: AttributeSet) :
         ViewGroup.LayoutParams(context, attrs) {
-        var margine: Int = 0
-        var diagramWidth2: Int = 0
+        var margin: Int = 0
 
         init {
 
             val typedArray =
                 context.obtainStyledAttributes(attrs, R.styleable.DiagramViewGroup_Layout)
-            diagramWidth2 =
-                typedArray.getInt(R.styleable.DiagramViewGroup_Layout_layout_diagram_width, 100)
-            margine = typedArray.getInt(R.styleable.DiagramViewGroup_Layout_layout_all_margin, 100)
+            margin = typedArray.getDimensionPixelSize(R.styleable.DiagramViewGroup_Layout_layout_all_margin, 100.dp)
             typedArray.recycle()
 
         }
     }
+
+    private fun log(text: String){
+        Log.d(TAG, text)
+    }
+
+    companion object{
+        private const val TAG = "VIEWGROUP"
+    }
+
 }
 

@@ -5,7 +5,7 @@
     </declare-styleable>
 
     <declare-styleable name="DiagramViewGroup_Layout">
-        <attr name="layout_all_margin" format="integer"/>
-        <attr name="layout_diagram_width" format="integer"/>
+        <attr name="layout_all_margin" format="dimension"/>
+<!--        <attr name="layout_diagram_width" format="integer"/>-->
     </declare-styleable>
 </resources>
