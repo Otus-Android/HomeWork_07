@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="MyDiagrammView">
-        <attr name="diagram_width" format="integer"/>
-    </declare-styleable>
-
     <declare-styleable name="BarsDiagram">
         <attr name="bar_color" format="color"/>
     </declare-styleable>
 
     <declare-styleable name="DiagramViewGroup_Layout">
         <attr name="layout_all_margin" format="dimension"/>
-<!--        <attr name="layout_diagram_width" format="integer"/>-->
     </declare-styleable>
 </resources>

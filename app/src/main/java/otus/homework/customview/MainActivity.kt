@@ -24,14 +24,9 @@ class MainActivity : AppCompatActivity() {
 
         val expenses = getExpensesFromJson()
         if (expenses != null) {
-
-            val allExpenses2 = AllExpenses(expenses)
-            Log.i(TAG,"map = ${allExpenses2.sortByCategory()}")
-
-            val allExpenses = mutableListOf<Item>()
+            val allExpenses = AllExpenses(expenses)
+            val items = mutableListOf<Item>()
             var total = 0
-
-
             val map = mutableMapOf<String, Int>()
 
             expenses.forEach {
@@ -40,32 +35,30 @@ class MainActivity : AppCompatActivity() {
                 total += it.amount
             }
             for ((cat, amount) in map.entries) {
-                allExpenses.add(Item(cat, amount))
+                items.add(Item(cat, amount))
             }
 
-            val comparator1 =
+            val comparatorByAmount =
                 Comparator<Item> { o1, o2 -> if (o1.amount > o2.amount) 1 else if (o2.amount > o1.amount) -1 else 0 }
 
             val itemList = ItemList(
-                allExpenses.sortedWith(comparator1),
+                items.sortedWith(comparatorByAmount),
                 total,
             )
 
-            val allExpensesDayByDay = getDetaledExpensesByCategory(allExpenses2)
+            val allExpensesDayByDay = getDetailedExpensesByCategory(allExpenses)
             binding.myCustomDetailsGraph.setValues(
                 allExpensesDayByDay
             )
-
 
             binding.myCustomView.apply {
                 setValues(itemList)
                 chooseCategoryCallback =
                     { item ->
                         val category = item.name
-                        val list = getDetaledExpensesByCategory(allExpenses2, category)
-
+                        val list = getDetailedExpensesByCategory(allExpenses, category)
                         binding.myCustomDetailsGraph.setValues(
-                           list
+                            list
                         )
                     }
                 switchCatsCallback = {
@@ -77,20 +70,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getDetaledExpensesByCategory(allExpenses2: AllExpenses, category: String=""): List<Int> {
+    private fun getDetailedExpensesByCategory(
+        allExpenses2: AllExpenses,
+        category: String = ""
+    ): List<Int> {
         Log.i("Category", "cat= $category, ${allExpenses2.mapByCategory[category]}")
-        val categoryExpensesDetails = if (category == ""){
+        val categoryExpensesDetails = if (category == "") {
             allExpenses2.getAllCategoriesExpenses()
-        }else{
+        } else {
             allExpenses2.getOneCategoryExpenses(category)
         }
         val byDay = mutableListOf<Int>()
-        return if (categoryExpensesDetails.isNotEmpty()){
+        return if (categoryExpensesDetails.isNotEmpty()) {
             categoryExpensesDetails.forEach {
                 byDay.add(it.amount)
             }
             byDay
-        }else{
+        } else {
             emptyList()
         }
 

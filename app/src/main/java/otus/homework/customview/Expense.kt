@@ -20,7 +20,6 @@ class AllExpenses(private val allExpenses: List<Expense>) {
         mapByCategory = sortByCategory()
     }
 
-
     fun sortByCategory(): Map<String, List<Expense>> {
         val mapByCategory = hashMapOf<String, MutableList<Expense>>()
         allExpenses.forEach { expense ->
