@@ -63,8 +63,7 @@ class RingDiagram @JvmOverloads constructor(
     init {
 
         if (isInEditMode) {
-//            setValues(listOf(Expense(12,"Cinema",250,"fun",0L))) {
-//            }
+            setValues(ItemList(listOf(Item("eda",1000), Item("car",15000)), 12))
         }
         setup(
             context
@@ -488,8 +487,6 @@ class RingDiagram @JvmOverloads constructor(
     private fun log(text: String){
         Log.d(TAG, text)
     }
-
-    fun Any.TAG() = this.javaClass.name
 }
 
 

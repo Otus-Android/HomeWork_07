@@ -28,8 +28,6 @@ class MainActivity : AppCompatActivity() {
             val allExpenses2 = AllExpenses(expenses)
             Log.i(TAG,"map = ${allExpenses2.sortByCategory()}")
 
-
-
             val allExpenses = mutableListOf<Item>()
             var total = 0
 

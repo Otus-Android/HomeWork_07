@@ -8,39 +8,34 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import kotlin.random.Random
 
-class DetailsGraphView @JvmOverloads constructor(
+class BarsDiagram @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
 ): View(context, attrs) {
     private val list = ArrayList<Int>()
     private var maxValue = 0
 
-    private lateinit var paintBaseFill: Paint
-    private lateinit var paintDangerFill: Paint
-
+    private lateinit var paintBase: Paint
     private var barWidth: Int = 20.px
-    private var threshold: Int = 0
-
     private lateinit var paintStroke: Paint
     private val rect = RectF()
 
 
     init {
-//        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.SimpleChartView)
-//        threshold = typedArray.getInt(R.styleable.SimpleChartView_threshold, 0)
-//        barWidth = typedArray.getDimension(R.styleable.SimpleChartView_barWidth, 50.px.toFloat())
-//        val baseColor = typedArray.getColor(R.styleable.SimpleChartView_baseColor, Color.GREEN)
-//        val dangerColor = typedArray.getColor(R.styleable.SimpleChartView_dangerColor, Color.RED)
-        setup(Color.GREEN, Color.RED, threshold, barWidth)
-
-//        typedArray.recycle()
-
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.BarsDiagram)
+        val mainColor = typedArray.getColor(R.styleable.BarsDiagram_bar_color, Color.RED)
+        setup(mainColor)
+        typedArray.recycle()
         if (isInEditMode) {
-            setValues(listOf(2, 4, 5, 12))
+            val list = mutableListOf<Int>()
+            repeat(30){
+                list.add(Random.nextInt(20))
+            }
+            setValues(list)
         }
     }
-
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val wMode = MeasureSpec.getMode(widthMeasureSpec)
@@ -54,27 +49,20 @@ class DetailsGraphView @JvmOverloads constructor(
             }
 
             MeasureSpec.AT_MOST -> {
-                Log.i(TAG, "atMost")
-
-                val newW = Integer.min(12000, wSize)
-                setMeasuredDimension(newW, hSize)
+                setMeasuredDimension(wSize, hSize)
             }
 
             MeasureSpec.UNSPECIFIED -> {
-                val newW = ((list.size) * barWidth).toInt()
+                val newW = ((list.size) * barWidth)
                 setMeasuredDimension(newW, hSize)
             }
         }
 
-
-        Log.i(
-            TAG,
+        log(
             "____onMeasure____ wMode = ${MeasureSpec.toString(wMode)}  hMode = ${
                 MeasureSpec.toString(hMode)
             }, wSize = $wSize, hSize = $hSize   measuredW=${measuredWidth}  measuredH=$measuredHeight"
         )
-        Log.i(TAG, "___________________________")
-//        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -82,9 +70,9 @@ class DetailsGraphView @JvmOverloads constructor(
 
         if (list.size == 0) return
 
-        val widthPerView = measuredWidth.toFloat() / list.size
+        val widthPerView = width / list.size
         var currentX = 0f
-        val heightPerValue = height.toFloat() / (2*maxValue)
+        val heightPerValue = height.toFloat() / (1.5f*maxValue)
 
         for (item in list) {
             rect.set(
@@ -93,37 +81,24 @@ class DetailsGraphView @JvmOverloads constructor(
                 (currentX + widthPerView),
                 0f+heightPerValue*item,
             )
-            canvas.drawRect(rect, if (item > threshold) paintDangerFill else paintBaseFill)
+            canvas.drawRect(rect, paintBase )
             canvas.drawRect(rect, paintStroke)
             currentX += widthPerView
         }
-        canvas.drawLine(0f,0f, measuredWidth.toFloat(),0f,paintStroke)
+        canvas.drawLine(0f,0f, width.toFloat(),0f,paintStroke)
     }
 
     fun setValues(values: List<Int>) {
         list.clear()
         list.addAll(values)
         maxValue = list.max()?: 0
-
         requestLayout()
         invalidate()
     }
 
-
-//    fun setThreshold(threshold : Int) {
-//        this.threshold = threshold
-//
-//        requestLayout()
-//        invalidate()
-//    }
-
-    private fun setup(baseColor: Int, dangerColor: Int, threshold: Int, barWidth: Int) {
-        paintBaseFill = Paint().apply {
+    private fun setup(baseColor: Int) {
+        paintBase = Paint().apply {
             color = baseColor
-            style = Paint.Style.FILL
-        }
-        paintDangerFill = Paint().apply {
-            color = dangerColor
             style = Paint.Style.FILL
         }
         paintStroke = Paint().apply {
@@ -131,7 +106,9 @@ class DetailsGraphView @JvmOverloads constructor(
             style = Paint.Style.STROKE
             strokeWidth = 5.0f
         }
-        this.threshold = threshold
-        this.barWidth = barWidth
+    }
+
+    private fun log(text: String){
+        Log.d(TAG, text)
     }
 }

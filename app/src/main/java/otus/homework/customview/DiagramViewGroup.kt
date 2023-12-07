@@ -16,24 +16,23 @@ class DiagramViewGroup @JvmOverloads constructor(
         val ring = getChildAt(0)
         val bars = getChildAt(1)
 
-        val margin =  (ring.layoutParams as LayoutParams).margin
+        val margin = (ring.layoutParams as LayoutParams).margin
 
         ring.layout(
-            l+margin, t+margin, r-margin, b-margin
+            l + margin, t + margin, r - margin, b - margin
         )
-        val ringWidth = (width/3).dp
+        val ringWidth = (width.dp / 3)
         log("onLayout()__ margin = $margin,   ringWidth = $ringWidth")
 
-        val diff = ring.width - 2*ringWidth - bars.measuredWidth
+        val ringShelf = ringWidth / 10
+        val ringPadding = ringWidth / 6
+        val d = ring.measuredWidth - 2 * ringPadding - 2 * ringShelf - 2 * ringWidth
 
-//        val r = ringWidth/5
         bars.layout(
-            width/2,
-
-//            ring.left.dp+ringWidth+diff/2,
-            ring.top+ring.height/2,
-            ring.right-ringWidth-diff/2,
-            ring.bottom-ringWidth
+            margin + ringPadding + ringWidth + d / 4,
+            ring.top + ring.height / 2,
+            r - margin - ringPadding - ringWidth - d / 4,
+            ring.bottom - ringWidth
         )
 
     }
@@ -53,13 +52,12 @@ class DiagramViewGroup @JvmOverloads constructor(
                 MeasureSpec.AT_MOST
             )
         )
-//        val cycleWidth = (cycleDiagram.layoutParams as LayoutParams).diagramWidth2
 
-        val ringWidth = width.dp/3
-        val cyclePadding = width/10
+        val ringWidth = width.dp / 3
+        val cyclePadding = width / 10
         graph.measure(
             MeasureSpec.makeMeasureSpec(
-                MeasureSpec.getSize((cycleDiagram.measuredWidth-2*ringWidth-cyclePadding*2)),
+                MeasureSpec.getSize((cycleDiagram.measuredWidth - 2 * ringWidth - cyclePadding * 2)),
                 MeasureSpec.EXACTLY
             ),
             MeasureSpec.makeMeasureSpec(
@@ -67,14 +65,11 @@ class DiagramViewGroup @JvmOverloads constructor(
                 MeasureSpec.AT_MOST
             )
         )
-
         setMeasuredDimension(
             cycleDiagram.measuredWidth,
-            cycleDiagram.measuredHeight)
-
+            cycleDiagram.measuredHeight
+        )
     }
-
-
 
     override fun generateLayoutParams(attrs: AttributeSet): ViewGroup.LayoutParams {
         return LayoutParams(context, attrs)
@@ -85,22 +80,19 @@ class DiagramViewGroup @JvmOverloads constructor(
         var margin: Int = 0
 
         init {
-
             val typedArray =
                 context.obtainStyledAttributes(attrs, R.styleable.DiagramViewGroup_Layout)
-            margin = typedArray.getDimensionPixelSize(R.styleable.DiagramViewGroup_Layout_layout_all_margin, 100.dp)
+            margin = typedArray.getDimensionPixelSize(
+                R.styleable.DiagramViewGroup_Layout_layout_all_margin,
+                100.dp
+            )
             typedArray.recycle()
 
         }
     }
 
-    private fun log(text: String){
+    private fun log(text: String) {
         Log.d(TAG, text)
     }
-
-    companion object{
-        private const val TAG = "VIEWGROUP"
-    }
-
 }
 
