@@ -11,11 +11,10 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
-import otus.homework.customview.presentation.pie.chart.models.InnerPieAngleNode
-import otus.homework.customview.presentation.pie.chart.models.PieData
-import otus.homework.customview.presentation.pie.chart.models.PieDataProvider
+import otus.homework.customview.presentation.pie.chart.models.PieAreaNode
+import otus.homework.customview.presentation.pie.chart.models.PieAreaProvider
 import otus.homework.customview.presentation.pie.chart.models.PiePaints
-import kotlin.math.atan2
+import otus.homework.customview.presentation.pie.chart.utils.MathUtils
 
 class PieChartView @JvmOverloads constructor(
     context: Context,
@@ -25,6 +24,7 @@ class PieChartView @JvmOverloads constructor(
 
     private val paints = PiePaints()
 
+    /* Вся область view */
     private val globalArea = Rect()
     private val localArea = RectF()
     private val chartArea = RectF()
@@ -35,8 +35,9 @@ class PieChartView @JvmOverloads constructor(
     private var style: PieStyle = PieStyle.PIE
     private var useCenter = false
 
-    private val radius get() = localArea.width() / 2f
-    private var currentValue: InnerPieAngleNode? = null
+    private var currentValue: PieAreaNode? = null
+
+    private val dataProvider = PieAreaProvider()
 
     fun setStyle(style: PieStyle) {
         this.style = style
@@ -55,9 +56,7 @@ class PieChartView @JvmOverloads constructor(
         invalidate()
     }
 
-    private val dataProvider = PieDataProvider()
-
-    fun updateNodes(pieData: PieData<Float>) {
+    fun updateNodes(pieData: PieData) {
         dataProvider.calculate(pieData)
         invalidate()
     }
@@ -84,9 +83,6 @@ class PieChartView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                if (localArea.contains(event.x, event.y)) {
-                    // Toast.makeText(context, "${event.x} and ${event.y}", Toast.LENGTH_SHORT).show()
-                }
                 val radius = localArea.width() / 2f
                 val xO = localArea.centerX() - event.x
                 val yO = localArea.centerY() - event.y
@@ -95,14 +91,12 @@ class PieChartView @JvmOverloads constructor(
                     invalidate()
                     // Toast.makeText(context, "${event.x} and ${event.y}", Toast.LENGTH_SHORT).show()
 
-                    // val theta = Math.atan2()
-                    var angleInDegrees = atan2(yO, xO)
-                    if (angleInDegrees < 0) {
-                        //  angleInDegrees = Math.PI. - angleInDegrees
-                    }
-                    val res = Math.toDegrees(angleInDegrees.toDouble())
-                    // angle = res.toFloat()
-                    angle = calculateThetaV2(event.x, event.y)
+                    angle = MathUtils.calculateThetaV2(
+                        localArea.centerX(),
+                        localArea.centerY(),
+                        event.x,
+                        event.y
+                    )
 
                     currentValue = dataProvider.getNode(angle)
 
@@ -111,6 +105,12 @@ class PieChartView @JvmOverloads constructor(
                 }
                 true
             }
+
+            /*         MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                         touchPointF.set(-1f, -1f)
+                         invalidate()
+                         true
+                     }*/
 
             else -> false
         }
@@ -126,7 +126,7 @@ class PieChartView @JvmOverloads constructor(
         dataProvider.getNodes().forEach { node ->
             paints.testchart.color = node.color
             canvas.drawArc(
-                localArea, node.angleStart, node.angleSweep, useCenter, paints.testchart
+                localArea, node.startAngle, node.sweepAngle, useCenter, paints.testchart
             )
         }
 
@@ -149,44 +149,12 @@ class PieChartView @JvmOverloads constructor(
         })
 
         currentValue?.let { node ->
-            canvas.drawArc(localArea, node.angleStart, node.angleSweep, true, Paint().apply {
+            canvas.drawArc(localArea, node.startAngle, node.sweepAngle, true, Paint().apply {
                 color = Color.GREEN
                 style = Paint.Style.STROKE
                 strokeWidth = 4f
             })
 
         }
-
-
     }
-
-    override fun performClick(): Boolean {
-        return super.performClick()
-    }
-
-    // right way
-    private fun calculateTheta(x: Float, y: Float): Float {
-        val xDistance = x - localArea.centerX().toDouble()
-        val yDistance = y - localArea.centerY().toDouble()
-        var angle = Math.toDegrees(atan2(-yDistance, xDistance))
-        if (angle < 0f) angle += 360
-        return angle.toFloat()
-    }
-
-    private fun calculateThetaV2(x: Float, y: Float): Float {
-        val xDistance = x - localArea.centerX().toDouble()
-        val yDistance = y - localArea.centerY().toDouble()
-        var angle = Math.toDegrees(atan2(-yDistance, xDistance))
-        if (angle < 0) {
-            angle = -angle
-        } else {
-            angle = 360 - angle
-        }
-        return angle.toFloat()
-    }
-}
-
-
-enum class PieStyle {
-    PIE, DONUT
 }

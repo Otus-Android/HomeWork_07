@@ -33,6 +33,9 @@ class PieChartFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.styleButton.setOnClickListener { viewModel.onStyleButtonClick() }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
 
@@ -46,9 +49,8 @@ class PieChartFragment : Fragment() {
 
                 launch {
                     viewModel.uiState.collect {
-                        if (it is PieChartUiState.Success) {
-                            binding.pieChartView.updateNodes(it.expenses)
-                        }
+                        binding.pieChartView.updateNodes(it.data)
+                        binding.pieChartView.setStyle(it.style)
                     }
                 }
             }

@@ -7,5 +7,6 @@ data class LineNode(
     val y: Float, // amount
     val label: String,
     val color: Int,
-    val date: Date
+    val date: Date,
+    //  val payload: T? = null
 )

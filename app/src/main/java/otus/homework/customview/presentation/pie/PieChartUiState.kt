@@ -1,15 +1,9 @@
 package otus.homework.customview.presentation.pie
 
-import otus.homework.customview.domain.Expense
-import otus.homework.customview.presentation.pie.chart.models.PieData
+import otus.homework.customview.presentation.pie.chart.PieStyle
+import otus.homework.customview.presentation.pie.chart.PieData
 
-sealed class PieChartUiState {
-
-    object IDLE : PieChartUiState()
-
-    object Loading : PieChartUiState()
-
-    data class Success(val expenses: PieData<Float>) : PieChartUiState()
-
-    data class Error(val message: String) : PieChartUiState()
-}
+data class PieChartUiState(
+    val data: PieData = PieData(emptyList()),
+    val style: PieStyle = PieStyle.PIE
+)
