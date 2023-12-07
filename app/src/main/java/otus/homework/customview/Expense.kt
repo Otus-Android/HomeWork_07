@@ -10,7 +10,7 @@ data class Expense(
     val amount: Int,
     val category: String,
     val time: Long
-): Serializable
+) : Serializable
 
 class AllExpenses(private val allExpenses: List<Expense>) {
     val mapByCategory: Map<String, List<Expense>>
@@ -20,7 +20,7 @@ class AllExpenses(private val allExpenses: List<Expense>) {
         mapByCategory = sortByCategory()
     }
 
-    fun sortByCategory(): Map<String, List<Expense>> {
+    private fun sortByCategory(): Map<String, List<Expense>> {
         val mapByCategory = hashMapOf<String, MutableList<Expense>>()
         allExpenses.forEach { expense ->
             total += expense.amount
@@ -45,53 +45,53 @@ class AllExpenses(private val allExpenses: List<Expense>) {
         mapByCategory.forEach { entry ->
             dayExpenses.addAll(mouthsExpensesByCategory(entry.key))
         }
-        repeat(30 - dayExpenses.size){
-            dayExpenses.add(DayExpense(Random.nextInt(1),"01/12/2023"))
+        repeat(30 - dayExpenses.size) {
+            dayExpenses.add(DayExpense(Random.nextInt(1), "01/12/2023"))
         }
         return dayExpenses
     }
 
-    fun getOneCategoryExpenses(category: String):List<DayExpense>{
+    fun getOneCategoryExpenses(category: String): List<DayExpense> {
         val days = mouthsExpensesByCategory(category) as MutableList
-        repeat(30 - days.size){
-            days.add(DayExpense(Random.nextInt(1),"01/12/2023"))
+        repeat(30 - days.size) {
+            days.add(DayExpense(Random.nextInt(1), "01/12/2023"))
         }
         return days
     }
 
 
-   private fun mouthsExpensesByCategory(category: String):List<DayExpense>{
-        val categoryExpenses = mapByCategory[category]?: emptyList()
+    private fun mouthsExpensesByCategory(category: String): List<DayExpense> {
+        val categoryExpenses = mapByCategory[category] ?: emptyList()
         val dayExpenses = mutableListOf<DayExpense>()
         var totalByDay = 0
         var prevDay = ""
         categoryExpenses.forEachIndexed { index, expense ->
             val dayExp = expense.mapToDayExpense()
-                if (prevDay == "") {
-                    prevDay = dayExp.date
-                    totalByDay += dayExp.amount
-                    if (index == categoryExpenses.lastIndex) {
-                        val d = DayExpense(totalByDay, prevDay)
-                        dayExpenses.add(d)
-                    }
-                } else if (dayExp.date == prevDay) {
-                    totalByDay += dayExp.amount
-                    if (index == categoryExpenses.lastIndex) {
-                        val d = DayExpense(totalByDay, prevDay)
-                        dayExpenses.add(d)
-                    }
-
-                } else {
+            if (prevDay == "") {
+                prevDay = dayExp.date
+                totalByDay += dayExp.amount
+                if (index == categoryExpenses.lastIndex) {
                     val d = DayExpense(totalByDay, prevDay)
                     dayExpenses.add(d)
-                    totalByDay = dayExp.amount
-                    prevDay = dayExp.date
-                    if (index == categoryExpenses.lastIndex) {
-                        val _d = DayExpense(totalByDay, prevDay)
-                        dayExpenses.add(_d)
-                    }
+                }
+            } else if (dayExp.date == prevDay) {
+                totalByDay += dayExp.amount
+                if (index == categoryExpenses.lastIndex) {
+                    val d = DayExpense(totalByDay, prevDay)
+                    dayExpenses.add(d)
+                }
+
+            } else {
+                val d = DayExpense(totalByDay, prevDay)
+                dayExpenses.add(d)
+                totalByDay = dayExp.amount
+                prevDay = dayExp.date
+                if (index == categoryExpenses.lastIndex) {
+                    val _d = DayExpense(totalByDay, prevDay)
+                    dayExpenses.add(_d)
                 }
             }
+        }
         return dayExpenses
     }
 }
@@ -101,20 +101,21 @@ fun Long.toDay(): String {
     val sdf = SimpleDateFormat("dd/MM/yyyy")
     return sdf.format(this)
 }
-fun Expense.mapToDayExpense(): DayExpense{
-    return DayExpense(this.amount,
-        this.time.toDay())
-    }
+
+fun Expense.mapToDayExpense(): DayExpense {
+    return DayExpense(
+        this.amount,
+        this.time.toDay()
+    )
+}
 
 
 class DayExpense(
     val amount: Int,
     val date: String
-){
+) {
 
 }
-
-
 
 
 data class Item(
@@ -125,9 +126,9 @@ data class Item(
 class ItemList(
     val pieces: List<Item>,
     val total: Int,
-){
+) {
     val onePercent: Float
-        get() = total.toFloat()/100
+        get() = total.toFloat() / 100
 }
 
 
