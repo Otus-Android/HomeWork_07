@@ -5,8 +5,13 @@ import android.graphics.RectF
 
 class LineAreaProvider(private val paints: LinePaints) {
 
+    /** Область всего пространства */
     val global = Rect()
+
+    /** Область с учетом отступов */
     val padding = Rect()
+
+    /** Область, на которой рисуется сам график */
     val local = RectF()
 
     fun update(

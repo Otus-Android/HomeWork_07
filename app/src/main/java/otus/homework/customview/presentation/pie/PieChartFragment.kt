@@ -49,7 +49,7 @@ class PieChartFragment : Fragment() {
 
                 launch {
                     viewModel.uiState.collect {
-                        binding.pieChartView.updateNodes(it.data)
+                        binding.pieChartView.render(it.data)
                         binding.pieChartView.setStyle(it.style)
                     }
                 }

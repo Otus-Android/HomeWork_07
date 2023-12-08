@@ -1,15 +1,18 @@
 package otus.homework.customview.presentation.line.chart.models
 
-import android.graphics.Color
-import otus.homework.customview.domain.Expense
-import java.util.Date
+import otus.homework.customview.presentation.line.chart.LineData
+import otus.homework.customview.presentation.line.chart.converters.LineAreaNodeConverter
 import kotlin.random.Random
 
-class LineDataProvider(private val areaProvider: LineAreaProvider) {
+class LineDataProvider(
+    private val areaProvider: LineAreaProvider,
+    private val converter: LineAreaNodeConverter = LineAreaNodeConverter()
+) {
 
     private val random = Random
 
-    private val nodes = mutableListOf<LineNode>()
+    private var origin = LineData()
+    private val nodes = mutableListOf<LineAreaNode>()
 
     var currentLineX = DEFAULT_LINE_X
 
@@ -26,46 +29,24 @@ class LineDataProvider(private val areaProvider: LineAreaProvider) {
         currentLineX = DEFAULT_LINE_X
     }
 
-    fun calculatePrevious(dataFrame: List<Expense>) {
-        // высота
-        val baseHeight = areaProvider.local.height()
+    fun calculate(data: LineData) {
+        origin = data
 
-        // шаг по Y: высоту делим на сумму
-        val scaleY =
-            areaProvider.local.height() / (dataFrame.maxOfOrNull { it.amount }?.toFloat() ?: 1f)
-
-        val timelineMinOfX = dataFrame.minOfOrNull { it.time } ?: 1L
-        val timelineMaxOfX = dataFrame.maxOfOrNull { it.time } ?: 1L
-        // TODO: may be 0
-        val timelineSpaceOfX = timelineMaxOfX - timelineMinOfX
-        val scaleX = areaProvider.local.width() / (timelineSpaceOfX)
-
-        val newValues = mutableListOf<LineNode>()
-
-        dataFrame.forEach {
-            val newX = areaProvider.local.left + (it.time - timelineMinOfX) * scaleX
-            val newY = areaProvider.local.top + baseHeight - (it.amount * scaleY)
-            newValues.add(
-                LineNode(
-                    x = newX,
-                    y = newY,
-                    label = it.category,
-                    color = Color.argb(
-                        255, random.nextInt(256), random.nextInt(256), random.nextInt(256)
-                    ),
-                    date = Date(it.time)
-                )
-            )
-        }
+        val areaNodes = converter.convert(data.nodes, areaProvider.local)
 
         nodes.clear()
-        nodes.addAll(newValues.sortedBy { it.x })
+        nodes.addAll(areaNodes)
     }
+
+    fun recalculate() {
+        calculate(origin)
+    }
+
 
     fun getNodeByX(x: Float) = nodes.findLast { it.x < x }
     fun getCurrentNode() = nodes.findLast { it.x < currentLineX }
 
-    fun getNodes(): List<LineNode> = nodes
+    fun getNodes(): List<LineAreaNode> = nodes
 
     private companion object {
         const val DEFAULT_LINE_X = -1f

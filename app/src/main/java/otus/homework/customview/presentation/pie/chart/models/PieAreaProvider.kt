@@ -1,30 +1,19 @@
 package otus.homework.customview.presentation.pie.chart.models
 
 import otus.homework.customview.presentation.pie.chart.PieData
+import otus.homework.customview.presentation.pie.chart.converters.PieAresNodeConverter
 import kotlin.random.Random
 
-class PieAreaProvider {
+class PieAreaProvider(private val converter: PieAresNodeConverter = PieAresNodeConverter()) {
 
     private val random = Random
 
-    private var pieAngleNodes = emptyList<PieAreaNode>()
+    private val pieAngleNodes = mutableListOf<PieAreaNode>()
 
     fun calculate(pieData: PieData) {
-        val generalAmount = pieData.nodes.sumOf { it.value.toDouble() }
-
-        var count = 0f
-        val newValues2 = pieData.nodes.map { (value, label, color) ->
-            PieAreaNode(
-                label = label.orEmpty(),
-                startAngle = count,
-                sweepAngle = value / (generalAmount.toFloat()) * 360f,
-                color = color
-            ).also { angleNode ->
-                count += angleNode.sweepAngle
-            }
-        }
-
-        pieAngleNodes = newValues2.sortedBy { it.startAngle }
+        val areaNodes = converter.convert(pieData.nodes)
+        pieAngleNodes.clear()
+        pieAngleNodes.addAll(areaNodes)
     }
 
 

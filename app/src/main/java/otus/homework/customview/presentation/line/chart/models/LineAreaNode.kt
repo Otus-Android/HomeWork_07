@@ -2,11 +2,10 @@ package otus.homework.customview.presentation.line.chart.models
 
 import java.util.Date
 
-data class LineNode(
-    val x: Float, // day
-    val y: Float, // amount
-    val label: String,
-    val color: Int,
+data class LineAreaNode(
+    val x: Float, // time
+    val y: Float, // value
+    val label: String?,
     val date: Date,
     //  val payload: T? = null
 )

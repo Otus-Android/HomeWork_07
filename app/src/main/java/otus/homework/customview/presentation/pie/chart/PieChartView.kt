@@ -56,7 +56,7 @@ class PieChartView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun updateNodes(pieData: PieData) {
+    fun render(pieData: PieData) {
         dataProvider.calculate(pieData)
         invalidate()
     }

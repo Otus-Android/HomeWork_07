@@ -63,7 +63,7 @@ class LinePaints(private val resources: Resources) {
 
     val currentLine = Paint().apply {
         isAntiAlias = true
-        strokeWidth = resources.getDimension(R.dimen.chart_2)
+        strokeWidth = resources.getDimension(R.dimen.chart_1)
         color = Color.BLACK
     }
 

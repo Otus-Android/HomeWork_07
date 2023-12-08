@@ -14,10 +14,10 @@ class PieNodeConverter {
     )
 
     private fun nextColor() = Color.argb(
-        255,
-        Random.nextInt(255),
-        Random.nextInt(255),
-        Random.nextInt(255)
+        MAX_COLOR,
+        Random.nextInt(MAX_COLOR),
+        Random.nextInt(MAX_COLOR),
+        Random.nextInt(MAX_COLOR)
     )
 
     private companion object {

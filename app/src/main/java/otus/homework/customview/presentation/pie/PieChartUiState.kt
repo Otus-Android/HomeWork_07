@@ -4,6 +4,6 @@ import otus.homework.customview.presentation.pie.chart.PieStyle
 import otus.homework.customview.presentation.pie.chart.PieData
 
 data class PieChartUiState(
-    val data: PieData = PieData(emptyList()),
+    val data: PieData = PieData(),
     val style: PieStyle = PieStyle.PIE
 )

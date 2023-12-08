@@ -33,12 +33,25 @@ class LineChartFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.debugCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.onDebugChanged(isChecked)
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                sharedViewModel.uiState.collect {
-                    if (it is ExpensesUiState.Success) {
-                        binding.lineChartView.updateNodes(it.expenses)
-                        binding.lineChartView.setDebugMode(true)
+                launch {
+                    sharedViewModel.uiState.collect {
+                        if (it is ExpensesUiState.Success) {
+                            viewModel.load(it.expenses)
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.uiState.collect {
+                        binding.lineChartView.render(it.data)
+                        binding.lineChartView.setDebugMode(it.isDebugEnabled)
                     }
                 }
             }
