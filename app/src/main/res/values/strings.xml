@@ -1,7 +1,17 @@
 <resources>
     <string name="app_name">Custom View</string>
 
-    <string name="name_prefix">name</string>
+    <string name="pie_chart_bottom_navigation_item">pie</string>
+    <string name="line_chart_bottom_navigation_item">line</string>
+    <string name="journal_bottom_navigation_item">Журнал</string>
+
+    <string name="name_prefix">product</string>
+
+    <string name="journal_item_id">Идентификатор: %1$d</string>
+    <string name="journal_item_name">Название: %1$s</string>
+    <string name="journal_item_amount">Сумма: %1$d</string>
+    <string name="journal_item_category">Категория: %1$s</string>
+    <string name="journal_item_time">Время: %1$d</string>
 
     <string-array name="stub_categories">
         <item>Продукты</item>

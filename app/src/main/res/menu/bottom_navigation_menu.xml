@@ -4,15 +4,23 @@
     <item
         android:id="@+id/pie_chart_menu_item"
         android:enabled="true"
-        android:icon="@drawable/ic_launcher_foreground"
-        android:title="pie"
+        android:icon="@drawable/baseline_pie_chart_36"
+        android:title="@string/pie_chart_bottom_navigation_item"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/line_chart_menu_item"
         android:enabled="true"
-        android:icon="@drawable/ic_launcher_background"
-        android:title="line"
+        android:icon="@drawable/baseline_area_chart_36"
+        android:title="@string/line_chart_bottom_navigation_item"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/journal_menu_item"
+        android:enabled="true"
+        android:icon="@drawable/baseline_view_list_36"
+        android:title="@string/journal_bottom_navigation_item"
+        app:showAsAction="ifRoom" />
+
 
 </menu>

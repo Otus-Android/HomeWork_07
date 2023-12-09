@@ -8,4 +8,8 @@ data class LineAreaNode(
     val label: String?,
     val date: Date,
     //  val payload: T? = null
-)
+) {
+    fun test() {
+        date.time
+    }
+}
