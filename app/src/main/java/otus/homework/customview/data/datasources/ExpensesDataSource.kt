@@ -14,5 +14,5 @@ interface ExpensesDataSource {
         StreamReadException::class,
         DatabindException::class
     )
-    fun getExpenses(): List<ExpenseEntity>
+    fun getExpenses(max: Int? = null): List<ExpenseEntity>
 }

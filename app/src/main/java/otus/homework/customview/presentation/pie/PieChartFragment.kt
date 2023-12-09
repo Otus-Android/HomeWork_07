@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.launch
 import otus.homework.customview.databinding.FragmentPieChartBinding
 import otus.homework.customview.presentation.expenses.ExpensesUiState
@@ -23,9 +24,7 @@ class PieChartFragment : Fragment() {
     private val viewModel: PieChartViewModel by viewModels { PieChartViewModel.Factory }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPieChartBinding.inflate(inflater, container, false)
         return binding.root
@@ -34,17 +33,16 @@ class PieChartFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.styleButton.setOnClickListener { viewModel.onStyleButtonClick() }
+        binding.styleCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.onStyleChanged(isChecked)
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
 
                 launch {
-                    sharedViewModel.uiState.collect {
-                        if (it is ExpensesUiState.Success) {
-                            viewModel.load(it.expenses)
-                        }
-                    }
+                    sharedViewModel.uiState.filterIsInstance(ExpensesUiState.Success::class)
+                        .collect { viewModel.load(it.expenses) }
                 }
 
                 launch {

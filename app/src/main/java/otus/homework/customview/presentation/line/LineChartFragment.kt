@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.launch
 import otus.homework.customview.databinding.FragmentLineChartBinding
 import otus.homework.customview.presentation.expenses.ExpensesUiState
@@ -41,11 +42,8 @@ class LineChartFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    sharedViewModel.uiState.collect {
-                        if (it is ExpensesUiState.Success) {
-                            viewModel.load(it.expenses)
-                        }
-                    }
+                    sharedViewModel.uiState.filterIsInstance(ExpensesUiState.Success::class)
+                        .collect { viewModel.load(it.expenses) }
                 }
 
                 launch {

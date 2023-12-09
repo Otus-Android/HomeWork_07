@@ -25,8 +25,8 @@ class LineChartViewModel(
         _uiState.update { it.copy(data = lineData) }
     }
 
-    fun onDebugChanged(isEnabled: Boolean) {
-        _uiState.update { it.copy(isDebugEnabled = isEnabled) }
+    fun onDebugChanged(isChecked: Boolean) {
+        _uiState.update { it.copy(isDebugEnabled = isChecked) }
     }
 
     companion object {

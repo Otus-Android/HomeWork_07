@@ -25,9 +25,9 @@ class PieChartViewModel(
         _uiState.update { it.copy(data = pieData) }
     }
 
-    fun onStyleButtonClick() {
+    fun onStyleChanged(isChecked: Boolean) {
         _uiState.update {
-            val style = if (it.style == PieStyle.PIE) PieStyle.DONUT else PieStyle.PIE
+            val style = if (isChecked) PieStyle.DONUT else PieStyle.PIE
             it.copy(style = style)
         }
     }

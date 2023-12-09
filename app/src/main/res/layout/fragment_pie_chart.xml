@@ -10,11 +10,10 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <Button
-        android:id="@+id/style_button"
-        android:layout_width="match_parent"
+    <CheckBox
+        android:id="@+id/style_checkbox"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="style" />
+        android:text="donut style" />
 
 </LinearLayout>

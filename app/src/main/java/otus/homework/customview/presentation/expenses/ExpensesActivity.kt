@@ -3,6 +3,7 @@ package otus.homework.customview.presentation.expenses
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import otus.homework.customview.R
 import otus.homework.customview.databinding.ActivityMainBinding
@@ -18,6 +19,13 @@ class ExpensesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.refreshImageButton.setOnClickListener { viewModel.loadExpenses() }
+        binding.sourceCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.onSourceChanged(isChecked)
+        }
+
+        binding.maxEditText.doAfterTextChanged { text -> viewModel.onMaxChanged(text.toString()) }
 
         binding.bottomNavigationView.setOnNavigationItemSelectedListener { menu ->
             when (menu.itemId) {

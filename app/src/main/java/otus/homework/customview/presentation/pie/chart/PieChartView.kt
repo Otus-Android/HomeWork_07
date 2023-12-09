@@ -41,8 +41,8 @@ class PieChartView @JvmOverloads constructor(
 
     fun setStyle(style: PieStyle) {
         this.style = style
-        useCenter = style == PieStyle.DONUT
-        if (style == PieStyle.PIE) {
+        useCenter = style == PieStyle.PIE
+        if (style == PieStyle.DONUT) {
             paints.testchart.apply {
                 this.style = Paint.Style.STROKE
                 strokeWidth = 40f
