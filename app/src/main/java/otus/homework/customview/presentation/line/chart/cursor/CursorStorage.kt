@@ -1,12 +1,11 @@
-package otus.homework.customview.presentation.line.chart.models
+package otus.homework.customview.presentation.line.chart.cursor
 
 import android.graphics.PointF
+import otus.homework.customview.presentation.line.chart.area.LineAreaProvider
 
 class CursorStorage(private val areaProvider: LineAreaProvider) {
 
     private val point = PointF(UNDEFINED, UNDEFINED)
-
-    fun getCurrentLineX() = point.x.takeIf { it != UNDEFINED }
 
     fun getPoint() = point.takeIf { it.x != UNDEFINED && it.y != UNDEFINED }
 
@@ -19,8 +18,8 @@ class CursorStorage(private val areaProvider: LineAreaProvider) {
             false
         }
 
-    fun clearCurrentLineX() {
-        point.x = UNDEFINED
+    fun clear() {
+        point.set(UNDEFINED, UNDEFINED)
     }
 
     private companion object {

@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Custom View</string>
+
+    <string name="name_prefix">name</string>
+
+    <string-array name="stub_categories">
+        <item>Продукты</item>
+        <item>Здоровье</item>
+        <item>Кафе и рестораны</item>
+        <item>Алкоголь</item>
+        <item>Доставка еды</item>
+        <item>Транспорт</item>
+        <item>Спорт</item>
+    </string-array>
 </resources>

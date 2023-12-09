@@ -49,7 +49,7 @@ class LineChartFragment : Fragment() {
                 launch {
                     viewModel.uiState.collect {
                         binding.lineChartView.render(it.data)
-                        binding.lineChartView.setDebugMode(it.isDebugEnabled)
+                        binding.lineChartView.isDebugModeEnabled = it.isDebugEnabled
                     }
                 }
             }

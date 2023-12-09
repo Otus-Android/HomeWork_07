@@ -44,8 +44,11 @@ class ExpensesViewModel(
     }
 
     fun onSourceChanged(isChecked: Boolean) {
-        config.provider = if (isChecked) ExpensesProvider.RANDOM else ExpensesProvider.LOCAL
-        loadExpenses()
+        val provider = if (isChecked) ExpensesProvider.RANDOM else ExpensesProvider.LOCAL
+        if (config.provider != provider) {
+            config.provider = provider
+            loadExpenses()
+        }
     }
 
     fun onMaxChanged(max: String) {

@@ -41,7 +41,7 @@ class DiContainer(context: Context) {
     }
 
     private val randomDataSource: ExpensesDataSource by lazy(LazyThreadSafetyMode.NONE) {
-        RandomDataSource()
+        RandomDataSource(context.resources)
     }
 
     val config: ExpensesConfig by lazy(LazyThreadSafetyMode.NONE) {

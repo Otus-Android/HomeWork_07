@@ -1,49 +1,50 @@
 package otus.homework.customview.presentation.line.chart
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.LinearGradient
 import android.graphics.Path
-import android.graphics.Rect
-import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
-import otus.homework.customview.presentation.line.chart.models.CursorStorage
-import otus.homework.customview.presentation.line.chart.models.LineAreaProvider
-import otus.homework.customview.presentation.line.chart.models.LineDataProvider
-import otus.homework.customview.presentation.line.chart.models.LinePaints
+import otus.homework.customview.presentation.line.chart.area.LineAreaProvider
+import otus.homework.customview.presentation.line.chart.cursor.CursorStorage
+import otus.homework.customview.presentation.line.chart.data.LineDataProvider
+import otus.homework.customview.presentation.line.chart.paints.LinePaints
 
-class LineChartView @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
+/**
+ * Линейный график
+ */
+class LineChartView constructor(
+    context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int
+) : View(context, attrs, defStyleAttr, defStyleRes) {
 
-    private val paints = LinePaints(resources)
-    private val areaProvider = LineAreaProvider(paints)
+    constructor(context: Context) : this(context, null, 0, 0)
+    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0, 0)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
+            this(context, attrs, defStyleAttr, 0)
+
+
+    private val areaProvider = LineAreaProvider()
     private val dataProvider = LineDataProvider(areaProvider)
     private val cursorStorage = CursorStorage(areaProvider)
 
-    private lateinit var gradient: LinearGradient
+    private val paints = LinePaints(areaProvider, resources)
 
-    private val path = Path()
+    private val lineChartPath = Path()
 
-    private var isDebugMode = false
+    /** Признак отображения отладочной информации */
+    var isDebugModeEnabled: Boolean = false
+        set(value) {
+            field = value
+            invalidate()
+        }
 
-    private val labelRect = Rect()
-
+    /** Нарисовать линйный график по данным [LineData] */
     fun render(data: LineData) {
         dataProvider.calculate(data)
         invalidate()
     }
-
-    fun setDebugMode(isEnabled: Boolean) {
-        isDebugMode = isEnabled
-        // TODO: можно ли дергать
-        invalidate()
-    }
-
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         areaProvider.update(
@@ -58,49 +59,25 @@ class LineChartView @JvmOverloads constructor(
         )
 
         dataProvider.recalculate()
-        updateGradient()
+        paints.recalculate()
         invalidate()
     }
 
-    private fun updateGradient() {
-        gradient = LinearGradient(
-            areaProvider.local.left,
-            areaProvider.local.top,
-            areaProvider.local.left,
-            areaProvider.local.bottom,
-            Color.BLUE,
-            Color.TRANSPARENT,
-            Shader.TileMode.CLAMP
-        )
-        paints.gradient.shader = gradient
-    }
-
-    override fun performClick(): Boolean {
-        return super.performClick()
-    }
-
-    private fun showToast(text: String) = Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
-
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                if (cursorStorage.update(event.x, event.y)) {
-                    invalidate()
-                    val currentNode = dataProvider.getNodeByX(event.x)
-                    showToast("${event.x} and ${event.y} ${currentNode?.date}")
-                }
+                if (cursorStorage.update(event.x, event.y)) invalidate()
                 true
             }
 
             MotionEvent.ACTION_MOVE -> {
-                if (cursorStorage.update(event.x, event.y)) {
-                    invalidate()
-                }
+                if (cursorStorage.update(event.x, event.y)) invalidate()
                 true
             }
 
             MotionEvent.ACTION_UP -> {
-                cursorStorage.clearCurrentLineX()
+                cursorStorage.clear()
                 invalidate()
                 true
             }
@@ -110,19 +87,19 @@ class LineChartView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        if (isDebugMode) {
-            drawDebugLayer(canvas)
+        if (isDebugModeEnabled) {
+            drawDebugAreas(canvas)
             drawDebugGrid(canvas)
         }
 
         drawLines(canvas)
-        drawVerticalCursor(canvas)
+        drawCursor(canvas)
         drawLabel(canvas)
     }
 
 
     /** Нарисовать отладочную информацию по областям графика */
-    private fun drawDebugLayer(canvas: Canvas) {
+    private fun drawDebugAreas(canvas: Canvas) {
         canvas.drawRect(areaProvider.global, paints.global)
         canvas.drawRect(areaProvider.padding, paints.padding)
         canvas.drawRect(areaProvider.local, paints.local)
@@ -130,17 +107,22 @@ class LineChartView @JvmOverloads constructor(
 
     /** Нарисовать отладочную информацию по "сетке" */
     private fun drawDebugGrid(canvas: Canvas) {
-        val numbers = 10
+        val cellCount = DEBUG_CELL_COUNT
         val area = areaProvider.local
-        val stepX = area.width() / numbers
-        val stepY = area.height() / numbers
+        val stepX = area.width() / cellCount
+        val stepY = area.height() / cellCount
         var currentPointX = area.left
         var currentPointY = area.top
-        for (i in 0 until numbers) {
-            canvas.drawLine(currentPointX, area.bottom, currentPointX, area.top, paints.grid)
-            canvas.drawText(currentPointX.toString(), currentPointX, area.bottom, paints.textAxis)
+        for (i in 0 until cellCount) {
+            canvas.drawLine(currentPointX, area.bottom, currentPointX, area.top, paints.debugGrid)
+            canvas.drawText(
+                currentPointX.toString(),
+                currentPointX,
+                area.bottom,
+                paints.debugTextAxis
+            )
 
-            canvas.drawLine(area.left, currentPointY, area.right, currentPointY, paints.grid)
+            canvas.drawLine(area.left, currentPointY, area.right, currentPointY, paints.debugGrid)
             currentPointX += stepX
             currentPointY += stepY
         }
@@ -149,42 +131,48 @@ class LineChartView @JvmOverloads constructor(
     /** Нарисовать линии графика с градиентом */
     private fun drawLines(canvas: Canvas) {
         dataProvider.getNodes().takeIf { it.isNotEmpty() }?.let { nodes ->
+            lineChartPath.reset()
+
+            // линия
+            val firstNode = nodes.first()
+            lineChartPath.moveTo(firstNode.x, firstNode.y)
+            nodes.forEach { node -> lineChartPath.lineTo(node.x, node.y) }
+            canvas.drawPath(lineChartPath, paints.line)
+
+            // градиент
             val area = areaProvider.local
-            path.reset()
-
-            // line
-            path.moveTo(nodes.first().x, nodes.first().y)
-            nodes.forEach { node -> path.lineTo(node.x, node.y) }
-
-            canvas.drawPath(path, paints.line)
-
-            // gradient
-            path.lineTo(nodes.last().x, area.bottom)
-            path.lineTo(area.left, area.bottom)
-            path.close()
-
-            canvas.drawPath(path, paints.gradient)
+            lineChartPath.lineTo(nodes.last().x, area.bottom)
+            lineChartPath.lineTo(area.left, area.bottom)
+            lineChartPath.close()
+            canvas.drawPath(lineChartPath, paints.gradient)
         }
     }
 
     /** Нарисовать вертикальную линию, соответствующую нажатой точке */
-    private fun drawVerticalCursor(canvas: Canvas) {
+    private fun drawCursor(canvas: Canvas) {
         cursorStorage.getPoint()?.let { point ->
             canvas.drawLine(
                 point.x,
                 areaProvider.local.top,
                 point.x,
                 areaProvider.local.bottom,
-                paints.currentLine
+                paints.cursor
             )
         }
     }
 
-    /** Нарисовать подпись, соответствующую нажатой точке */
+    /** Нарисовать подпись, соответствующую позиции курсора */
     private fun drawLabel(canvas: Canvas) {
         val area = areaProvider.local
-        dataProvider.getCurrentNode()?.label?.let { label ->
-            canvas.drawText(label, area.centerX(), area.bottom, paints.text)
-        }
+        val cursorPoint = cursorStorage.getPoint() ?: return
+        val node = dataProvider.getNodeByX(cursorPoint.x)
+        val label = node?.label ?: return
+        canvas.drawText(label, area.centerX(), area.bottom, paints.label)
+    }
+
+    private companion object {
+
+        /** Кол-во клеток "сетки" отладочной информации */
+        const val DEBUG_CELL_COUNT = 10
     }
 }
