@@ -8,14 +8,9 @@ class ExpensesInteractorImpl(private val repository: ExpensesRepository) : Expen
     override suspend fun getExpenses(max: Int?, force: Boolean): List<Expense> =
         repository.getExpenses(max, force)
 
-    override suspend fun getCategories(maxExpenses: Int?): List<Category> {
-        return getExpenses(maxExpenses).groupBy { it.category }.flatMap { (category, expenses) ->
-            listOf(
-                Category(
-                    category,
-                    expenses
-                )
-            )
+    override suspend fun getCategories(maxExpenses: Int?): List<Category> =
+        getExpenses(maxExpenses).groupBy { it.category }.flatMap { (name, expenses) ->
+            val sum = expenses.sumOf { it.amount.toLong() }
+            listOf(Category(name = name, amount = sum, expenses = expenses))
         }
-    }
 }
