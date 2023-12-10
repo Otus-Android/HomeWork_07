@@ -6,5 +6,5 @@ import kotlin.coroutines.cancellation.CancellationException
 interface ExpensesRepository {
 
     @Throws(ExpensesException::class, CancellationException::class)
-    suspend fun getExpenses(max: Int? = null): List<Expense>
+    suspend fun getExpenses(max: Int? = null, force: Boolean): List<Expense>
 }

@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import otus.homework.customview.data.ExpensesRepositoryImpl
 import otus.homework.customview.data.converters.ExpensesConverter
 import otus.homework.customview.data.datasources.ExpensesDataSource
-import otus.homework.customview.data.datasources.LocalDataSource
+import otus.homework.customview.data.datasources.ExpensesMemoryCache
+import otus.homework.customview.data.datasources.FileDataSource
+import otus.homework.customview.data.datasources.MemoryDataSource
 import otus.homework.customview.data.datasources.RandomDataSource
 import otus.homework.customview.domain.ExpensesInteractor
 import otus.homework.customview.domain.ExpensesInteractorImpl
@@ -22,7 +24,7 @@ class DiContainer(context: Context) {
     }
 
     private val repository: ExpensesRepository by lazy(LazyThreadSafetyMode.NONE) {
-        ExpensesRepositoryImpl(dataSources, config, ExpensesConverter())
+        ExpensesRepositoryImpl(dataSources, memoryCache, config, ExpensesConverter())
     }
 
     private val dataSources by lazy(
@@ -30,18 +32,22 @@ class DiContainer(context: Context) {
     ) {
         EnumMap(
             mapOf(
-                ExpensesProvider.LOCAL to localDataSource,
+                ExpensesProvider.ORIGIN to localDataSource,
                 ExpensesProvider.RANDOM to randomDataSource
             )
         )
     }
 
     private val localDataSource: ExpensesDataSource by lazy(LazyThreadSafetyMode.NONE) {
-        LocalDataSource(context, ObjectMapper())
+        FileDataSource(context, ObjectMapper())
     }
 
     private val randomDataSource: ExpensesDataSource by lazy(LazyThreadSafetyMode.NONE) {
         RandomDataSource(context.resources)
+    }
+
+    private val memoryCache: ExpensesMemoryCache by lazy(LazyThreadSafetyMode.NONE) {
+        MemoryDataSource()
     }
 
     val config: ExpensesConfig by lazy(LazyThreadSafetyMode.NONE) {

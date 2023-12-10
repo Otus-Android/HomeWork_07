@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import otus.homework.customview.R
 import otus.homework.customview.data.ExpenseEntity
 
-class LocalDataSource(
+class FileDataSource(
     private val context: Context,
     private val objectMapper: ObjectMapper
 ) : ExpensesDataSource {
