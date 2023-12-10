@@ -5,7 +5,12 @@ import android.graphics.Rect
 import android.graphics.RectF
 import otus.homework.customview.presentation.pie.chart.paints.PiePaints
 
-class PieAreaProvider(private val paints: PiePaints) {
+/**
+ * Хранилище параметров областей `View`
+ *
+ * @param paints параметры рисования графика
+ */
+internal class PieAreaStorage(private val paints: PiePaints) {
 
     /** Область всего пространства `View` */
     val global = Rect()

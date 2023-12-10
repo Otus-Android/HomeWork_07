@@ -1,18 +1,22 @@
 package otus.homework.customview.data.datasources
 
-import android.content.res.Resources.NotFoundException
-import com.fasterxml.jackson.core.exc.StreamReadException
-import com.fasterxml.jackson.databind.DatabindException
+import androidx.annotation.WorkerThread
 import otus.homework.customview.data.models.ExpenseEntity
-import java.io.IOException
+import otus.homework.customview.data.models.ExpensesDataException
 
+/**
+ * Источник данных по расходам
+ */
 interface ExpensesDataSource {
 
-    @Throws(
-        NotFoundException::class,
-        IOException::class,
-        StreamReadException::class,
-        DatabindException::class
-    )
+    /**
+     * Получить данные по расходам
+     *
+     * @param max максимально возможное кол-во записей по расходам (`null` - ограничения отсутствуют)
+     *
+     * @throws ExpensesDataException при ошибке получения данных
+     */
+    @Throws(ExpensesDataException::class)
+    @WorkerThread
     fun getExpenses(max: Int? = null): List<ExpenseEntity>
 }

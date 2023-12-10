@@ -1,6 +1,10 @@
 package otus.homework.customview.domain.config
 
+/**
+ * Конфигурационные данные по расходам
+ */
 interface ExpensesConfig {
 
-    var provider: ExpensesProvider
+    /** Способ получения данных по расходам */
+    var providerType: ExpensesProviderType
 }

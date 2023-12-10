@@ -3,7 +3,10 @@ package otus.homework.customview.presentation.line.chart.area
 import android.graphics.Rect
 import android.graphics.RectF
 
-class LineAreaProvider {
+/**
+ * Хранилище параметров областей `View`
+ */
+internal class LineAreaStorage {
 
     /** Область всего пространства `View` */
     val global = Rect()

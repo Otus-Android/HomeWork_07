@@ -10,10 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import otus.homework.customview.MyApplication
-import otus.homework.customview.data.models.ExpensesException
+import otus.homework.customview.domain.models.ExpensesException
 import otus.homework.customview.domain.ExpensesInteractor
 import otus.homework.customview.domain.config.ExpensesConfig
-import otus.homework.customview.domain.config.ExpensesProvider
+import otus.homework.customview.domain.config.ExpensesProviderType
 
 class ExpensesViewModel(
     private val interactor: ExpensesInteractor,
@@ -42,9 +42,9 @@ class ExpensesViewModel(
     }
 
     fun onSourceChanged(isChecked: Boolean) {
-        val provider = if (isChecked) ExpensesProvider.RANDOM else ExpensesProvider.ORIGIN
-        if (config.provider != provider) {
-            config.provider = provider
+        val provider = if (isChecked) ExpensesProviderType.RANDOM else ExpensesProviderType.FILE
+        if (config.providerType != provider) {
+            config.providerType = provider
             loadExpenses()
         }
     }

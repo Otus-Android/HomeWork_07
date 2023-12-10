@@ -2,7 +2,9 @@ package otus.homework.customview.data.datasources
 
 import otus.homework.customview.data.models.ExpenseEntity
 
-
+/**
+ * Источник данных по расходам из оперативной памяти
+ */
 class MemoryDataSource : ExpensesMemoryCache {
 
     private val cache = mutableListOf<ExpenseEntity>()

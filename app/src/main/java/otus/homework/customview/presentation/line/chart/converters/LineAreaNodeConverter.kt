@@ -5,8 +5,7 @@ import otus.homework.customview.presentation.line.chart.LineNode
 import otus.homework.customview.presentation.line.chart.models.LineAreaNode
 import java.util.Date
 
-class LineAreaNodeConverter {
-
+internal class LineAreaNodeConverter {
 
     fun convert(nodes: List<LineNode>, area: RectF): List<LineAreaNode> {
         // высота

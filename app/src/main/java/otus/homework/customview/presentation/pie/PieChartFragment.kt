@@ -15,6 +15,9 @@ import otus.homework.customview.databinding.FragmentPieChartBinding
 import otus.homework.customview.presentation.expenses.ExpensesUiState
 import otus.homework.customview.presentation.expenses.ExpensesViewModel
 
+/**
+ * `Fragment` отображения кругового графика данных по категориям расходов
+ */
 class PieChartFragment : Fragment() {
 
     private var _binding: FragmentPieChartBinding? = null
@@ -46,7 +49,7 @@ class PieChartFragment : Fragment() {
 
                 launch {
                     sharedViewModel.uiState.filterIsInstance(ExpensesUiState.Success::class)
-                        .collect { viewModel.load(it.categories) }
+                        .collect { viewModel.process(it.categories) }
                 }
 
                 launch {
@@ -67,6 +70,8 @@ class PieChartFragment : Fragment() {
     }
 
     companion object {
+
+        /** Создать новый `fragment` отображения кругового графика [PieChartFragment] */
         fun newInstance() = PieChartFragment()
     }
 }

@@ -1,8 +1,18 @@
 package otus.homework.customview.presentation.pie.chart.models
 
-data class PieAreaNode(
-    val label: String,
+import androidx.annotation.ColorInt
+
+/**
+ * Внутренняя модель узла кругового графика
+ *
+ * @param startAngle угол начала
+ * @param sweepAngle угол сектора
+ * @param label подпись
+ * @param color цвет
+ */
+internal data class PieAreaNode(
     val startAngle: Float,
     val sweepAngle: Float,
-    val color: Int
+    val label: String?,
+    @ColorInt val color: Int
 )

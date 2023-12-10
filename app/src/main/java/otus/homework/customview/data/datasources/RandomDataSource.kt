@@ -6,6 +6,11 @@ import otus.homework.customview.data.models.ExpenseEntity
 import java.util.UUID
 import kotlin.random.Random
 
+/**
+ * Источник данных случайных записей по расходам
+ *
+ * @param resources менеджер ресурсов
+ */
 class RandomDataSource(
     private val resources: Resources,
 ) : ExpensesDataSource {
@@ -31,6 +36,8 @@ class RandomDataSource(
     )
 
     private companion object {
+
+        /** Стандартное значение максимально возможного кол-ва записей */
         const val DEFAULT_MAX = 10
     }
 }

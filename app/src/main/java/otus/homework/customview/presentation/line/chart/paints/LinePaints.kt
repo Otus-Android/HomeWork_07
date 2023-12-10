@@ -7,11 +7,17 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
 import otus.homework.customview.R
-import otus.homework.customview.presentation.line.chart.area.LineAreaProvider
+import otus.homework.customview.presentation.line.chart.area.LineAreaStorage
 
-class LinePaints(
-    private val areaProvider: LineAreaProvider,
-    private val resources: Resources
+/**
+ * Параметры рисования графика
+ *
+ * @param resources менеджер ресурсов
+ * @param areaStorage хранилище параметров областей `View`
+ */
+internal class LinePaints(
+    private val resources: Resources,
+    private val areaStorage: LineAreaStorage
 ) {
 
     /** Настройка отображения области всего пространства */
@@ -87,10 +93,10 @@ class LinePaints(
     /** Перерасчитать настройки отображения на основе данных области */
     fun recalculate() {
         gradient.shader = LinearGradient(
-            areaProvider.chart.left,
-            areaProvider.chart.top,
-            areaProvider.chart.left,
-            areaProvider.chart.bottom,
+            areaStorage.chart.left,
+            areaStorage.chart.top,
+            areaStorage.chart.left,
+            areaStorage.chart.bottom,
             Color.BLUE,
             Color.TRANSPARENT,
             Shader.TileMode.CLAMP

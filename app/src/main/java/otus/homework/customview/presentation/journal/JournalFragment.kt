@@ -16,6 +16,9 @@ import otus.homework.customview.databinding.FragmentJournalBinding
 import otus.homework.customview.presentation.expenses.ExpensesUiState
 import otus.homework.customview.presentation.expenses.ExpensesViewModel
 
+/**
+ * `Fragment` журнала данных по расходам
+ */
 class JournalFragment : Fragment() {
 
     private var _binding: FragmentJournalBinding? = null
@@ -58,6 +61,8 @@ class JournalFragment : Fragment() {
     }
 
     companion object {
+
+        /** Создать новый `fragment` журнала данных по расходам [JournalFragment] */
         fun newInstance() = JournalFragment()
     }
 }

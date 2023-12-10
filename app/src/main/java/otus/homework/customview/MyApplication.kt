@@ -4,6 +4,9 @@ import android.app.Application
 import android.content.Context
 import otus.homework.customview.di.DiContainer
 
+/**
+ * `Custom application`, предоставляющий контейнер зависимостей
+ */
 class MyApplication : Application() {
 
     /** Контейнер зависимостей */
@@ -16,6 +19,7 @@ class MyApplication : Application() {
 
     companion object {
 
+        /** Получить контейнер зависимостей на основе контекста [Context] */
         fun diContainer(context: Context) =
             (context.applicationContext as MyApplication).diContainer
     }

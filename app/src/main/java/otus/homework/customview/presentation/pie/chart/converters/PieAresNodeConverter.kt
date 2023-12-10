@@ -3,23 +3,31 @@ package otus.homework.customview.presentation.pie.chart.converters
 import otus.homework.customview.presentation.pie.chart.PieNode
 import otus.homework.customview.presentation.pie.chart.models.PieAreaNode
 
-class PieAresNodeConverter {
+/**
+ * Конвертер внутренних моделей узлов кругового графика
+ */
+internal class PieAresNodeConverter {
 
+    /** Преобразовать список [PieNode] в список [PieAreaNode] */
     fun convert(nodes: List<PieNode>): List<PieAreaNode> {
-        val generalAmount = nodes.sumOf { it.value.toDouble() }
+        val totalAmount = nodes.sumOf { it.value.toDouble() }.toFloat()
 
-        var count = 0f
-        val newValues2 = nodes.map { (value, label, color) ->
+        var startAngle = 0f
+        val pieAreaNodes = nodes.map { (value, label, color) ->
             PieAreaNode(
-                label = label.orEmpty(),
-                startAngle = count,
-                sweepAngle = value / (generalAmount.toFloat()) * 360f,
+                startAngle = startAngle,
+                sweepAngle = value / (totalAmount) * CIRCLE_DEGREES,
+                label = label,
                 color = color
-            ).also { angleNode ->
-                count += angleNode.sweepAngle
-            }
+            ).also { angleNode -> startAngle += angleNode.sweepAngle }
         }
 
-        return newValues2.sortedBy { it.startAngle }
+        return pieAreaNodes.sortedBy { it.startAngle }
+    }
+
+    private companion object {
+
+        /** Кол-во градусов в круге */
+        const val CIRCLE_DEGREES = 360f
     }
 }

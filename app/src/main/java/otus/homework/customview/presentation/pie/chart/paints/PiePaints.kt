@@ -8,7 +8,12 @@ import android.graphics.RectF
 import otus.homework.customview.R
 import otus.homework.customview.presentation.pie.chart.PieStyle
 
-class PiePaints(private val resources: Resources) {
+/**
+ * Параметры рисования графика
+ *
+ * @param resources менеджер ресурсов
+ */
+internal class PiePaints(private val resources: Resources) {
 
     /** Настройка отображения области всего пространства */
     val global = Paint().apply {
@@ -67,6 +72,7 @@ class PiePaints(private val resources: Resources) {
 
     val labelRect: RectF = RectF()
 
+    /** Стиль отображения кругового графика */
     var style: PieStyle = PieStyle.PIE
         set(value) {
             field = value

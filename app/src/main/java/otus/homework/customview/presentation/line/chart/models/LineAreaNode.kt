@@ -2,14 +2,17 @@ package otus.homework.customview.presentation.line.chart.models
 
 import java.util.Date
 
-data class LineAreaNode(
-    val x: Float, // time
-    val y: Float, // value
+/**
+ * Внутренняя модель узла линейного графика
+ *
+ * @param x координата по оси X
+ * @param y координата по оси Y
+ * @param label подпись
+ * @param date дата, соответствующая координте [y]
+ */
+internal data class LineAreaNode(
+    val x: Float,
+    val y: Float,
     val label: String?,
     val date: Date,
-    //  val payload: T? = null
-) {
-    fun test() {
-        date.time
-    }
-}
+)

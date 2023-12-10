@@ -1,19 +1,19 @@
 package otus.homework.customview.presentation.line.chart.data
 
 import otus.homework.customview.presentation.line.chart.LineData
+import otus.homework.customview.presentation.line.chart.area.LineAreaStorage
 import otus.homework.customview.presentation.line.chart.converters.LineAreaNodeConverter
 import otus.homework.customview.presentation.line.chart.models.LineAreaNode
-import otus.homework.customview.presentation.line.chart.area.LineAreaProvider
 
-class LineDataProvider(
-    private val areaProvider: LineAreaProvider,
+internal class LineDataStorage(
+    private val areaProvider: LineAreaStorage,
     private val converter: LineAreaNodeConverter = LineAreaNodeConverter()
 ) {
 
     private var origin = LineData()
     private val nodes = mutableListOf<LineAreaNode>()
 
-    fun calculate(data: LineData) {
+    fun update(data: LineData) {
         origin = data
 
         val areaNodes = converter.convert(data.nodes, areaProvider.chart)
@@ -22,10 +22,7 @@ class LineDataProvider(
         nodes.addAll(areaNodes)
     }
 
-    fun recalculate() {
-        calculate(origin)
-    }
-
+    fun reupdate() = update(origin)
 
     fun getNodeByX(x: Float) = nodes.findLast { it.x < x }
 

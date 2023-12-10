@@ -7,13 +7,13 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import otus.homework.customview.presentation.line.chart.area.LineAreaProvider
+import otus.homework.customview.presentation.line.chart.area.LineAreaStorage
 import otus.homework.customview.presentation.line.chart.cursor.CursorStorage
-import otus.homework.customview.presentation.line.chart.data.LineDataProvider
+import otus.homework.customview.presentation.line.chart.data.LineDataStorage
 import otus.homework.customview.presentation.line.chart.paints.LinePaints
 
 /**
- * Линейный график
+ * Линейный график, позволяющий отображать положительные значения на временной оси
  */
 class LineChartView constructor(
     context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int
@@ -25,17 +25,17 @@ class LineChartView constructor(
             this(context, attrs, defStyleAttr, 0)
 
 
-    private val areaProvider = LineAreaProvider()
-    private val dataProvider = LineDataProvider(areaProvider)
-    private val cursorStorage = CursorStorage(areaProvider)
+    private val areaStorage = LineAreaStorage()
+    private val dataStorage = LineDataStorage(areaStorage)
+    private val cursorStorage = CursorStorage(areaStorage)
 
-    private val paints = LinePaints(areaProvider, resources)
+    private val paints = LinePaints(resources, areaStorage)
 
     private val lineChartPath = Path()
 
     /** Нарисовать линйный график по данным [LineData] */
     fun render(data: LineData) {
-        dataProvider.calculate(data)
+        dataStorage.update(data)
         invalidate()
     }
 
@@ -47,7 +47,7 @@ class LineChartView constructor(
         }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        areaProvider.update(
+        areaStorage.update(
             width = w,
             height = h,
             leftPadding = paddingLeft,
@@ -56,7 +56,7 @@ class LineChartView constructor(
             bottomPadding = paddingBottom
         )
 
-        dataProvider.recalculate()
+        dataStorage.reupdate()
         paints.recalculate()
         invalidate()
     }
@@ -104,15 +104,15 @@ class LineChartView constructor(
 
     /** Нарисовать отладочную информацию по областям графика */
     private fun drawDebugAreas(canvas: Canvas) {
-        canvas.drawRect(areaProvider.global, paints.global)
-        canvas.drawRect(areaProvider.padding, paints.padding)
-        canvas.drawRect(areaProvider.chart, paints.chart)
+        canvas.drawRect(areaStorage.global, paints.global)
+        canvas.drawRect(areaStorage.padding, paints.padding)
+        canvas.drawRect(areaStorage.chart, paints.chart)
     }
 
     /** Нарисовать отладочную информацию по "сетке" */
     private fun drawDebugGrid(canvas: Canvas) {
         val cellCount = DEBUG_CELL_COUNT
-        val area = areaProvider.chart
+        val area = areaStorage.chart
         val stepX = area.width() / cellCount
         val stepY = area.height() / cellCount
         var currentPointX = area.left
@@ -134,7 +134,7 @@ class LineChartView constructor(
 
     /** Нарисовать линии графика с градиентом */
     private fun drawLines(canvas: Canvas) {
-        dataProvider.getNodes().takeIf { it.isNotEmpty() }?.let { nodes ->
+        dataStorage.getNodes().takeIf { it.isNotEmpty() }?.let { nodes ->
             lineChartPath.reset()
 
             // линия
@@ -144,7 +144,7 @@ class LineChartView constructor(
             canvas.drawPath(lineChartPath, paints.line)
 
             // градиент
-            val area = areaProvider.chart
+            val area = areaStorage.chart
             lineChartPath.lineTo(nodes.last().x, area.bottom)
             lineChartPath.lineTo(area.left, area.bottom)
             lineChartPath.close()
@@ -157,9 +157,9 @@ class LineChartView constructor(
         cursorStorage.getPoint()?.let { point ->
             canvas.drawLine(
                 point.x,
-                areaProvider.chart.top,
+                areaStorage.chart.top,
                 point.x,
-                areaProvider.chart.bottom,
+                areaStorage.chart.bottom,
                 paints.cursor
             )
         }
@@ -167,9 +167,9 @@ class LineChartView constructor(
 
     /** Нарисовать подпись, соответствующую позиции курсора */
     private fun drawLabel(canvas: Canvas) {
-        val area = areaProvider.chart
+        val area = areaStorage.chart
         val cursorPoint = cursorStorage.getPoint() ?: return
-        val node = dataProvider.getNodeByX(cursorPoint.x)
+        val node = dataStorage.getNodeByX(cursorPoint.x)
         val label = node?.label ?: return
         canvas.drawText(label, area.centerX(), area.bottom, paints.label)
     }

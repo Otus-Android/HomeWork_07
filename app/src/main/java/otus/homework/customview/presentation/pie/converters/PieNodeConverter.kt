@@ -5,8 +5,14 @@ import otus.homework.customview.domain.models.Category
 import otus.homework.customview.presentation.pie.chart.PieNode
 import kotlin.random.Random
 
+/**
+ * Конвертер данных узла кругового графика
+ */
 class PieNodeConverter {
 
+    /**
+     * Конвертировать [Category] в [PieNode]
+     */
     fun convert(category: Category) = PieNode(
         value = category.amount.toFloat(),
         label = category.name,
