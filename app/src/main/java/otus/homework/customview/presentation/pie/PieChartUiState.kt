@@ -5,5 +5,6 @@ import otus.homework.customview.presentation.pie.chart.PieData
 
 data class PieChartUiState(
     val data: PieData = PieData(),
+    val isDebugEnabled: Boolean = false,
     val style: PieStyle = PieStyle.PIE
 )

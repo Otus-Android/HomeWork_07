@@ -43,6 +43,6 @@ class ExpensesRepositoryImpl(
         }
 
     private companion object {
-        const val STUB_DELAY = 2000L
+        const val STUB_DELAY = 1000L
     }
 }

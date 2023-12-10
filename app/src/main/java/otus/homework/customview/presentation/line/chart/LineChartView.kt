@@ -33,6 +33,12 @@ class LineChartView constructor(
 
     private val lineChartPath = Path()
 
+    /** Нарисовать линйный график по данным [LineData] */
+    fun render(data: LineData) {
+        dataProvider.calculate(data)
+        invalidate()
+    }
+
     /** Признак отображения отладочной информации */
     var isDebugModeEnabled: Boolean = false
         set(value) {
@@ -40,18 +46,10 @@ class LineChartView constructor(
             invalidate()
         }
 
-    /** Нарисовать линйный график по данным [LineData] */
-    fun render(data: LineData) {
-        dataProvider.calculate(data)
-        invalidate()
-    }
-
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         areaProvider.update(
-            leftPosition = 0,
-            topPosition = 0,
-            rightPosition = w,
-            bottomPosition = h,
+            width = w,
+            height = h,
             leftPadding = paddingLeft,
             topPadding = paddingTop,
             rightPadding = paddingRight,
@@ -82,6 +80,12 @@ class LineChartView constructor(
                 true
             }
 
+            MotionEvent.ACTION_CANCEL -> {
+                cursorStorage.clear()
+                invalidate()
+                false
+            }
+
             else -> false
         }
     }
@@ -102,13 +106,13 @@ class LineChartView constructor(
     private fun drawDebugAreas(canvas: Canvas) {
         canvas.drawRect(areaProvider.global, paints.global)
         canvas.drawRect(areaProvider.padding, paints.padding)
-        canvas.drawRect(areaProvider.local, paints.local)
+        canvas.drawRect(areaProvider.chart, paints.chart)
     }
 
     /** Нарисовать отладочную информацию по "сетке" */
     private fun drawDebugGrid(canvas: Canvas) {
         val cellCount = DEBUG_CELL_COUNT
-        val area = areaProvider.local
+        val area = areaProvider.chart
         val stepX = area.width() / cellCount
         val stepY = area.height() / cellCount
         var currentPointX = area.left
@@ -140,7 +144,7 @@ class LineChartView constructor(
             canvas.drawPath(lineChartPath, paints.line)
 
             // градиент
-            val area = areaProvider.local
+            val area = areaProvider.chart
             lineChartPath.lineTo(nodes.last().x, area.bottom)
             lineChartPath.lineTo(area.left, area.bottom)
             lineChartPath.close()
@@ -148,14 +152,14 @@ class LineChartView constructor(
         }
     }
 
-    /** Нарисовать вертикальную линию, соответствующую нажатой точке */
+    /** Нарисовать вертикальную линию, соответствующую позиции курсора */
     private fun drawCursor(canvas: Canvas) {
         cursorStorage.getPoint()?.let { point ->
             canvas.drawLine(
                 point.x,
-                areaProvider.local.top,
+                areaProvider.chart.top,
                 point.x,
-                areaProvider.local.bottom,
+                areaProvider.chart.bottom,
                 paints.cursor
             )
         }
@@ -163,7 +167,7 @@ class LineChartView constructor(
 
     /** Нарисовать подпись, соответствующую позиции курсора */
     private fun drawLabel(canvas: Canvas) {
-        val area = areaProvider.local
+        val area = areaProvider.chart
         val cursorPoint = cursorStorage.getPoint() ?: return
         val node = dataProvider.getNodeByX(cursorPoint.x)
         val label = node?.label ?: return

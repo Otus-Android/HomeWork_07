@@ -16,7 +16,7 @@ class LineDataProvider(
     fun calculate(data: LineData) {
         origin = data
 
-        val areaNodes = converter.convert(data.nodes, areaProvider.local)
+        val areaNodes = converter.convert(data.nodes, areaProvider.chart)
 
         nodes.clear()
         nodes.addAll(areaNodes)

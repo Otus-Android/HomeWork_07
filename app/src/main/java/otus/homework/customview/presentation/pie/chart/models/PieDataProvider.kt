@@ -2,11 +2,8 @@ package otus.homework.customview.presentation.pie.chart.models
 
 import otus.homework.customview.presentation.pie.chart.PieData
 import otus.homework.customview.presentation.pie.chart.converters.PieAresNodeConverter
-import kotlin.random.Random
 
-class PieAreaProvider(private val converter: PieAresNodeConverter = PieAresNodeConverter()) {
-
-    private val random = Random
+class PieDataProvider(private val converter: PieAresNodeConverter = PieAresNodeConverter()) {
 
     private val pieAngleNodes = mutableListOf<PieAreaNode>()
 

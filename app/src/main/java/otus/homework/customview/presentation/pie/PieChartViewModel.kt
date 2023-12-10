@@ -21,6 +21,10 @@ class PieChartViewModel(
         _uiState.update { it.copy(data = pieData) }
     }
 
+    fun onDebugChanged(isChecked: Boolean) {
+        _uiState.update { it.copy(isDebugEnabled = isChecked) }
+    }
+
     fun onStyleChanged(isChecked: Boolean) {
         _uiState.update {
             val style = if (isChecked) PieStyle.DONUT else PieStyle.PIE

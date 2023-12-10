@@ -9,9 +9,8 @@ class CursorStorage(private val areaProvider: LineAreaProvider) {
 
     fun getPoint() = point.takeIf { it.x != UNDEFINED && it.y != UNDEFINED }
 
-
     fun update(x: Float, y: Float): Boolean =
-        if (areaProvider.local.contains(x, y)) {
+        if (areaProvider.chart.contains(x, y)) {
             point.set(x, y)
             true
         } else {

@@ -3,28 +3,36 @@ package otus.homework.customview.presentation.line.chart.area
 import android.graphics.Rect
 import android.graphics.RectF
 
-class LineAreaProvider() {
+class LineAreaProvider {
 
-    /** Область всего пространства */
+    /** Область всего пространства `View` */
     val global = Rect()
 
-    /** Область с учетом отступов */
+    /** Область пространства `View` с учетом отступов */
     val padding = Rect()
 
-    /** Область, на которой рисуется сам график */
-    val local = RectF()
+    /** Область графика */
+    val chart = RectF()
 
+    /**
+     * Обновить данные областей
+     *
+     * @param width ширина всего пространства `View`
+     * @param height высота всего пространства `View`
+     * @param leftPadding левый отступ
+     * @param topPadding верхний отступ
+     * @param rightPadding правый отступ
+     * @param bottomPadding нижний отступ
+     */
     fun update(
-        leftPosition: Int,
-        topPosition: Int,
-        rightPosition: Int,
-        bottomPosition: Int,
+        width: Int,
+        height: Int,
         leftPadding: Int,
         topPadding: Int,
         rightPadding: Int,
         bottomPadding: Int
     ) {
-        global.set(leftPosition, topPosition, rightPosition, bottomPosition)
+        global.set(0, 0, width, height)
 
         padding.set(
             global.left + leftPadding,
@@ -33,6 +41,6 @@ class LineAreaProvider() {
             global.bottom - bottomPadding
         )
 
-        local.set(padding)
+        chart.set(padding)
     }
 }

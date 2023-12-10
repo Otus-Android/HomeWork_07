@@ -14,6 +14,8 @@
 
     <dimen name="item_journal_margin">6dp</dimen>
 
+    <dimen name="donut_stroke_width">20dp</dimen>
+
     <dimen name="chart_text_size_8">8sp</dimen>
     <dimen name="chart_text_size_16">16sp</dimen>
     <dimen name="chart_text_size_24">24sp</dimen>

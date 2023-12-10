@@ -33,6 +33,10 @@ class PieChartFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.debugCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.onDebugChanged(isChecked)
+        }
+
         binding.styleCheckbox.setOnCheckedChangeListener { _, isChecked ->
             viewModel.onStyleChanged(isChecked)
         }
@@ -46,9 +50,10 @@ class PieChartFragment : Fragment() {
                 }
 
                 launch {
-                    viewModel.uiState.collect {
-                        binding.pieChartView.render(it.data)
-                        binding.pieChartView.setStyle(it.style)
+                    viewModel.uiState.collect { uiState ->
+                        binding.pieChartView.render(uiState.data)
+                        binding.pieChartView.style = uiState.style
+                        binding.pieChartView.isDebugModeEnabled = uiState.isDebugEnabled
                     }
                 }
             }
