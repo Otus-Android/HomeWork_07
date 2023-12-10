@@ -4,7 +4,7 @@ import android.content.Context
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import otus.homework.customview.R
-import otus.homework.customview.data.ExpenseEntity
+import otus.homework.customview.data.models.ExpenseEntity
 
 class FileDataSource(
     private val context: Context,

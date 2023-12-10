@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import otus.homework.customview.domain.Expense
+import otus.homework.customview.domain.models.Expense
 import otus.homework.customview.presentation.pie.chart.PieStyle
 import otus.homework.customview.presentation.pie.converters.PieDataConverter
 

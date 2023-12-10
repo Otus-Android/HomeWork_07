@@ -1,6 +1,6 @@
 package otus.homework.customview.presentation.expenses
 
-import otus.homework.customview.domain.Expense
+import otus.homework.customview.domain.models.Expense
 
 sealed class ExpensesUiState {
 

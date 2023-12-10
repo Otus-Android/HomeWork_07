@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import otus.homework.customview.R
 import otus.homework.customview.databinding.ItemJournalBinding
-import otus.homework.customview.domain.Expense
+import otus.homework.customview.domain.models.Expense
 
 class JournalAdapter : ListAdapter<Expense, JournalAdapter.JournalViewHolder>(DiffCallback()) {
 

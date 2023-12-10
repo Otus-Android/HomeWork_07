@@ -1,7 +1,9 @@
 package otus.homework.customview.domain
 
 import kotlinx.coroutines.CancellationException
-import otus.homework.customview.data.ExpensesException
+import otus.homework.customview.data.models.ExpensesException
+import otus.homework.customview.domain.models.Category
+import otus.homework.customview.domain.models.Expense
 
 interface ExpensesInteractor {
 

@@ -2,7 +2,7 @@ package otus.homework.customview.data.datasources
 
 import android.content.res.Resources
 import otus.homework.customview.R
-import otus.homework.customview.data.ExpenseEntity
+import otus.homework.customview.data.models.ExpenseEntity
 import java.util.UUID
 import kotlin.random.Random
 

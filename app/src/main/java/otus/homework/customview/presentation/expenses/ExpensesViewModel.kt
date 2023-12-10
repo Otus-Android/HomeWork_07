@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import otus.homework.customview.MyApplication
-import otus.homework.customview.data.ExpensesException
+import otus.homework.customview.data.models.ExpensesException
 import otus.homework.customview.domain.ExpensesInteractor
 import otus.homework.customview.domain.config.ExpensesConfig
 import otus.homework.customview.domain.config.ExpensesProvider

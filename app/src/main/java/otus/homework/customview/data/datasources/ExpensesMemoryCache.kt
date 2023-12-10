@@ -1,6 +1,6 @@
 package otus.homework.customview.data.datasources
 
-import otus.homework.customview.data.ExpenseEntity
+import otus.homework.customview.data.models.ExpenseEntity
 
 interface ExpensesMemoryCache : ExpensesDataSource {
 

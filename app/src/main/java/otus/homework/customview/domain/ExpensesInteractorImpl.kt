@@ -1,5 +1,8 @@
 package otus.homework.customview.domain
 
+import otus.homework.customview.domain.models.Category
+import otus.homework.customview.domain.models.Expense
+
 class ExpensesInteractorImpl(private val repository: ExpensesRepository) : ExpensesInteractor {
 
     override suspend fun getExpenses(max: Int?, force: Boolean): List<Expense> =

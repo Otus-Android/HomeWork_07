@@ -1,7 +1,7 @@
 package otus.homework.customview.data.converters
 
-import otus.homework.customview.data.ExpenseEntity
-import otus.homework.customview.domain.Expense
+import otus.homework.customview.data.models.ExpenseEntity
+import otus.homework.customview.domain.models.Expense
 
 class ExpensesConverter {
 

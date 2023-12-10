@@ -1,4 +1,4 @@
-package otus.homework.customview.data
+package otus.homework.customview.data.models
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
