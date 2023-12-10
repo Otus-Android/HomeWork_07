@@ -43,13 +43,14 @@ class LineChartFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     sharedViewModel.uiState.filterIsInstance(ExpensesUiState.Success::class)
-                        .collect { viewModel.load(it.expenses) }
+                        .collect { viewModel.load(it.categories) }
                 }
 
                 launch {
-                    viewModel.uiState.collect {
-                        binding.lineChartView.render(it.data)
-                        binding.lineChartView.isDebugModeEnabled = it.isDebugEnabled
+                    viewModel.uiState.collect { uiState ->
+                        uiState.current?.let { binding.lineChartView.render(it) }
+                        binding.lineChartView.isDebugModeEnabled = uiState.isDebugEnabled
+
                     }
                 }
             }

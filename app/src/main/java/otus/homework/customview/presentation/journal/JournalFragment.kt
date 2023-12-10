@@ -44,7 +44,9 @@ class JournalFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 sharedViewModel.uiState.filterIsInstance(ExpensesUiState.Success::class)
-                    .collect { adapter.submitList(it.expenses) }
+                    .collect { uiState ->
+                        adapter.submitList(uiState.categories.flatMap { category -> category.expenses })
+                    }
             }
         }
     }

@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import otus.homework.customview.domain.models.Expense
+import otus.homework.customview.domain.models.Category
 import otus.homework.customview.presentation.line.converters.LineDataConverter
 
 class LineChartViewModel(
@@ -15,9 +15,9 @@ class LineChartViewModel(
     val uiState get() = _uiState.asStateFlow()
     private val _uiState: MutableStateFlow<LineChartUiState> = MutableStateFlow(LineChartUiState())
 
-    fun load(expenses: List<Expense>) {
-        val lineData = converter.convert(expenses)
-        _uiState.update { it.copy(data = lineData) }
+    fun load(categories: List<Category>) {
+        val lineData = converter.convert(categories)
+        _uiState.update { it.copy(current = lineData.firstOrNull(), lines = lineData) }
     }
 
     fun onDebugChanged(isChecked: Boolean) {

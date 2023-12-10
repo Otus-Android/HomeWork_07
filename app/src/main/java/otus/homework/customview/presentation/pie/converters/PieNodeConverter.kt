@@ -1,15 +1,15 @@
 package otus.homework.customview.presentation.pie.converters
 
 import android.graphics.Color
-import otus.homework.customview.domain.models.Expense
+import otus.homework.customview.domain.models.Category
 import otus.homework.customview.presentation.pie.chart.PieNode
 import kotlin.random.Random
 
 class PieNodeConverter {
 
-    fun convert(source: Expense) = PieNode(
-        value = source.amount.toFloat(),
-        label = source.category,
+    fun convert(category: Category) = PieNode(
+        value = category.amount.toFloat(),
+        label = category.name,
         color = nextColor()
     )
 

@@ -33,9 +33,7 @@ class ExpensesViewModel(
         viewModelScope.launch(exceptionHandler) {
             _uiState.value = ExpensesUiState.Loading
             try {
-                val expenses = if (max == null) interactor.getExpenses() else {
-                    interactor.getExpenses(max)
-                }
+                val expenses = interactor.getCategories(max)
                 _uiState.value = ExpensesUiState.Success(expenses)
             } catch (e: ExpensesException) {
                 _uiState.value = ExpensesUiState.Error(e.toString())

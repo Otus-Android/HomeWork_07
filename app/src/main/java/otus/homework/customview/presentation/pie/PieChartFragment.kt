@@ -42,7 +42,7 @@ class PieChartFragment : Fragment() {
 
                 launch {
                     sharedViewModel.uiState.filterIsInstance(ExpensesUiState.Success::class)
-                        .collect { viewModel.load(it.expenses) }
+                        .collect { viewModel.load(it.categories) }
                 }
 
                 launch {

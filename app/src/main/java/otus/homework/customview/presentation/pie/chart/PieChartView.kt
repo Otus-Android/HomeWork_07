@@ -117,8 +117,6 @@ class PieChartView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-
-        canvas.drawColor(Color.YELLOW)
         canvas.drawRect(globalArea, paints.global)
         canvas.drawRect(localArea, paints.local)
         canvas.drawRect(chartArea, paints.chart)

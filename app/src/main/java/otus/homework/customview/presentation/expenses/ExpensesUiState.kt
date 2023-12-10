@@ -1,6 +1,6 @@
 package otus.homework.customview.presentation.expenses
 
-import otus.homework.customview.domain.models.Expense
+import otus.homework.customview.domain.models.Category
 
 sealed class ExpensesUiState {
 
@@ -8,7 +8,7 @@ sealed class ExpensesUiState {
 
     object Loading : ExpensesUiState()
 
-    data class Success(val expenses: List<Expense>) : ExpensesUiState()
+    data class Success(val categories: List<Category>) : ExpensesUiState()
 
     data class Error(val message: String) : ExpensesUiState()
 }

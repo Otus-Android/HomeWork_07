@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import otus.homework.customview.domain.models.Expense
+import otus.homework.customview.domain.models.Category
 import otus.homework.customview.presentation.pie.chart.PieStyle
 import otus.homework.customview.presentation.pie.converters.PieDataConverter
 
@@ -16,8 +16,8 @@ class PieChartViewModel(
     val uiState get() = _uiState.asStateFlow()
     private val _uiState = MutableStateFlow(PieChartUiState())
 
-    fun load(expenses: List<Expense>) {
-        val pieData = converter.convert(expenses)
+    fun load(categories: List<Category>) {
+        val pieData = converter.convert(categories)
         _uiState.update { it.copy(data = pieData) }
     }
 
