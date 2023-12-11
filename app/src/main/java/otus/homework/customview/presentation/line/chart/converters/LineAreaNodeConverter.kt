@@ -5,8 +5,12 @@ import otus.homework.customview.presentation.line.chart.LineNode
 import otus.homework.customview.presentation.line.chart.models.LineAreaNode
 import java.util.Calendar
 
+/**
+ * Конвертер внутренних моделей узлов линейного графика
+ */
 internal class LineAreaNodeConverter {
 
+    /** Преобразовать список [LineNode] в список [LineAreaNode] на основе данных доступной области [area] */
     fun convert(nodes: List<LineNode>, area: RectF): List<LineAreaNode> {
         if (nodes.isEmpty()) return emptyList()
 

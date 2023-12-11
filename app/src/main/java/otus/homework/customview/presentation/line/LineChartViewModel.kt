@@ -8,24 +8,38 @@ import kotlinx.coroutines.flow.update
 import otus.homework.customview.domain.models.Category
 import otus.homework.customview.presentation.line.converters.LineDataConverter
 
+/**
+ * `ViewModel` линейного графика данных по категориям расходов
+ *
+ * @param converter конвертер данных линейного графика
+ */
 class LineChartViewModel(
     private val converter: LineDataConverter = LineDataConverter()
 ) : ViewModel() {
 
+    /** Состояние отображения линейного графика */
     val uiState get() = _uiState.asStateFlow()
     private val _uiState: MutableStateFlow<LineChartUiState> = MutableStateFlow(LineChartUiState())
 
-    fun load(categories: List<Category>) {
-        val lineData = converter.convert(categories)
-        _uiState.update { it.copy(current = lineData.firstOrNull(), lines = lineData) }
+    /** Обработать данные по категориям расходов */
+    fun process(categories: List<Category>) {
+        val category = categories.firstOrNull()
+        val lineData = category?.let { converter.convert(it) }
+        _uiState.update { it.copy(current = lineData, categories = categories) }
     }
 
+    /**
+     * Обработать нажатие на кнопку отображения отладочной информации
+     *
+     * @param isChecked признак доступности отладочной информации
+     */
     fun onDebugChanged(isChecked: Boolean) {
         _uiState.update { it.copy(isDebugEnabled = isChecked) }
     }
 
     companion object {
 
+        /** Фабрика создания `ViewModel` */
         val Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {

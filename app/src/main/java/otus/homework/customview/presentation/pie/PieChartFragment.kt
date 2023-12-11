@@ -89,7 +89,7 @@ class PieChartFragment : Fragment() {
 
     companion object {
 
-        const val EMPTY = ""
+        private const val EMPTY = ""
 
         /** Создать новый `fragment` отображения кругового графика [PieChartFragment] */
         fun newInstance() = PieChartFragment()

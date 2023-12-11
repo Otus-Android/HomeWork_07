@@ -53,13 +53,6 @@ internal class LinePaintStorage(
         )
     }
 
-    val debugTextAxis = Paint().apply {
-        isAntiAlias = true
-        color = Color.BLACK
-        style = Paint.Style.FILL
-        textSize = resources.getDimension(R.dimen.chart_text_size_8)
-    }
-
     /** Настройка отображения линий графика */
     val line = Paint().apply {
         isAntiAlias = true

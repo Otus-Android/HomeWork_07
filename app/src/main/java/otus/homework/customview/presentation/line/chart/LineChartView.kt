@@ -24,7 +24,6 @@ class LineChartView constructor(
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
             this(context, attrs, defStyleAttr, 0)
 
-
     private val areaStorage = LineAreaStorage()
     private val dataStorage = LineDataStorage(areaStorage)
     private val cursorStorage = CursorStorage(areaStorage)
@@ -123,12 +122,6 @@ class LineChartView constructor(
                 currentPointX,
                 area.top,
                 paintStorage.debugGrid
-            )
-            canvas.drawText(
-                currentPointX.toString(),
-                currentPointX,
-                area.bottom,
-                paintStorage.debugTextAxis
             )
 
             canvas.drawLine(

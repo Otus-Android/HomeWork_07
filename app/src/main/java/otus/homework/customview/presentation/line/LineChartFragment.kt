@@ -15,6 +15,9 @@ import otus.homework.customview.databinding.FragmentLineChartBinding
 import otus.homework.customview.presentation.expenses.ExpensesUiState
 import otus.homework.customview.presentation.expenses.ExpensesViewModel
 
+/**
+ * `Fragment` отображения линейного графика данных по категориям расходов
+ */
 class LineChartFragment : Fragment() {
 
     private var _binding: FragmentLineChartBinding? = null
@@ -43,7 +46,7 @@ class LineChartFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     sharedViewModel.uiState.filterIsInstance(ExpensesUiState.Success::class)
-                        .collect { viewModel.load(it.categories) }
+                        .collect { viewModel.process(it.categories) }
                 }
 
                 launch {
@@ -64,6 +67,8 @@ class LineChartFragment : Fragment() {
     }
 
     companion object {
+
+        /** Создать новый `fragment` отображения линейного графика [LineChartFragment] */
         fun newInstance() = LineChartFragment()
     }
 }

@@ -10,9 +10,7 @@ import kotlin.random.Random
  */
 class PieNodeConverter {
 
-    /**
-     * Конвертировать [Category] в [PieNode]
-     */
+    /** Конвертировать [Category] в [PieNode] */
     fun convert(category: Category) = PieNode(
         value = category.amount.toFloat(),
         label = category.name,
