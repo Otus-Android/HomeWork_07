@@ -1,7 +1,6 @@
-package otus.homework.customview.presentation.line.chart.data
+package otus.homework.customview.presentation.line.chart.storages
 
 import otus.homework.customview.presentation.line.chart.LineData
-import otus.homework.customview.presentation.line.chart.area.LineAreaStorage
 import otus.homework.customview.presentation.line.chart.converters.LineAreaNodeConverter
 import otus.homework.customview.presentation.line.chart.models.LineAreaNode
 

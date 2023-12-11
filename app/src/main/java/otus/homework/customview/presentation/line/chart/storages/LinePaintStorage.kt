@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation.line.chart.paints
+package otus.homework.customview.presentation.line.chart.storages
 
 import android.content.res.Resources
 import android.graphics.Color
@@ -7,15 +7,14 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
 import otus.homework.customview.R
-import otus.homework.customview.presentation.line.chart.area.LineAreaStorage
 
 /**
- * Параметры рисования графика
+ * Хранилище параметров отрисовки графика
  *
  * @param resources менеджер ресурсов
  * @param areaStorage хранилище параметров областей `View`
  */
-internal class LinePaints(
+internal class LinePaintStorage(
     private val resources: Resources,
     private val areaStorage: LineAreaStorage
 ) {

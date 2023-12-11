@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation.line.chart.area
+package otus.homework.customview.presentation.line.chart.storages
 
 import android.graphics.Rect
 import android.graphics.RectF

@@ -7,10 +7,10 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import otus.homework.customview.presentation.line.chart.area.LineAreaStorage
-import otus.homework.customview.presentation.line.chart.cursor.CursorStorage
-import otus.homework.customview.presentation.line.chart.data.LineDataStorage
-import otus.homework.customview.presentation.line.chart.paints.LinePaints
+import otus.homework.customview.presentation.line.chart.storages.CursorStorage
+import otus.homework.customview.presentation.line.chart.storages.LineAreaStorage
+import otus.homework.customview.presentation.line.chart.storages.LineDataStorage
+import otus.homework.customview.presentation.line.chart.storages.LinePaintStorage
 
 /**
  * Линейный график, позволяющий отображать положительные значения на временной оси
@@ -28,8 +28,7 @@ class LineChartView constructor(
     private val areaStorage = LineAreaStorage()
     private val dataStorage = LineDataStorage(areaStorage)
     private val cursorStorage = CursorStorage(areaStorage)
-
-    private val paints = LinePaints(resources, areaStorage)
+    private val paintStorage = LinePaintStorage(resources, areaStorage)
 
     private val lineChartPath = Path()
 
@@ -57,7 +56,7 @@ class LineChartView constructor(
         )
 
         dataStorage.reupdate()
-        paints.recalculate()
+        paintStorage.recalculate()
         invalidate()
     }
 
@@ -104,9 +103,9 @@ class LineChartView constructor(
 
     /** Нарисовать отладочную информацию по областям графика */
     private fun drawDebugAreas(canvas: Canvas) {
-        canvas.drawRect(areaStorage.global, paints.global)
-        canvas.drawRect(areaStorage.padding, paints.padding)
-        canvas.drawRect(areaStorage.chart, paints.chart)
+        canvas.drawRect(areaStorage.global, paintStorage.global)
+        canvas.drawRect(areaStorage.padding, paintStorage.padding)
+        canvas.drawRect(areaStorage.chart, paintStorage.chart)
     }
 
     /** Нарисовать отладочную информацию по "сетке" */
@@ -118,15 +117,27 @@ class LineChartView constructor(
         var currentPointX = area.left
         var currentPointY = area.top
         for (i in 0 until cellCount) {
-            canvas.drawLine(currentPointX, area.bottom, currentPointX, area.top, paints.debugGrid)
+            canvas.drawLine(
+                currentPointX,
+                area.bottom,
+                currentPointX,
+                area.top,
+                paintStorage.debugGrid
+            )
             canvas.drawText(
                 currentPointX.toString(),
                 currentPointX,
                 area.bottom,
-                paints.debugTextAxis
+                paintStorage.debugTextAxis
             )
 
-            canvas.drawLine(area.left, currentPointY, area.right, currentPointY, paints.debugGrid)
+            canvas.drawLine(
+                area.left,
+                currentPointY,
+                area.right,
+                currentPointY,
+                paintStorage.debugGrid
+            )
             currentPointX += stepX
             currentPointY += stepY
         }
@@ -141,14 +152,14 @@ class LineChartView constructor(
             val firstNode = nodes.first()
             lineChartPath.moveTo(firstNode.x, firstNode.y)
             nodes.forEach { node -> lineChartPath.lineTo(node.x, node.y) }
-            canvas.drawPath(lineChartPath, paints.line)
+            canvas.drawPath(lineChartPath, paintStorage.line)
 
             // градиент
             val area = areaStorage.chart
             lineChartPath.lineTo(nodes.last().x, area.bottom)
             lineChartPath.lineTo(area.left, area.bottom)
             lineChartPath.close()
-            canvas.drawPath(lineChartPath, paints.gradient)
+            canvas.drawPath(lineChartPath, paintStorage.gradient)
         }
     }
 
@@ -160,7 +171,7 @@ class LineChartView constructor(
                 areaStorage.chart.top,
                 point.x,
                 areaStorage.chart.bottom,
-                paints.cursor
+                paintStorage.cursor
             )
         }
     }
@@ -171,7 +182,7 @@ class LineChartView constructor(
         val cursorPoint = cursorStorage.getPoint() ?: return
         val node = dataStorage.getNodeByX(cursorPoint.x)
         val label = node?.label ?: return
-        canvas.drawText(label, area.centerX(), area.bottom, paints.label)
+        canvas.drawText(label, area.centerX(), area.bottom, paintStorage.label)
     }
 
     private companion object {

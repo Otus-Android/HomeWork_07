@@ -1,7 +1,6 @@
-package otus.homework.customview.presentation.line.chart.cursor
+package otus.homework.customview.presentation.line.chart.storages
 
 import android.graphics.PointF
-import otus.homework.customview.presentation.line.chart.area.LineAreaStorage
 
 /**
  * Хранилище данных по курсору
