@@ -1,6 +1,6 @@
 package otus.homework.customview.presentation.line.chart.models
 
-import java.util.Date
+import java.util.Calendar
 
 /**
  * Внутренняя модель узла линейного графика
@@ -14,5 +14,5 @@ internal data class LineAreaNode(
     val x: Float,
     val y: Float,
     val label: String?,
-    val date: Date,
+    val calendar: Calendar,
 )
