@@ -1,16 +1,15 @@
-package otus.homework.customview.presentation.pie.chart.area
+package otus.homework.customview.presentation.pie.chart.storages
 
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
-import otus.homework.customview.presentation.pie.chart.paints.PiePaints
 
 /**
  * Хранилище параметров областей `View`
  *
- * @param paints параметры рисования графика
+ * @param paintStorage хранилище параметров отрисовки графика
  */
-internal class PieAreaStorage(private val paints: PiePaints) {
+internal class PieAreaStorage(private val paintStorage: PiePaintStorage) {
 
     /** Область всего пространства `View` */
     val global = Rect()
@@ -58,10 +57,7 @@ internal class PieAreaStorage(private val paints: PiePaints) {
         val center = PointF(padding.exactCenterX(), padding.exactCenterY())
 
         chart.set(
-            center.x - radius,
-            center.y - radius,
-            center.x + radius,
-            center.y + radius
+            center.x - radius, center.y - radius, center.x + radius, center.y + radius
         )
 
         updateChart()
@@ -69,7 +65,7 @@ internal class PieAreaStorage(private val paints: PiePaints) {
 
     /** Обновить данные [default] и [expanded] областей графика */
     fun updateChart() {
-        val pieStroke = paints.pie.strokeWidth / 2f
+        val pieStroke = paintStorage.pie.strokeWidth / 2f
         expanded.set(
             chart.left + pieStroke,
             chart.top + pieStroke,

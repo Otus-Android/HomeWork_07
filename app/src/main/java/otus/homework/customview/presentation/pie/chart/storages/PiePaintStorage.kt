@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation.pie.chart.paints
+package otus.homework.customview.presentation.pie.chart.storages
 
 import android.content.res.Resources
 import android.graphics.Color
@@ -9,11 +9,11 @@ import otus.homework.customview.R
 import otus.homework.customview.presentation.pie.chart.PieStyle
 
 /**
- * Параметры рисования графика
+ * Хранилище параметры отрисовки графика
  *
  * @param resources менеджер ресурсов
  */
-internal class PiePaints(private val resources: Resources) {
+internal class PiePaintStorage(private val resources: Resources) {
 
     /** Настройка отображения области всего пространства */
     val global = Paint().apply {

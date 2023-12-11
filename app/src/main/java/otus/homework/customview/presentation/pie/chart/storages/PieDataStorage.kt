@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation.pie.chart.data
+package otus.homework.customview.presentation.pie.chart.storages
 
 import otus.homework.customview.presentation.pie.chart.PieData
 import otus.homework.customview.presentation.pie.chart.converters.PieAresNodeConverter

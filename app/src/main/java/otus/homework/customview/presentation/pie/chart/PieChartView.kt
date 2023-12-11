@@ -6,10 +6,10 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.presentation.line.chart.LineData
-import otus.homework.customview.presentation.pie.chart.area.PieAreaStorage
-import otus.homework.customview.presentation.pie.chart.cursor.CursorStorage
-import otus.homework.customview.presentation.pie.chart.data.PieDataStorage
-import otus.homework.customview.presentation.pie.chart.paints.PiePaints
+import otus.homework.customview.presentation.pie.chart.storages.CursorStorage
+import otus.homework.customview.presentation.pie.chart.storages.PieAreaStorage
+import otus.homework.customview.presentation.pie.chart.storages.PieDataStorage
+import otus.homework.customview.presentation.pie.chart.storages.PiePaintStorage
 
 /**
  * Круговой график
@@ -24,16 +24,16 @@ class PieChartView constructor(
         context, attrs, defStyleAttr, 0
     )
 
-    private val paints = PiePaints(resources)
+    private val paintStorage = PiePaintStorage(resources)
     private val dataStorage = PieDataStorage()
-    private val areaStorage = PieAreaStorage(paints)
+    private val areaStorage = PieAreaStorage(paintStorage)
     private val cursorStorage = CursorStorage(areaStorage, dataStorage)
 
     /** Стиль отображения кругового графика */
     var style: PieStyle
-        get() = paints.style
+        get() = paintStorage.style
         set(value) {
-            paints.style = value
+            paintStorage.style = value
             areaStorage.updateChart()
             invalidate()
         }
@@ -107,14 +107,14 @@ class PieChartView constructor(
     /** Нарисовать сектора графика */
     private fun drawSectors(canvas: Canvas) {
         dataStorage.getNodes().takeIf { it.isNotEmpty() }?.forEach { node ->
-            paints.pie.color = node.color
+            paintStorage.pie.color = node.color
             if (node.startAngle != cursorStorage.getNode()?.startAngle) {
                 canvas.drawArc(
                     areaStorage.default,
                     node.startAngle,
                     node.sweepAngle,
-                    paints.style.isFilled,
-                    paints.pie
+                    paintStorage.style.isFilled,
+                    paintStorage.pie
                 )
             }
         }
@@ -123,13 +123,13 @@ class PieChartView constructor(
     /** Выделить сектор, соответствующий позиции курсора */
     private fun drawCursor(canvas: Canvas) {
         cursorStorage.getNode()?.let { node ->
-            paints.pie.color = node.color
+            paintStorage.pie.color = node.color
             canvas.drawArc(
                 areaStorage.expanded,
                 node.startAngle + SELECTED_SECTOR_GAP_DEGREE,
                 node.sweepAngle - 2 * SELECTED_SECTOR_GAP_DEGREE,
-                paints.style.isFilled,
-                paints.pie
+                paintStorage.style.isFilled,
+                paintStorage.pie
             )
         }
     }
@@ -140,19 +140,19 @@ class PieChartView constructor(
         cursorStorage.getNode()?.label?.let { label ->
             canvas.drawText(
                 label,
-                areaStorage.default.centerX() - paints.labelRect.width() / 2,
-                areaStorage.default.centerY() + paints.labelRect.height() / 2,
-                paints.label
+                areaStorage.default.centerX() - paintStorage.labelRect.width() / 2,
+                areaStorage.default.centerY() + paintStorage.labelRect.height() / 2,
+                paintStorage.label
             )
         }
     }
 
     /** Нарисовать отладочную информацию по областям графика */
     private fun drawDebugAreas(canvas: Canvas) {
-        canvas.drawRect(areaStorage.global, paints.global)
-        canvas.drawRect(areaStorage.padding, paints.padding)
-        canvas.drawRect(areaStorage.chart, paints.chart)
-        canvas.drawRect(areaStorage.default, paints.default)
+        canvas.drawRect(areaStorage.global, paintStorage.global)
+        canvas.drawRect(areaStorage.padding, paintStorage.padding)
+        canvas.drawRect(areaStorage.chart, paintStorage.chart)
+        canvas.drawRect(areaStorage.default, paintStorage.default)
     }
 
     /** Нарисовать отладочную информацию по "сетке" */
@@ -164,8 +164,8 @@ class PieChartView constructor(
         var currentPointX = area.left
         var currentPointY = area.top
         for (i in 0 until cellCount) {
-            canvas.drawLine(currentPointX, area.bottom, currentPointX, area.top, paints.debugGrid)
-            canvas.drawLine(area.left, currentPointY, area.right, currentPointY, paints.debugGrid)
+            canvas.drawLine(currentPointX, area.bottom, currentPointX, area.top, paintStorage.debugGrid)
+            canvas.drawLine(area.left, currentPointY, area.right, currentPointY, paintStorage.debugGrid)
             currentPointX += stepX
             currentPointY += stepY
         }

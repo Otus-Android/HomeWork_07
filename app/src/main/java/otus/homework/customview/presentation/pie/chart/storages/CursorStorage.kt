@@ -1,8 +1,6 @@
-package otus.homework.customview.presentation.pie.chart.cursor
+package otus.homework.customview.presentation.pie.chart.storages
 
 import android.graphics.PointF
-import otus.homework.customview.presentation.pie.chart.area.PieAreaStorage
-import otus.homework.customview.presentation.pie.chart.data.PieDataStorage
 import otus.homework.customview.presentation.pie.chart.models.PieAreaNode
 import otus.homework.customview.presentation.pie.chart.utils.MathUtils
 
