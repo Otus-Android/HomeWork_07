@@ -16,7 +16,8 @@ class PieNodeConverter {
     fun convert(category: Category) = PieNode(
         value = category.amount.toFloat(),
         label = category.name,
-        color = nextColor()
+        color = nextColor(),
+        payload = category
     )
 
     private fun nextColor() = Color.argb(

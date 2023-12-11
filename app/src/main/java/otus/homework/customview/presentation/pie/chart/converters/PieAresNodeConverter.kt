@@ -13,12 +13,13 @@ internal class PieAresNodeConverter {
         val totalAmount = nodes.sumOf { it.value.toDouble() }.toFloat()
 
         var startAngle = 0f
-        val pieAreaNodes = nodes.map { (value, label, color) ->
+        val pieAreaNodes = nodes.map { (value, label, color, payload) ->
             PieAreaNode(
                 startAngle = startAngle,
                 sweepAngle = value / (totalAmount) * CIRCLE_DEGREES,
                 label = label,
-                color = color
+                color = color,
+                payload = payload
             ).also { angleNode -> startAngle += angleNode.sweepAngle }
         }
 

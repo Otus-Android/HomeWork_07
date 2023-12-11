@@ -45,6 +45,9 @@ class PieChartView constructor(
             invalidate()
         }
 
+    var sectorTapListener: PieSectorTapListener? = null
+
+
     /** Нарисовать круговой график по данным [LineData] */
     fun render(pieData: PieData) {
         dataStorage.update(pieData)
@@ -65,17 +68,22 @@ class PieChartView constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                if (cursorStorage.update(event.x, event.y)) invalidate()
+                if (cursorStorage.update(event.x, event.y)) {
+                    sectorTapListener?.onDown(cursorStorage.getNode()?.payload)
+                    invalidate()
+                }
                 true
             }
 
             MotionEvent.ACTION_UP -> {
+                sectorTapListener?.onUp(cursorStorage.getNode()?.payload)
                 cursorStorage.clear()
                 invalidate()
                 true
             }
 
             MotionEvent.ACTION_CANCEL -> {
+                sectorTapListener?.onUp(cursorStorage.getNode()?.payload)
                 cursorStorage.clear()
                 invalidate()
                 false
@@ -132,8 +140,8 @@ class PieChartView constructor(
         cursorStorage.getNode()?.label?.let { label ->
             canvas.drawText(
                 label,
-                areaStorage.default.centerX(),
-                areaStorage.default.bottom,
+                areaStorage.default.centerX() - paints.labelRect.width() / 2,
+                areaStorage.default.centerY() + paints.labelRect.height() / 2,
                 paints.label
             )
         }
@@ -161,6 +169,12 @@ class PieChartView constructor(
             currentPointX += stepX
             currentPointY += stepY
         }
+    }
+
+    interface PieSectorTapListener {
+        fun onDown(payload: Any?)
+
+        fun onUp(payload: Any?)
     }
 
     private companion object {

@@ -14,5 +14,6 @@ internal data class PieAreaNode(
     val startAngle: Float,
     val sweepAngle: Float,
     val label: String?,
-    @ColorInt val color: Int
+    @ColorInt val color: Int,
+    val payload: Any?
 )

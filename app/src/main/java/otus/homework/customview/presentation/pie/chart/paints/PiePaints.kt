@@ -4,7 +4,7 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.graphics.Paint
-import android.graphics.RectF
+import android.graphics.Rect
 import otus.homework.customview.R
 import otus.homework.customview.presentation.pie.chart.PieStyle
 
@@ -70,7 +70,7 @@ internal class PiePaints(private val resources: Resources) {
         textSize = resources.getDimension(R.dimen.chart_text_size_24)
     }
 
-    val labelRect: RectF = RectF()
+    val labelRect: Rect = Rect()
 
     /** Стиль отображения кругового графика */
     var style: PieStyle = PieStyle.PIE

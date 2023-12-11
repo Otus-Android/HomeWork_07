@@ -11,9 +11,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.launch
+import otus.homework.customview.R
 import otus.homework.customview.databinding.FragmentPieChartBinding
+import otus.homework.customview.domain.models.Category
 import otus.homework.customview.presentation.expenses.ExpensesUiState
 import otus.homework.customview.presentation.expenses.ExpensesViewModel
+import otus.homework.customview.presentation.pie.chart.PieChartView
 
 /**
  * `Fragment` отображения кругового графика данных по категориям расходов
@@ -44,6 +47,8 @@ class PieChartFragment : Fragment() {
             viewModel.onStyleChanged(isChecked)
         }
 
+        binding.pieChartView.sectorTapListener = createPieSectorTapListener()
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
 
@@ -63,6 +68,19 @@ class PieChartFragment : Fragment() {
         }
     }
 
+    private fun createPieSectorTapListener() = object : PieChartView.PieSectorTapListener {
+        override fun onDown(payload: Any?) {
+            (payload as? Category)?.let { category ->
+                binding.categoryTextView.text = resources.getString(
+                    R.string.pie_chart_sector_category, category.name, category.amount
+                )
+            }
+        }
+
+        override fun onUp(payload: Any?) {
+            binding.categoryTextView.text = EMPTY
+        }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -70,6 +88,8 @@ class PieChartFragment : Fragment() {
     }
 
     companion object {
+
+        const val EMPTY = ""
 
         /** Создать новый `fragment` отображения кругового графика [PieChartFragment] */
         fun newInstance() = PieChartFragment()
