@@ -25,7 +25,7 @@ class LineChartViewModel(
     fun process(categories: List<Category>) {
         val category = categories.firstOrNull()
         val lineData = category?.let { converter.convert(it) }
-        _uiState.update { it.copy(current = lineData, categories = categories) }
+        _uiState.update { it.copy(lineData = lineData, categories = categories) }
     }
 
     /**
@@ -35,6 +35,18 @@ class LineChartViewModel(
      */
     fun onDebugChanged(isChecked: Boolean) {
         _uiState.update { it.copy(isDebugEnabled = isChecked) }
+    }
+
+    /**
+     * Обработать выбор текущей категории
+     *
+     * @param position позиция выбранной категории
+     */
+    fun onCategorySelected(position: Int) {
+        _uiState.update { state ->
+            val lineData = state.categories.getOrNull(position)?.let { converter.convert(it) }
+            state.copy(lineData = lineData)
+        }
     }
 
     companion object {

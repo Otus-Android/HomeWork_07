@@ -1,9 +1,13 @@
 package otus.homework.customview.presentation.line
 
+import android.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemSelectedListener
+import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -27,9 +31,7 @@ class LineChartFragment : Fragment() {
     private val viewModel: LineChartViewModel by viewModels { LineChartViewModel.Factory }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentLineChartBinding.inflate(inflater, container, false)
         return binding.root
@@ -37,6 +39,15 @@ class LineChartFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val categories = mutableListOf<String>()
+        val dataAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, categories)
+        dataAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+        binding.categorySpinner.adapter = dataAdapter
+
+        binding.categorySpinner.onItemSelectedListener = object : DefaultOnItemSelectedListener {
+            override fun onItemSelected(position: Int) = viewModel.onCategorySelected(position)
+        }
 
         binding.debugCheckbox.setOnCheckedChangeListener { _, isChecked ->
             viewModel.onDebugChanged(isChecked)
@@ -51,9 +62,10 @@ class LineChartFragment : Fragment() {
 
                 launch {
                     viewModel.uiState.collect { uiState ->
-                        uiState.current?.let { binding.lineChartView.render(it) }
+                        uiState.lineData?.let { binding.lineChartView.render(it) }
                         binding.lineChartView.isDebugModeEnabled = uiState.isDebugEnabled
-
+                        dataAdapter.clear()
+                        dataAdapter.addAll(uiState.categories.map { it.name })
                     }
                 }
             }
@@ -64,6 +76,22 @@ class LineChartFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private interface DefaultOnItemSelectedListener : OnItemSelectedListener {
+
+
+        fun onItemSelected(position: Int) {
+            /* do nothing */
+        }
+
+        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            onItemSelected(position)
+        }
+
+        override fun onNothingSelected(parent: AdapterView<*>?) {
+            /* do nothing */
+        }
     }
 
     companion object {
