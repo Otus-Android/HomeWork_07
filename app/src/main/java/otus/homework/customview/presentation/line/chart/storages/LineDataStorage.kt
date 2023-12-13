@@ -15,7 +15,7 @@ internal class LineDataStorage(
     private val converter: LineAreaNodeConverter = LineAreaNodeConverter()
 ) {
 
-    private var origin = LineData()
+    var origin = LineData()
     private val nodes = mutableListOf<LineAreaNode>()
 
     /** Обновить список внутренних моделей узлов на основании данных [LineData] */
@@ -36,5 +36,4 @@ internal class LineDataStorage(
 
     /** Получить внутреннюю модель узла по координате на оси X */
     fun getNodeByX(x: Float) = nodes.findLast { it.x < x }
-
 }

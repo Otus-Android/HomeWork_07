@@ -11,10 +11,12 @@ import otus.homework.customview.presentation.pie.chart.models.PieAreaNode
  */
 internal class PieDataStorage(private val converter: PieAresNodeConverter = PieAresNodeConverter()) {
 
+    var origin = PieData()
     private val pieAngleNodes = mutableListOf<PieAreaNode>()
 
     /** Обновить список внутренних моделей узлов на основании данных [PieData] */
     fun update(pieData: PieData) {
+        origin = pieData
         val areaNodes = converter.convert(pieData.nodes)
         pieAngleNodes.clear()
         pieAngleNodes.addAll(areaNodes)

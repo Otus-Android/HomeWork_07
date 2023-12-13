@@ -1,6 +1,8 @@
 package otus.homework.customview.presentation.pie.chart
 
+import android.os.Parcelable
 import androidx.annotation.ColorInt
+import kotlinx.parcelize.Parcelize
 
 /**
  * Данные узла круговой диаграмы
@@ -9,9 +11,12 @@ import androidx.annotation.ColorInt
  * @param label подпись
  * @param color цвет узла
  */
+@Parcelize
 data class PieNode(
     val value: Float,
     val label: String? = null,
     @ColorInt val color: Int,
-    val payload: Any?
-)
+    val payload: Parcelable?
+) : Parcelable {
+
+}

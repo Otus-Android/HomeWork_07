@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Path
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import kotlinx.parcelize.Parcelize
 import otus.homework.customview.presentation.line.chart.storages.CursorStorage
 import otus.homework.customview.presentation.line.chart.storages.LineAreaStorage
 import otus.homework.customview.presentation.line.chart.storages.LineDataStorage
@@ -31,18 +33,18 @@ class LineChartView constructor(
 
     private val lineChartPath = Path()
 
-    /** Нарисовать линйный график по данным [LineData] */
-    fun render(data: LineData) {
-        dataStorage.update(data)
-        invalidate()
-    }
-
     /** Признак отображения отладочной информации */
     var isDebugModeEnabled: Boolean = false
         set(value) {
             field = value
             invalidate()
         }
+
+    /** Нарисовать линйный график по данным [LineData] */
+    fun render(data: LineData) {
+        dataStorage.update(data)
+        invalidate()
+    }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         areaStorage.update(
@@ -177,6 +179,27 @@ class LineChartView constructor(
         val label = node?.label ?: return
         canvas.drawText(label, area.centerX(), area.bottom, paintStorage.label)
     }
+
+    override fun onSaveInstanceState(): Parcelable =
+        SavedState(
+            super.onSaveInstanceState(),
+            dataStorage.origin,
+            isDebugModeEnabled
+        )
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
+        val savedState = state as SavedState
+        isDebugModeEnabled = savedState.isDebugModeEnabled
+        render(savedState.pieData)
+    }
+
+    @Parcelize
+    class SavedState(
+        private val superSavedState: Parcelable?,
+        val pieData: LineData,
+        val isDebugModeEnabled: Boolean,
+    ) : BaseSavedState(superSavedState), Parcelable
 
     private companion object {
 

@@ -6,6 +6,7 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import kotlinx.parcelize.Parcelize
 import otus.homework.customview.presentation.line.chart.LineData
 import otus.homework.customview.presentation.pie.chart.storages.CursorStorage
 import otus.homework.customview.presentation.pie.chart.storages.PieAreaStorage
@@ -165,12 +166,40 @@ class PieChartView constructor(
         var currentPointX = area.left
         var currentPointY = area.top
         for (i in 0 until cellCount) {
-            canvas.drawLine(currentPointX, area.bottom, currentPointX, area.top, paintStorage.debugGrid)
-            canvas.drawLine(area.left, currentPointY, area.right, currentPointY, paintStorage.debugGrid)
+            canvas.drawLine(
+                currentPointX, area.bottom, currentPointX, area.top, paintStorage.debugGrid
+            )
+            canvas.drawLine(
+                area.left, currentPointY, area.right, currentPointY, paintStorage.debugGrid
+            )
             currentPointX += stepX
             currentPointY += stepY
         }
     }
+
+    override fun onSaveInstanceState(): Parcelable =
+        SavedState(
+            super.onSaveInstanceState(),
+            dataStorage.origin,
+            paintStorage.style,
+            isDebugModeEnabled
+        )
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
+        val savedState = state as SavedState
+        style = savedState.style
+        isDebugModeEnabled = savedState.isDebugModeEnabled
+        render(savedState.pieData)
+    }
+
+    @Parcelize
+    class SavedState(
+        private val superSavedState: Parcelable?,
+        val pieData: PieData,
+        val style: PieStyle,
+        val isDebugModeEnabled: Boolean,
+    ) : BaseSavedState(superSavedState), Parcelable
 
     interface PieSectorTapListener {
         fun onDown(payload: Any?)
