@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import kotlinx.parcelize.Parcelize
@@ -12,6 +13,8 @@ import otus.homework.customview.presentation.pie.chart.storages.CursorStorage
 import otus.homework.customview.presentation.pie.chart.storages.PieAreaStorage
 import otus.homework.customview.presentation.pie.chart.storages.PieDataStorage
 import otus.homework.customview.presentation.pie.chart.storages.PiePaintStorage
+import otus.homework.customview.presentation.pie.chart.storages.PiePaintStorage.Companion.DEFAULT_LABEL
+import kotlin.math.max
 
 /**
  * Круговой график
@@ -56,7 +59,31 @@ class PieChartView constructor(
         invalidate()
     }
 
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        Log.d(
+            TAG, "onMeasure:" +
+                    "widthMeasureSpec = ${MeasureSpec.toString(widthMeasureSpec)}, " +
+                    "heightMeasureSpec = ${MeasureSpec.toString(heightMeasureSpec)}"
+        )
+
+        val label = DEFAULT_LABEL
+        paintStorage.label.getTextBounds(label, 0, label.length, paintStorage.labelRect)
+
+        val viewMinWith = paintStorage.labelRect.width() + paddingLeft + paddingRight
+        val viewMinHeight = paintStorage.labelRect.height() + paddingTop + paddingBottom
+        val requestedWidth = max(viewMinWith, suggestedMinimumWidth)
+        val requestedHeight = max(viewMinHeight, suggestedMinimumHeight)
+
+        val requestedSize = max(requestedWidth, requestedHeight)
+
+        val realWidth = resolveSizeAndState(requestedSize, widthMeasureSpec, 0)
+        val realHeight = resolveSizeAndState(requestedSize, heightMeasureSpec, 0)
+
+        setMeasuredDimension(realWidth, realHeight)
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        Log.d(TAG, "onSizeChanged: w = $w, h = $h, oldw = $oldw, oldh = $oldh")
         areaStorage.update(
             width = w,
             height = h,
@@ -140,6 +167,7 @@ class PieChartView constructor(
     /** Нарисовать подпись, соответствующую позиции курсора */
     private fun drawLabel(canvas: Canvas) {
         cursorStorage.getNode()?.label?.let { label ->
+            paintStorage.label.getTextBounds(label, 0, label.length, paintStorage.labelRect)
             canvas.drawText(
                 label,
                 areaStorage.default.centerX() - paintStorage.labelRect.width() / 2,
@@ -208,6 +236,8 @@ class PieChartView constructor(
     }
 
     private companion object {
+
+        private const val TAG = "PieChartView"
 
         /** Кол-во клеток "сетки" отладочной информации */
         const val DEBUG_CELL_COUNT = 10

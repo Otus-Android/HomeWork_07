@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Path
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import kotlinx.parcelize.Parcelize
@@ -13,6 +14,8 @@ import otus.homework.customview.presentation.line.chart.storages.CursorStorage
 import otus.homework.customview.presentation.line.chart.storages.LineAreaStorage
 import otus.homework.customview.presentation.line.chart.storages.LineDataStorage
 import otus.homework.customview.presentation.line.chart.storages.LinePaintStorage
+import otus.homework.customview.presentation.line.chart.storages.LinePaintStorage.Companion.DEFAULT_LABEL
+import kotlin.math.max
 
 /**
  * Линейный график, позволяющий отображать положительные значения на временной оси
@@ -46,7 +49,31 @@ class LineChartView constructor(
         invalidate()
     }
 
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        Log.d(
+            TAG, "onMeasure:" +
+                    "widthMeasureSpec = ${MeasureSpec.toString(widthMeasureSpec)}, " +
+                    "heightMeasureSpec = ${MeasureSpec.toString(heightMeasureSpec)}"
+        )
+
+        val label = DEFAULT_LABEL
+        paintStorage.label.getTextBounds(label, 0, label.length, paintStorage.labelRect)
+
+        val viewMinWith = paintStorage.labelRect.width() + paddingLeft + paddingRight
+        val viewMinHeight = paintStorage.labelRect.height() + paddingTop + paddingBottom
+        val requestedWidth = max(viewMinWith, suggestedMinimumWidth)
+        val requestedHeight = max(viewMinHeight, suggestedMinimumHeight)
+
+        val requestedSize = max(requestedWidth, requestedHeight)
+
+        val realWidth = resolveSizeAndState(requestedSize, widthMeasureSpec, 0)
+        val realHeight = resolveSizeAndState(requestedSize, heightMeasureSpec, 0)
+
+        setMeasuredDimension(realWidth, realHeight)
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        Log.d(TAG, "onSizeChanged: w = $w, h = $h, oldw = $oldw, oldh = $oldh")
         areaStorage.update(
             width = w,
             height = h,
@@ -177,7 +204,13 @@ class LineChartView constructor(
         val cursorPoint = cursorStorage.getPoint() ?: return
         val node = dataStorage.getNodeByX(cursorPoint.x)
         val label = node?.label ?: return
-        canvas.drawText(label, area.centerX(), area.bottom, paintStorage.label)
+        paintStorage.label.getTextBounds(label, 0, label.length, paintStorage.labelRect)
+        canvas.drawText(
+            label,
+            area.centerX() - paintStorage.labelRect.width() / 2,
+            area.bottom - paintStorage.labelRect.height() / 2,
+            paintStorage.label
+        )
     }
 
     override fun onSaveInstanceState(): Parcelable =
@@ -202,6 +235,8 @@ class LineChartView constructor(
     ) : BaseSavedState(superSavedState), Parcelable
 
     private companion object {
+
+        private const val TAG = "LineChartView"
 
         /** Кол-во клеток "сетки" отладочной информации */
         const val DEBUG_CELL_COUNT = 10

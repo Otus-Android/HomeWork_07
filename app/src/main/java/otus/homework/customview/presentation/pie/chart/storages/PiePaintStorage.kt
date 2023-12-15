@@ -88,4 +88,8 @@ internal class PiePaintStorage(private val resources: Resources) {
                 }
             }
         }
+
+    companion object {
+        const val DEFAULT_LABEL = "DEFAULT_LABEL"
+    }
 }

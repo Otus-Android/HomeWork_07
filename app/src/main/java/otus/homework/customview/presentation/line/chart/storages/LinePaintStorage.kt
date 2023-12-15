@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.Shader
 import otus.homework.customview.R
 
@@ -82,6 +83,8 @@ internal class LinePaintStorage(
         textSize = resources.getDimension(R.dimen.chart_text_size_24)
     }
 
+    val labelRect: Rect = Rect()
+
     /** Перерасчитать настройки отображения на основе данных области */
     fun recalculate() {
         gradient.shader = LinearGradient(
@@ -93,5 +96,9 @@ internal class LinePaintStorage(
             Color.TRANSPARENT,
             Shader.TileMode.CLAMP
         )
+    }
+
+    companion object {
+        const val DEFAULT_LABEL = "DEFAULT_LABEL"
     }
 }
