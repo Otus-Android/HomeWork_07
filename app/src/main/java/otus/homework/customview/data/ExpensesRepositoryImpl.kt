@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import otus.homework.customview.data.converters.ExpensesConverter
 import otus.homework.customview.data.datasources.ExpensesDataSource
 import otus.homework.customview.data.datasources.ExpensesMemoryCache
+import otus.homework.customview.data.models.ExpenseEntity
 import otus.homework.customview.data.models.ExpensesDataException
 import otus.homework.customview.domain.ExpensesRepository
 import otus.homework.customview.domain.config.ExpensesConfig
@@ -33,12 +34,9 @@ class ExpensesRepositoryImpl(
         withContext(Dispatchers.IO) {
             try {
                 val expenses = if (force) {
-                    delay(STUB_DELAY)
-                    val dataSource = dataSources.getValue(config.providerType)
-                    runInterruptible { dataSource.getExpenses(max) }
-                        .also { memoryCache.saveExpenses(it) }
+                    requestExpenses(max)
                 } else {
-                    memoryCache.getExpenses(max)
+                    memoryCache.getExpenses(max).ifEmpty { requestExpenses(max) }
                 }
                 expenses.map { converter.convert(it) }
             } catch (e: ExpensesDataException) {
@@ -46,6 +44,13 @@ class ExpensesRepositoryImpl(
                 throw ExpensesException(e)
             }
         }
+
+    private suspend fun requestExpenses(max: Int?): List<ExpenseEntity> {
+        delay(STUB_DELAY)
+        val dataSource = dataSources.getValue(config.providerType)
+        return runInterruptible { dataSource.getExpenses(max) }
+            .also { memoryCache.saveExpenses(it) }
+    }
 
     private companion object {
 

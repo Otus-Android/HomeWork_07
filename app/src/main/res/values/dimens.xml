@@ -11,12 +11,32 @@
     <dimen name="chart_14">14dp</dimen>
     <dimen name="chart_18">18dp</dimen>
     <dimen name="chart_20">20dp</dimen>
-
-    <dimen name="item_journal_margin">6dp</dimen>
-
+    v
     <dimen name="donut_stroke_width">20dp</dimen>
 
     <dimen name="chart_text_size_8">8sp</dimen>
     <dimen name="chart_text_size_16">16sp</dimen>
     <dimen name="chart_text_size_24">24sp</dimen>
+
+    <dimen name="max_edit_text_margin_start">10dp</dimen>
+
+    <dimen name="refresh_image_button_margin_end">10dp</dimen>
+
+    <dimen name="line_chart_view_padding_start">20dp</dimen>
+    <dimen name="line_chart_view_padding_top">12dp</dimen>
+    <dimen name="line_chart_view_padding_end">4dp</dimen>
+    <dimen name="line_chart_view_padding_bottom">8dp</dimen>
+
+    <dimen name="pie_chart_view_padding_start">20dp</dimen>
+    <dimen name="pie_chart_view_padding_top">12dp</dimen>
+    <dimen name="pie_chart_view_padding_end">4dp</dimen>
+    <dimen name="pie_chart_view_padding_bottom">8dp</dimen>
+
+    <dimen name="item_journal_margin">6dp</dimen>
+
+    <dimen name="id_text_view_margin">2dp</dimen>
+    <dimen name="name_text_view_margin">2dp</dimen>
+    <dimen name="amount_text_view_margin">2dp</dimen>
+    <dimen name="category_text_view_margin">2dp</dimen>
+    <dimen name="date_text_view_margin">2dp</dimen>
 </resources>

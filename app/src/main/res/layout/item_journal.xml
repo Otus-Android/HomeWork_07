@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="2dp"
+            android:layout_margin="@dimen/id_text_view_margin"
             android:textAlignment="center" />
 
         <TextView
@@ -24,14 +24,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="2dp" />
+            android:layout_margin="@dimen/name_text_view_margin" />
 
         <TextView
             android:id="@+id/amount_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="2dp"
+            android:layout_margin="@dimen/amount_text_view_margin"
             android:textAlignment="center" />
 
         <TextView
@@ -39,7 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="2dp"
+            android:layout_margin="@dimen/category_text_view_margin"
             android:textAlignment="center" />
 
         <TextView
@@ -47,7 +47,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="2dp"
+            android:layout_margin="@dimen/date_text_view_margin"
             android:textAlignment="center" />
 
     </LinearLayout>

@@ -8,7 +8,7 @@ import java.util.Calendar
  * @param x координата по оси X
  * @param y координата по оси Y
  * @param label подпись
- * @param date дата, соответствующая координте [y]
+ * @param calendar дата, соответствующая координте [y]
  */
 internal data class LineAreaNode(
     val x: Float,

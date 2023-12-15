@@ -1,6 +1,5 @@
 package otus.homework.customview.presentation.line
 
-import android.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -40,9 +39,12 @@ class LineChartFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val categories = mutableListOf<String>()
-        val dataAdapter = ArrayAdapter(requireContext(), R.layout.simple_spinner_item, categories)
-        dataAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+        val dataAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            mutableListOf<String>()
+        )
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.categorySpinner.adapter = dataAdapter
 
         binding.categorySpinner.onItemSelectedListener = object : DefaultOnItemSelectedListener {
@@ -78,9 +80,15 @@ class LineChartFragment : Fragment() {
         _binding = null
     }
 
+    /**
+     * `Default` слушатель нажатий на выпадающий список
+     */
     private interface DefaultOnItemSelectedListener : OnItemSelectedListener {
 
 
+        /**
+         * `Callback` выбора элемента с позицией [position]
+         */
         fun onItemSelected(position: Int) {
             /* do nothing */
         }

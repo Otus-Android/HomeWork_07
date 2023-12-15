@@ -70,6 +70,7 @@ internal class PiePaintStorage(private val resources: Resources) {
         textSize = resources.getDimension(R.dimen.chart_text_size_24)
     }
 
+    /** Границы подписи, соответствующей позиции курсора */
     val labelRect: Rect = Rect()
 
     /** Стиль отображения кругового графика */

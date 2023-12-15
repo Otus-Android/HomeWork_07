@@ -9,10 +9,10 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingStart="20dp"
-        android:paddingTop="12dp"
-        android:paddingEnd="4dp"
-        android:paddingBottom="8dp" />
+        android:paddingStart="@dimen/pie_chart_view_padding_start"
+        android:paddingTop="@dimen/pie_chart_view_padding_top"
+        android:paddingEnd="@dimen/pie_chart_view_padding_end"
+        android:paddingBottom="@dimen/pie_chart_view_padding_bottom" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -23,20 +23,20 @@
             android:id="@+id/debug_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="debug mode" />
+            android:text="@string/debug_checkbox_text" />
 
         <CheckBox
             android:id="@+id/style_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="donut style" />
+            android:text="@string/style_checkbox_text" />
 
         <TextView
             android:id="@+id/category_text_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
-            android:textAlignment="center"/>
+            android:textAlignment="center" />
 
     </LinearLayout>
 

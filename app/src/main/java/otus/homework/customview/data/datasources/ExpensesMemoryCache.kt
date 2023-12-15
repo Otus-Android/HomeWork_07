@@ -1,5 +1,6 @@
 package otus.homework.customview.data.datasources
 
+import androidx.annotation.AnyThread
 import otus.homework.customview.data.models.ExpenseEntity
 
 /**
@@ -8,8 +9,10 @@ import otus.homework.customview.data.models.ExpenseEntity
 interface ExpensesMemoryCache : ExpensesDataSource {
 
     /** Сохранить список записей [ExpenseEntity] */
+    @AnyThread
     fun saveExpenses(expenses: List<ExpenseEntity>)
 
     /** Очистить сохраненные записи */
+    @AnyThread
     fun clear()
 }

@@ -9,12 +9,15 @@ class MemoryDataSource : ExpensesMemoryCache {
 
     private val cache = mutableListOf<ExpenseEntity>()
 
+    @Synchronized
     override fun saveExpenses(expenses: List<ExpenseEntity>) {
         cache.clear()
         cache.addAll(expenses)
     }
 
-    override fun getExpenses(max: Int?): List<ExpenseEntity> = cache
+    @Synchronized
+    override fun getExpenses(max: Int?): List<ExpenseEntity> = cache.toList()
 
+    @Synchronized
     override fun clear() = cache.clear()
 }

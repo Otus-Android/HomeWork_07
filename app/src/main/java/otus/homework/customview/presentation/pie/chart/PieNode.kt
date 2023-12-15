@@ -10,6 +10,7 @@ import kotlinx.parcelize.Parcelize
  * @param value значение
  * @param label подпись
  * @param color цвет узла
+ * @param payload дополнительные данные
  */
 @Parcelize
 data class PieNode(

@@ -1,5 +1,6 @@
 package otus.homework.customview.presentation.pie.chart
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.os.Parcelable
@@ -50,6 +51,11 @@ class PieChartView constructor(
             invalidate()
         }
 
+    /**
+     * Слушатель нажатия на сектор кругового графика.
+     * Для сброса слушателя следует передать `null`.
+     * При смене конфигурации следует повторно установить слушатель.
+     */
     var sectorTapListener: PieSectorTapListener? = null
 
 
@@ -94,6 +100,7 @@ class PieChartView constructor(
         )
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return when (event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -229,9 +236,15 @@ class PieChartView constructor(
         val isDebugModeEnabled: Boolean,
     ) : BaseSavedState(superSavedState), Parcelable
 
+    /**
+     *  Слушатель нажатия на сектор кругового графика
+     */
     interface PieSectorTapListener {
+
+        /** `Callback` нажатия на сектор, которому соответствуют дополнительные данные [payload] */
         fun onDown(payload: Any?)
 
+        /** `Callback` отпускания выбранного сектора, котоорому соответствуют дополнительные данные [payload] */
         fun onUp(payload: Any?)
     }
 

@@ -16,6 +16,9 @@ import otus.homework.customview.presentation.journal.JournalFragment
 import otus.homework.customview.presentation.line.LineChartFragment
 import otus.homework.customview.presentation.pie.PieChartFragment
 
+/**
+ * `Ativity` данных по расходам
+ */
 class ExpensesActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -26,7 +29,7 @@ class ExpensesActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.refreshImageButton.setOnClickListener { viewModel.loadExpenses() }
+        binding.refreshImageButton.setOnClickListener { viewModel.updateExpenses() }
         binding.sourceCheckbox.setOnCheckedChangeListener { _, isChecked ->
             viewModel.onSourceChanged(isChecked)
         }
@@ -50,7 +53,7 @@ class ExpensesActivity : AppCompatActivity() {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
                     when (uiState) {
-                        ExpensesUiState.IDLE -> {
+                        ExpensesUiState.Idle -> {
                             binding.chartsContainer.visibility = View.GONE
                             binding.loadingContainer.visibility = View.VISIBLE
                             binding.loadingProgressBar.visibility = View.GONE

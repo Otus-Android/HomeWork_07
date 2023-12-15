@@ -9,10 +9,10 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingStart="20dp"
-        android:paddingTop="12dp"
-        android:paddingEnd="4dp"
-        android:paddingBottom="8dp" />
+        android:paddingStart="@dimen/line_chart_view_padding_start"
+        android:paddingTop="@dimen/line_chart_view_padding_top"
+        android:paddingEnd="@dimen/line_chart_view_padding_end"
+        android:paddingBottom="@dimen/line_chart_view_padding_bottom" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start|center"
-            android:text="debug mode" />
+            android:text="@string/debug_checkbox_text" />
 
         <Spinner
             android:id="@+id/category_spinner"

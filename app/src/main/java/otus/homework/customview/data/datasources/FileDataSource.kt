@@ -11,7 +11,7 @@ import otus.homework.customview.data.models.ExpensesDataException
  * Файловый источник данных
  *
  * @param context `application` context
- * @param objectMapper `JSON` преоразователь
+ * @param objectMapper `JSON` преобразователь
  */
 class FileDataSource(
     private val context: Context,
