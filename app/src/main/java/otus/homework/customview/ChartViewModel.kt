@@ -1,11 +1,13 @@
 package otus.homework.customview
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import otus.homework.customview.pojo.*
+import otus.homework.customview.sealed.Mode
+import otus.homework.customview.sealed.Result
+import otus.homework.customview.util.ChartDefaultDataCreator
 import otus.homework.customview.util.Converter
 import otus.homework.customview.util.Serializer
 
@@ -26,8 +28,6 @@ class ChartViewModel : ViewModel() {
         _parseExpensesResult.value = Serializer.deserialize(context)
     }
 
-
-    //Переделать чтобы сразу с Sector было
     fun showExpensesByCategory(allExpenses: List<Expense>) {
         _allExpenses = allExpenses
         for (i in allExpenses.indices) {
@@ -38,7 +38,8 @@ class ChartViewModel : ViewModel() {
                 } == null
             ) expensesByCategory[category] = allExpenses[i].amount
         }
-        _mode.value = Mode.ExpensesCategory(expensesByCategory)
+        _mode.value =
+            Mode.ExpensesCategory(ChartDefaultDataCreator.createSectorsByCategory(expensesByCategory))
     }
 
     fun showDetailsCategory(category: String, color: Int) {

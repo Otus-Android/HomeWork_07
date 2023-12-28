@@ -3,7 +3,7 @@ package otus.homework.customview.util
 import android.graphics.Color
 import otus.homework.customview.pojo.Sector
 
-object ChartDefaultData {
+object ChartDefaultDataCreator {
 
     fun getChartColors(): Array<Int> {
         return arrayOf(
@@ -19,6 +19,8 @@ object ChartDefaultData {
             Color.rgb(100,100,15)
         )
     }
+
+    fun getGridColor(): Int = Color.rgb(105,105,105)
 
     fun createSectorsByCategory(expensesByCategory: Map<String, Int>): Map<String, Sector> {
         val anglesByCategory = mutableMapOf<String, Sector>()
@@ -43,9 +45,5 @@ object ChartDefaultData {
             colorOrderNumber++
         }
         return anglesByCategory
-    }
-
-    fun createCategoryDetailExpensesListByDate() {
-
     }
 }

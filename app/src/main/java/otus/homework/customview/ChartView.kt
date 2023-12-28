@@ -4,18 +4,15 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Paint.Align
-import android.graphics.Path
 import android.graphics.RectF
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.extensions.getNameByAngle
 import otus.homework.customview.pojo.Sector
-import otus.homework.customview.util.ChartDefaultData
+import otus.homework.customview.util.ChartDefaultDataCreator
 import kotlin.math.*
 
 class ChartView @JvmOverloads constructor(
@@ -52,8 +49,7 @@ class ChartView @JvmOverloads constructor(
     private var commentsPositions = arrayOfNulls<Pair<Float, Float>>(12)
     private val commentRect = RectF()
 
-    private lateinit var _expensesByCategory: Map<String, Int>
-    private lateinit var sectorsByCategory: Map<String, Sector>
+    private lateinit var _sectorsByCategory: Map<String, Sector>
 
     private val chartPaint = Paint().apply {
         color = Color.BLACK
@@ -75,9 +71,9 @@ class ChartView @JvmOverloads constructor(
         textWidth = it.measureText("0000")
     }
 
-    fun populate(expensesByCategory: Map<String, Int>) {
+    fun populate(sectorsByCategory: Map<String, Sector>) {
         open()
-        _expensesByCategory = expensesByCategory
+        _sectorsByCategory = sectorsByCategory
         invalidate()
     }
 
@@ -89,7 +85,7 @@ class ChartView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        if (_expensesByCategory.isNullOrEmpty())  return
+        if (_sectorsByCategory.isNullOrEmpty())  return
 
         setPieDimensions()
         setCommentsPositions()
@@ -104,10 +100,10 @@ class ChartView @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> {
                 if (!isInsidePie(x, y)) return false
 
-                val categoryName = sectorsByCategory.getNameByAngle(getTouchAngle(x,y))
+                val categoryName = _sectorsByCategory.getNameByAngle(getTouchAngle(x,y))
                 onSectorClickListener?.onClick(
                     categoryName,
-                    sectorsByCategory[categoryName]!!.color
+                    _sectorsByCategory[categoryName]!!.color
                 )
                 close()
                 invalidate()
@@ -131,8 +127,6 @@ class ChartView @JvmOverloads constructor(
         pieWidth = pieDiameter / 6
         pieInnerRadius = pieOuterRadius - pieWidth
 
-        //todo Sectors make in viewmodel
-        sectorsByCategory = ChartDefaultData.createSectorsByCategory(_expensesByCategory)
         outOval = RectF(startX, startY, endX, endY)
         innerOval = RectF(startX + pieWidth, startY + pieWidth, endX - pieWidth, endY - pieWidth)
 
@@ -141,7 +135,7 @@ class ChartView @JvmOverloads constructor(
 
     private fun setCommentsPositions() {
         commentSpaceInYAxis = (centerY - pieOuterRadius) / 3
-        for (i in 0 until _expensesByCategory.size) {
+        for (i in 0 until _sectorsByCategory.size) {
             commentsPositions[i] = when {
                 i < 3 ->  Pair(START_OFFSET, i * commentSpaceInYAxis + START_OFFSET)
                 i in 3..5 -> Pair(centerX + START_OFFSET, (i - 3) * commentSpaceInYAxis + START_OFFSET)
@@ -155,7 +149,7 @@ class ChartView @JvmOverloads constructor(
     private fun drawPie(canvas: Canvas) {
 
         var count = 0
-        for ((key, value) in sectorsByCategory) {
+        for ((key, value) in _sectorsByCategory) {
 
             chartPaint.color = value.color
 

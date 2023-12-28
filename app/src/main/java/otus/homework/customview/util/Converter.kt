@@ -1,9 +1,7 @@
 package otus.homework.customview.util
 
-import android.util.Log
 import otus.homework.customview.extensions.format
 import java.util.*
-import kotlin.math.ceil
 
 object Converter {
     private const val DAY_SECONDS = 86400L
@@ -12,8 +10,6 @@ object Converter {
         val startDay = rangeTimestamp.first / DAY_SECONDS
         val endDay = rangeTimestamp.second / DAY_SECONDS
         val dayQuantity = (endDay - startDay + 1).toInt()
-        Log.d("DateMapper", "startDay: $startDay, endDay: $endDay")
-        Log.d("DateMapper", "Quantity: $dayQuantity")
 
         val dayList = mutableListOf<Long>()
 

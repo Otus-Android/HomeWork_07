@@ -10,13 +10,13 @@ import android.os.Build.VERSION
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import androidx.annotation.RequiresApi
 import otus.homework.customview.pojo.Details
 import otus.homework.customview.pojo.GraphsBuildDetailsData
+import otus.homework.customview.util.ChartDefaultDataCreator
 import otus.homework.customview.util.Converter
-import java.util.SortedMap
+import java.util.*
 
 class DetailsView @JvmOverloads constructor(
     context: Context,
@@ -59,6 +59,10 @@ class DetailsView @JvmOverloads constructor(
         axisHorizontalTextWidth = it.measureText("XX.XX.XXXX")
         axisVerticalTextWidth = it.measureText("0000")
         axisTitleWidth = it.measureText("Количество")
+    }
+
+    private val paintGrid = Paint().apply {
+        color = ChartDefaultDataCreator.getGridColor()
     }
 
     private val paintTitle = Paint().apply {
@@ -128,28 +132,6 @@ class DetailsView @JvmOverloads constructor(
         verticalKoef = axisAmounts[axisAmounts.lastKey()]!! / axisAmounts.lastKey()
     }
 
-    private fun drawAxis(canvas: Canvas) {
-        canvas.drawLine(startX, startY, endX, startY, paintAxis)
-        canvas.drawLine(startX, startY, startX, endY, paintAxis)
-        canvas.drawLines(linesDivisionsX.toFloatArray(), paintAxis)
-        canvas.drawLines(linesDivisionsY.toFloatArray(), paintAxis)
-
-        drawGrid(canvas)
-        drawHorizontalDivisionsText(canvas)
-        drawVerticalDivisionsText(canvas)
-
-        drawVerticalAxisName(canvas)
-    }
-
-    private fun drawTitle(canvas: Canvas) {
-        canvas.drawText(
-            _category,
-            width.toFloat() / 2 - titleWidth / 2,
-            TITLE_TEXT_HEIGHT,
-            paintTitle
-        )
-    }
-
     private fun populateHorizontalDataMapKeys() {
         val dayList = Converter.rangeTimestampToDaysList(_rangeDateAll)
         axisDates[dayList.first() - 1] = 0f
@@ -192,6 +174,28 @@ class DetailsView @JvmOverloads constructor(
         }
     }
 
+    private fun drawAxis(canvas: Canvas) {
+        canvas.drawLine(startX, startY, endX, startY, paintAxis)
+        canvas.drawLine(startX, startY, startX, endY, paintAxis)
+        canvas.drawLines(linesDivisionsX.toFloatArray(), paintAxis)
+        canvas.drawLines(linesDivisionsY.toFloatArray(), paintAxis)
+
+        drawGrid(canvas)
+        drawHorizontalDivisionsText(canvas)
+        drawVerticalDivisionsText(canvas)
+
+        drawVerticalAxisName(canvas)
+    }
+
+    private fun drawTitle(canvas: Canvas) {
+        canvas.drawText(
+            _category,
+            width.toFloat() / 2 - titleWidth / 2,
+            TITLE_TEXT_HEIGHT,
+            paintTitle
+        )
+    }
+
     private fun drawHorizontalDivisionsText(canvas: Canvas) {
         for ((k,v) in axisDates) {
             val textDate = Converter.timestampToDateString(k * 3600 * 24)
@@ -229,7 +233,7 @@ class DetailsView @JvmOverloads constructor(
                 startY - it,
                 endX,
                 startY - it,
-                paintAxis.apply { color = Color.GRAY })
+                paintGrid)
         }
     }
 

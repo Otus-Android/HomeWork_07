@@ -5,10 +5,10 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import otus.homework.customview.databinding.ActivityMainBinding
-import otus.homework.customview.pojo.Mode.DetailsCategory
-import otus.homework.customview.pojo.Mode.ExpensesCategory
-import otus.homework.customview.pojo.Result.Error
-import otus.homework.customview.pojo.Result.Expenses
+import otus.homework.customview.sealed.Mode.DetailsCategory
+import otus.homework.customview.sealed.Mode.ExpensesCategory
+import otus.homework.customview.sealed.Result.Error
+import otus.homework.customview.sealed.Result.Expenses
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
 
         chartViewModel.mode.observe(this) {
             when(it) {
-                is ExpensesCategory -> pieChartView.populate(it.expensesByCategory)
+                is ExpensesCategory -> pieChartView.populate(it.sectorsByCategory)
                 is DetailsCategory -> detailsCategoryView.populate(it.detailsData)
                 else -> {}
             }
@@ -62,9 +62,5 @@ class MainActivity : AppCompatActivity() {
             }
             false -> super.onBackPressed()
         }
-    }
-
-    companion object {
-        const val CATEGORY = "category"
     }
 }
