@@ -7,4 +7,17 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="abc">#F44336</color>
+    <color name="rigla">#E91E63</color>
+    <color name="five">#9C27B0</color>
+    <color name="truffo">#673AB7</color>
+    <color name="simple_wine">#2196F3</color>
+    <color name="abc_express">#00BCD4</color>
+    <color name="uber">#FF5722</color>
+    <color name="metro">#009688</color>
+    <color name="dentist">#FF9800</color>
+    <color name="five_2">#4CAF50</color>
+    <color name="pool">#FFEB3B</color>
+    <color name="uber_2">#041EAF</color>
 </resources>
