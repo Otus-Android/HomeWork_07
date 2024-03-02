@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.R
 import otus.homework.customview.utils.px
@@ -24,6 +25,9 @@ class ChartView @JvmOverloads constructor(
     private var threshold: Int = Int.MAX_VALUE
     private lateinit var paintStroke: Paint
     private val rect = RectF()
+    val colorNew = listOf(
+        Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA
+    )
 
     init {
         if (isInEditMode) {
@@ -31,9 +35,9 @@ class ChartView @JvmOverloads constructor(
         }
 
         val typeArray = context.obtainStyledAttributes(attrs, R.styleable.ChartView)
-        val baseColor = typeArray.getColor(R.styleable.ChartView_baseColor,Color.GREEN)
-        val dangerColor = typeArray.getColor(R.styleable.ChartView_dangerColor,Color.RED)
-        val threshold = typeArray.getInteger(R.styleable.ChartView_threshold,50)
+        val baseColor = typeArray.getColor(R.styleable.ChartView_baseColor, Color.GREEN)
+        val dangerColor = typeArray.getColor(R.styleable.ChartView_dangerColor, Color.RED)
+        val threshold = typeArray.getInteger(R.styleable.ChartView_threshold, 50)
         val barWidth = typeArray.getDimension(R.styleable.ChartView_barWidth, 80.px.toFloat())
 
         typeArray.recycle()
@@ -50,13 +54,15 @@ class ChartView @JvmOverloads constructor(
         when (wMode) {
             MeasureSpec.EXACTLY -> {
                 println("ShuView: EXACTLY $wSize $hSize")
-                setMeasuredDimension(wSize,hSize)
+                setMeasuredDimension(wSize, hSize)
             }
+
             MeasureSpec.AT_MOST -> {
                 println("ShuView: AT_MOST $wSize $hSize")
                 val newW = min((list.size * barWidth).toInt(), wSize)
                 setMeasuredDimension(newW, hSize)
             }
+
             MeasureSpec.UNSPECIFIED -> {
                 println("ShuView: UNSPECIFIED $wSize $hSize")
                 setMeasuredDimension((list.size * barWidth).toInt(), wSize)
@@ -64,7 +70,7 @@ class ChartView @JvmOverloads constructor(
             }
         }
 
-       // super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        // super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -77,7 +83,7 @@ class ChartView @JvmOverloads constructor(
         val heightPerValue = height.toFloat() / maxValue
 
         //отрисовка списка
-
+        var currentColor = 0
         for (item in list) {
             rect.set(
                 currentX,
@@ -85,10 +91,18 @@ class ChartView @JvmOverloads constructor(
                 (currentX + widthPerView),
                 height.toFloat(),
             )
-            canvas.drawRect(rect, if (item > threshold) paintDangerFill else paintBaseFill)
+            paintBaseFill.color = colorNew[currentColor]
+            canvas.drawRect(rect,  paintBaseFill)
             canvas.drawRect(rect, paintStroke)
+
             currentX += widthPerView
+            if (currentColor == 3) {
+                currentColor = 0
+            }
+            currentColor += 1
         }
+        canvas.drawText("$lastTouchX ",widthPerView + 100f,heightPerValue + 50f, paintStroke)
+        canvas.drawText("$lastTouchY",widthPerView + 100f,heightPerValue + 90f, paintStroke)
     }
 
     fun setValues(values: List<Int>) {
@@ -118,11 +132,33 @@ class ChartView @JvmOverloads constructor(
         }
         paintStroke = Paint().apply {
             color = Color.BLACK
+            textSize = 30f
             style = Paint.Style.STROKE
             strokeWidth = 2.0f
         }
         this.threshold = threshold
         this.barWidth = barWidth
+    }
+
+    private var lastTouchX = 0f
+    private var lastTouchY = 0f
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            lastTouchX = event.x
+            lastTouchY = event.y
+        } else if (event.action == MotionEvent.ACTION_MOVE) {
+            val dx = event.x - lastTouchX
+            val dy = event.y - lastTouchY
+
+            /*  imgPosX += dx
+              imgPosY += dy*/
+
+            lastTouchX = event.x
+            lastTouchY = event.y
+
+            invalidate()
+        }
+        return true
     }
 
 }

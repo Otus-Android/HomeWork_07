@@ -4,13 +4,19 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.R
 import otus.homework.customview.utils.px
 import java.util.Collections.max
+import kotlin.math.PI
+import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.sin
 import kotlin.random.Random
 
 class ChartCircleView @JvmOverloads constructor(
@@ -32,6 +38,8 @@ class ChartCircleView @JvmOverloads constructor(
     val colorNew = listOf(
         Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA
     )
+
+    private val path = Path()
 
     init {
         if (isInEditMode) {
@@ -108,14 +116,18 @@ class ChartCircleView @JvmOverloads constructor(
 
         rect.set(left, top, right, bottom)
         //отрисовка списка
-
+        path.reset()
+        var name = 1
         for (item in list) {
             currentSweepAngle = item * oneChunk
             sumAngle += currentSweepAngle
             paintBaseFill.color = colorNew[currentColor]
             dx = item * oneChunkRect
             dy = dx
-            rect.set(left - dx, top - dy, right + dx, bottom + dy)/*if (currentStartAngle < 90f) {
+            rect.set(left - dx, top - dy, right + dx, bottom + dy)
+
+
+            /*if (currentStartAngle < 90f) {
                 rect.offset(dx, dy)
             } else if (currentStartAngle < 180f) {
                 rect.offset(-dx, dy)
@@ -125,23 +137,64 @@ class ChartCircleView @JvmOverloads constructor(
                 rect.offset(dx, -dy)
             }*/
 
+            path.moveTo(widthHalf, heightHalf)
+
+            val newCoordinate = calcPolarCoord(currentStartAngle,450f,widthHalf,heightHalf)
+
+            val x = newCoordinate.first
+            val y = newCoordinate.second
+            path.lineTo(x, y)
+            canvas.drawText(
+                "$name $item", x, y, paintStroke
+            )
+            path.moveTo(widthHalf, heightHalf)
+
             canvas.drawArc(rect, currentStartAngle, currentSweepAngle, true, paintBaseFill)
 
             rect.set(left, top, right, bottom)
             paintStroke.textSize = 30f
             paintStroke.textAlign = Paint.Align.LEFT
             canvas.drawText(
-                "$item ${currentSweepAngle.toInt()}%", left - 100, topText, paintStroke
+                "$item ${currentStartAngle.toInt()}%  [${x}] [${y}] ", left - 100, topText, paintStroke
             )
             topText += 30f
             currentStartAngle += currentSweepAngle
 
-            if (currentColor == 3) { currentColor = 0 }
+            if (currentColor == 3) {
+                currentColor = 0
+            }
             currentColor += 1
+            name +=1
         }
+        path.close()
+        canvas.drawPath(path, paintStroke)
         canvas.drawCircle(widthHalf, heightHalf, 300f, paintWhite)
 
+        canvas.drawText("$lastTouchX ",widthHalf - 100f,heightHalf, paintStroke)
+        canvas.drawText("$lastTouchY",widthHalf - 100f,heightHalf + 30f, paintStroke)
 
+    }
+
+
+    private var lastTouchX = 0f
+    private var lastTouchY = 0f
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            lastTouchX = event.x
+            lastTouchY = event.y
+        } else if (event.action == MotionEvent.ACTION_MOVE) {
+            val dx = event.x - lastTouchX
+            val dy = event.y - lastTouchY
+
+          /*  imgPosX += dx
+            imgPosY += dy*/
+
+            lastTouchX = event.x
+            lastTouchY = event.y
+
+            invalidate()
+        }
+        return true
     }
 
     fun setValues(values: List<Int>) {
@@ -177,6 +230,12 @@ class ChartCircleView @JvmOverloads constructor(
 
     private fun randomColor(): Int {
         return Color.HSVToColor(floatArrayOf(Random.nextInt(361).toFloat(), 1f, 1f))
+    }
+
+    private fun calcPolarCoord(angle : Float, radius: Float , x0: Float,y0: Float) : Pair<Float,Float> {
+        val x1 = x0 + cos(angle) * radius
+        val y1 = y0 + sin(angle) * radius
+        return Pair(x1,y1)
     }
 
 }
