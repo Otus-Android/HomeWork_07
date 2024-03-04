@@ -26,7 +26,10 @@ class ChartView @JvmOverloads constructor(
     private lateinit var paintStroke: Paint
     private val rect = RectF()
     val colorNew = listOf(
-        Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA
+        Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA,Color.parseColor("#00ffc5"),
+        Color.parseColor("#ff6800"),Color.parseColor("#bde619"),Color.parseColor("#ddadaf"),
+        Color.parseColor("#ff7f50"),Color.parseColor("#7743eb"),Color.parseColor("#872a08"),
+        Color.parseColor("#d8bfd8"),
     )
 
     init {
@@ -96,10 +99,9 @@ class ChartView @JvmOverloads constructor(
             canvas.drawRect(rect, paintStroke)
 
             currentX += widthPerView
-            if (currentColor == 3) {
+            if (currentColor == colorNew.size - 1) {
                 currentColor = 0
-            }
-            currentColor += 1
+            } else currentColor += 1
         }
         canvas.drawText("$lastTouchX ",widthPerView + 100f,heightPerValue + 50f, paintStroke)
         canvas.drawText("$lastTouchY",widthPerView + 100f,heightPerValue + 90f, paintStroke)

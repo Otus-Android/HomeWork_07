@@ -6,7 +6,10 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
+import android.util.SparseArray
 import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.R
@@ -18,6 +21,9 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
+
+
+private const val ONE_RADIAN = 0.0174533f
 
 class ChartCircleView @JvmOverloads constructor(
     context: Context,
@@ -36,7 +42,10 @@ class ChartCircleView @JvmOverloads constructor(
     private var dx = 6f
     private var dy = 6f
     val colorNew = listOf(
-        Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA
+        Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.parseColor("#00ffc5"),
+        Color.parseColor("#ff6800"), Color.parseColor("#bde619"), Color.parseColor("#ddadaf"),
+        Color.parseColor("#ff7f50"), Color.parseColor("#7743eb"), Color.parseColor("#872a08"),
+        Color.parseColor("#d8bfd8"),
     )
 
     private val path = Path()
@@ -112,66 +121,51 @@ class ChartCircleView @JvmOverloads constructor(
 
         //Начальные значения
         var currentStartAngle = 0f
-        var currentSweepAngle = 30f
+        var currentSweepAngle = 0f
 
         rect.set(left, top, right, bottom)
-        //отрисовка списка
-        path.reset()
-        var name = 1
+
+        paintStroke.textSize = 30f
+        paintStroke.textAlign = Paint.Align.LEFT
+
+        // Cycle Draw
         for (item in list) {
             currentSweepAngle = item * oneChunk
             sumAngle += currentSweepAngle
             paintBaseFill.color = colorNew[currentColor]
+
+            //Задаём смещение . dx = 0f без смещения.
             dx = item * oneChunkRect
             dy = dx
             rect.set(left - dx, top - dy, right + dx, bottom + dy)
 
-
-            /*if (currentStartAngle < 90f) {
-                rect.offset(dx, dy)
-            } else if (currentStartAngle < 180f) {
-                rect.offset(-dx, dy)
-            } else if (currentStartAngle < 270) {
-                rect.offset(-dx, -dy)
-            } else {
-                rect.offset(dx, -dy)
-            }*/
-
-            path.moveTo(widthHalf, heightHalf)
-
-            val newCoordinate = calcPolarCoord(currentStartAngle,450f,widthHalf,heightHalf)
-
-            val x = newCoordinate.first
-            val y = newCoordinate.second
-            path.lineTo(x, y)
-            canvas.drawText(
-                "$name $item", x, y, paintStroke
-            )
-            path.moveTo(widthHalf, heightHalf)
-
+            //Draw Arc
             canvas.drawArc(rect, currentStartAngle, currentSweepAngle, true, paintBaseFill)
 
-            rect.set(left, top, right, bottom)
-            paintStroke.textSize = 30f
-            paintStroke.textAlign = Paint.Align.LEFT
+            //Draw Metka . 35f and 10f выравнивание текста.
+            val angleForText = (currentStartAngle + (currentSweepAngle / 2f)) * ONE_RADIAN
+            val x = widthHalf - 35f + cos(angleForText) * 450f
+            val y = heightHalf + 10f + sin(angleForText) * 450f
             canvas.drawText(
-                "$item ${currentStartAngle.toInt()}%  [${x}] [${y}] ", left - 100, topText, paintStroke
+                "$item ", x, y, paintStroke
             )
-            topText += 30f
+            rect.set(left, top, right, bottom)
+
+            //Next Angle
             currentStartAngle += currentSweepAngle
 
-            if (currentColor == 3) {
+            //Check last color in ColorNew
+            if (currentColor == colorNew.size - 1) {
                 currentColor = 0
-            }
-            currentColor += 1
-            name +=1
+            } else currentColor += 1
         }
-        path.close()
-        canvas.drawPath(path, paintStroke)
+
+        //Draw White Circle
         canvas.drawCircle(widthHalf, heightHalf, 300f, paintWhite)
 
-        canvas.drawText("$lastTouchX ",widthHalf - 100f,heightHalf, paintStroke)
-        canvas.drawText("$lastTouchY",widthHalf - 100f,heightHalf + 30f, paintStroke)
+        //Draw Coordinate Touch Event
+        canvas.drawText("$lastTouchX ", widthHalf - 100f, heightHalf, paintStroke)
+        canvas.drawText("$lastTouchY", widthHalf - 100f, heightHalf + 30f, paintStroke)
 
     }
 
@@ -186,8 +180,8 @@ class ChartCircleView @JvmOverloads constructor(
             val dx = event.x - lastTouchX
             val dy = event.y - lastTouchY
 
-          /*  imgPosX += dx
-            imgPosY += dy*/
+            /*  imgPosX += dx
+              imgPosY += dy*/
 
             lastTouchX = event.x
             lastTouchY = event.y
@@ -232,10 +226,20 @@ class ChartCircleView @JvmOverloads constructor(
         return Color.HSVToColor(floatArrayOf(Random.nextInt(361).toFloat(), 1f, 1f))
     }
 
-    private fun calcPolarCoord(angle : Float, radius: Float , x0: Float,y0: Float) : Pair<Float,Float> {
-        val x1 = x0 + cos(angle) * radius
-        val y1 = y0 + sin(angle) * radius
-        return Pair(x1,y1)
+    override fun dispatchSaveInstanceState(container: SparseArray<Parcelable>?) {
+        super.dispatchSaveInstanceState(container)
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        Log.i("Normal", "onSaveInstanceState")
+        return super.onSaveInstanceState()
+
+    }
+
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        Log.i("Normal", "onRestoreInstanceState")
+        super.onRestoreInstanceState(state)
     }
 
 }
