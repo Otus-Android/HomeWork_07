@@ -9,4 +9,7 @@ data class Store(
     val amount : Int,
     val category : String,
     val time : Int,
+    var beginDegree : Int = 0,
+    var endDegree : Int = 0,
+    var isSelect : Boolean = false,
 )

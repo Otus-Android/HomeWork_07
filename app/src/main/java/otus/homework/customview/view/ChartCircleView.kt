@@ -13,17 +13,17 @@ import android.util.SparseArray
 import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.R
+import otus.homework.customview.model.Store
 import otus.homework.customview.utils.px
-import java.util.Collections.max
-import kotlin.math.PI
-import kotlin.math.atan2
+import kotlin.math.acos
 import kotlin.math.cos
-import kotlin.math.min
 import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 
 private const val ONE_RADIAN = 0.0174533f
+private const val ONE_DEGREE = 57.2958
 
 class ChartCircleView @JvmOverloads constructor(
     context: Context,
@@ -31,17 +31,20 @@ class ChartCircleView @JvmOverloads constructor(
 ) : View(context, attrs) {
 
     private val list = ArrayList<Int>()
+    private val listStore = ArrayList<Store>()
     private var maxValue = 0
     private var sumValues = 0
     private lateinit var paintBaseFill: Paint
+    private lateinit var paintSelect: Paint
     private lateinit var paintDangerFill: Paint
     private lateinit var paintStroke: Paint
+    private lateinit var paintTitle: Paint
     private lateinit var paintWhite: Paint
     private var strokeWidthNew: Float
     private val rect = RectF()
     private var dx = 6f
     private var dy = 6f
-    val colorNew = listOf(
+    private val colorNew = listOf(
         Color.RED, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.parseColor("#00ffc5"),
         Color.parseColor("#ff6800"), Color.parseColor("#bde619"), Color.parseColor("#ddadaf"),
         Color.parseColor("#ff7f50"), Color.parseColor("#7743eb"), Color.parseColor("#872a08"),
@@ -49,10 +52,16 @@ class ChartCircleView @JvmOverloads constructor(
     )
 
     private val path = Path()
+    private var lastSelect = 0
+    private var widthHalf = 0f
+    private var heightHalf = 0f
+    private var title = ""
 
     init {
         if (isInEditMode) {
-            setValues(listOf(1500, 499, 129, 4541, 1600, 1841, 369, 100, 8000, 809, 1000, 389))
+            setValues(
+                listOf(1500, 499, 129, 4541, 1600, 1841, 369, 100, 8000, 809, 1000, 389)
+            )
             //setValues(listOf(1500, 499, 129, 4541))
             //setValues(listOf(1500, 499, 129, 4541, 1600, 1841, 369, 100, 8000))
         }
@@ -96,8 +105,8 @@ class ChartCircleView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val widthHalf = width / 2f
-        val heightHalf = height / 2f
+        widthHalf = width / 2f
+        heightHalf = height / 2f
 
         //coordinate Rect
         val left = widthHalf - 400f
@@ -125,75 +134,113 @@ class ChartCircleView @JvmOverloads constructor(
 
         rect.set(left, top, right, bottom)
 
-        paintStroke.textSize = 30f
-        paintStroke.textAlign = Paint.Align.LEFT
 
         // Cycle Draw
-        for (item in list) {
-            currentSweepAngle = item * oneChunk
+        for (store in listStore) {
+            currentSweepAngle = store.amount * oneChunk
             sumAngle += currentSweepAngle
             paintBaseFill.color = colorNew[currentColor]
+            paintSelect.color = colorNew[currentColor]
 
             //Задаём смещение . dx = 0f без смещения.
-            dx = item * oneChunkRect
+            dx = store.amount * oneChunkRect
             dy = dx
             rect.set(left - dx, top - dy, right + dx, bottom + dy)
-
-            //Draw Arc
-            canvas.drawArc(rect, currentStartAngle, currentSweepAngle, true, paintBaseFill)
 
             //Draw Metka . 35f and 10f выравнивание текста.
             val angleForText = (currentStartAngle + (currentSweepAngle / 2f)) * ONE_RADIAN
             val x = widthHalf - 35f + cos(angleForText) * 450f
             val y = heightHalf + 10f + sin(angleForText) * 450f
-            canvas.drawText(
-                "$item ", x, y, paintStroke
-            )
+
+            //Draw Arc
+            if (store.isSelect) {
+                canvas.drawArc(
+                    rect,
+                    currentStartAngle,
+                    currentSweepAngle,
+                    true,
+                    paintSelect
+                )
+                title = store.category
+                canvas.drawText(
+                    "${store.amount} ", x, y, paintTitle
+                )
+            } else {
+                canvas.drawArc(rect, currentStartAngle, currentSweepAngle, true, paintBaseFill)
+                canvas.drawText(
+                    "${store.amount} ", x, y, paintStroke
+                )
+            }
+
             rect.set(left, top, right, bottom)
 
+            //можно сделать флажок для вычисления один раз.
+            store.beginDegree = currentStartAngle.toInt()
             //Next Angle
             currentStartAngle += currentSweepAngle
+            store.endDegree = currentStartAngle.toInt()
 
             //Check last color in ColorNew
             if (currentColor == colorNew.size - 1) {
                 currentColor = 0
             } else currentColor += 1
-        }
 
+        }
         //Draw White Circle
         canvas.drawCircle(widthHalf, heightHalf, 300f, paintWhite)
 
-        //Draw Coordinate Touch Event
-        canvas.drawText("$lastTouchX ", widthHalf - 100f, heightHalf, paintStroke)
-        canvas.drawText("$lastTouchY", widthHalf - 100f, heightHalf + 30f, paintStroke)
-
+        canvas.drawText(
+            title,
+            widthHalf - 300f,
+            heightHalf + 30f,
+            paintTitle
+        )
     }
-
 
     private var lastTouchX = 0f
     private var lastTouchY = 0f
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_DOWN) {
+        if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
             lastTouchX = event.x
             lastTouchY = event.y
-        } else if (event.action == MotionEvent.ACTION_MOVE) {
-            val dx = event.x - lastTouchX
-            val dy = event.y - lastTouchY
-
-            /*  imgPosX += dx
-              imgPosY += dy*/
-
-            lastTouchX = event.x
-            lastTouchY = event.y
-
+            searchSelect()
             invalidate()
         }
         return true
     }
 
-    fun setValues(values: List<Int>) {
+    private fun searchSelect() {
+        //начальные координаты A (widthHalf, heightHalf) B (widthHalf + 400, heightHalf) AB (400, 0)
+        // C (lastTouchX, lastTouchY) AC ( lastTouchX - widthHalf, lastTouchY - heightHalf)
+        // координаты выбраной точки
+        val x1 = 400
+        val y1 = 0
+        val x2 = lastTouchX - widthHalf
+        val y2 = lastTouchY - heightHalf
+
+        val angle1 = x1 * x2 + y1 * y2
+        val angle2 = sqrt((x1 * x1).toDouble() + (y1 * y1))
+        val angle3 = sqrt((x2 * x2).toDouble() + (y2 * y2))
+        val angle4 = angle2 * angle3
+        var angle5 = acos(angle1 / angle4) * ONE_DEGREE
+        if (y2 < 0) {
+            angle5 = 180 + 180 - angle5
+        }
+        // Search select category
+        listStore[lastSelect].isSelect = false
+        listStore.forEachIndexed { index, store ->
+            if (angle5 > store.beginDegree && angle5 < store.endDegree) {
+                store.isSelect = true
+                lastSelect = index
+            }
+        }
+    }
+
+    fun setValues(values: List<Int>, listStoreNew: List<Store> = emptyList()) {
         list.clear()
         list.addAll(values)
+        listStore.clear()
+        listStore.addAll(listStoreNew)
         maxValue = list.max()
         sumValues = list.sum()
         requestLayout()
@@ -206,6 +253,12 @@ class ChartCircleView @JvmOverloads constructor(
             strokeWidth = strokeWidthNew
             style = Paint.Style.FILL
         }
+        paintSelect = Paint().apply {
+            color = Color.GREEN
+            strokeWidth = strokeWidthNew
+            style = Paint.Style.FILL_AND_STROKE
+        }
+
         paintDangerFill = Paint().apply {
             color = Color.RED
             strokeWidth = strokeWidthNew
@@ -213,7 +266,14 @@ class ChartCircleView @JvmOverloads constructor(
         }
         paintStroke = Paint().apply {
             color = Color.BLACK
-            style = Paint.Style.STROKE
+            textSize = 40f
+            style = Paint.Style.FILL
+            strokeWidth = 2.0f
+        }
+        paintTitle = Paint().apply {
+            color = Color.BLUE
+            style = Paint.Style.FILL_AND_STROKE
+            textSize = 70f
             strokeWidth = 2.0f
         }
         paintWhite = Paint().apply {
@@ -232,14 +292,21 @@ class ChartCircleView @JvmOverloads constructor(
 
     override fun onSaveInstanceState(): Parcelable? {
         Log.i("Normal", "onSaveInstanceState")
-        return super.onSaveInstanceState()
+        return CustomViewSavedState(super.onSaveInstanceState()).apply {
+            lastIndex = lastSelect
+        }
 
     }
-
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         Log.i("Normal", "onRestoreInstanceState")
-        super.onRestoreInstanceState(state)
-    }
+        if (state is CustomViewSavedState) {
+            super.onRestoreInstanceState(state.superState)
+            lastSelect = state.lastIndex
+            listStore[lastSelect].isSelect = true
+        } else {
+            super.onRestoreInstanceState(state)
+        }
 
+    }
 }

@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         }
         //println("$listStore")
 
-        binding.chart.setValues(amounts)
+        binding.chart.setValues(amounts,listStore)
         binding.chartRect.setValues(amounts)
 
     }
