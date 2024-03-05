@@ -231,6 +231,7 @@ class ChartCircleView @JvmOverloads constructor(
         listStore.forEachIndexed { index, store ->
             if (angle5 > store.beginDegree && angle5 < store.endDegree) {
                 store.isSelect = true
+                onItemClickListener?.let { it(index) }
                 lastSelect = index
             }
         }
@@ -290,7 +291,7 @@ class ChartCircleView @JvmOverloads constructor(
         super.dispatchSaveInstanceState(container)
     }
 
-    override fun onSaveInstanceState(): Parcelable? {
+    override fun onSaveInstanceState(): Parcelable {
         Log.i("Normal", "onSaveInstanceState")
         return CustomViewSavedState(super.onSaveInstanceState()).apply {
             lastIndex = lastSelect
@@ -307,6 +308,12 @@ class ChartCircleView @JvmOverloads constructor(
         } else {
             super.onRestoreInstanceState(state)
         }
+    }
 
+    private var onItemClickListener: ((Int) -> Unit)? = null
+
+    fun setOnItemClickListener(listener: (Int) -> Unit) {
+        onItemClickListener = listener
     }
 }
+

@@ -1,6 +1,7 @@
 package otus.homework.customview
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -52,7 +53,12 @@ class MainActivity : AppCompatActivity() {
         //println("$listStore")
 
         binding.chart.setValues(amounts,listStore)
-        binding.chartRect.setValues(amounts)
+        binding.chartRect.setValues(amounts,listStore)
+
+        binding.chart.setOnItemClickListener { lastIndex ->
+            Log.d("click", " index $lastIndex")
+            binding.chartRect.setIndex(lastIndex)
+        }
 
     }
 }
