@@ -11,8 +11,8 @@
     <declare-styleable name="ChartCircleView">
         <attr name="strokeWidth" format="dimension"/>
         <attr name="viewType" format="boolean"/>
-        <attr name="radiusCircle" format="dimension"/>
-        <attr name="radiusText" format="dimension"/>
+        <attr name="radiusCircle" format="float"/>
+        <attr name="radiusText" format="float"/>
     </declare-styleable>
 
 </resources>

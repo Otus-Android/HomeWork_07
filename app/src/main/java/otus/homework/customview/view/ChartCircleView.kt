@@ -15,6 +15,7 @@ import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.R
 import otus.homework.customview.model.Store
+import otus.homework.customview.utils.dp
 import otus.homework.customview.utils.px
 import kotlin.math.acos
 import kotlin.math.cos
@@ -78,16 +79,16 @@ class ChartCircleView @JvmOverloads constructor(
 
         val typeArray = context.obtainStyledAttributes(attrs, R.styleable.ChartCircleView)
         strokeWidthNew =
-            typeArray.getDimension(R.styleable.ChartCircleView_strokeWidth, 40.px.toFloat())
+            typeArray.getDimension(R.styleable.ChartCircleView_strokeWidth, 40f)
         viewType = typeArray.getBoolean(R.styleable.ChartCircleView_viewType, true)
         radiusCircle =
-            typeArray.getDimension(R.styleable.ChartCircleView_radiusCircle, 400f)
+            typeArray.getFloat(R.styleable.ChartCircleView_radiusCircle, 400f)
         radiusText =
-            typeArray.getDimension(R.styleable.ChartCircleView_radiusText, 450f)
+            typeArray.getFloat(R.styleable.ChartCircleView_radiusText, 450f)
 
         typeArray.recycle()
 
-        Log.d("dimension", "${radiusCircle}  $radiusText")
+        Log.d("dimension", "$strokeWidthNew ${radiusCircle}  $radiusText")
         setup(strokeWidthNew)
     }
 
@@ -205,7 +206,7 @@ class ChartCircleView @JvmOverloads constructor(
 
         }
         //Draw White Circle
-        canvas.drawCircle(widthHalf, heightHalf, 300f, paintWhite)
+        canvas.drawCircle(widthHalf, heightHalf, radiusCircle - strokeWidthNew, paintWhite)
 
         canvas.drawText(
             title,
