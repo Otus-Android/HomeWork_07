@@ -6,7 +6,9 @@ import android.graphics.Color
 import android.graphics.CornerPathEffect
 import android.graphics.Paint
 import android.graphics.Path
+import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
@@ -23,7 +25,7 @@ class StockChartView @JvmOverloads constructor(
     private val listAmount = ArrayList<Int>()
     private var maxValue = 0
     private var minValue = 0
-    private var lastIndex = 0
+    private var lastSelect = 0
 
     private val paint = Paint().apply {
         color = Color.parseColor("#bd7ebe")
@@ -85,7 +87,7 @@ class StockChartView @JvmOverloads constructor(
 
             path.lineTo(x, y)
 
-            if (lastIndex == index && listStore[index].isSelect) {
+            if (lastSelect == index && listStore[index].isSelect) {
                 canvas.drawText("${listStore[index].amount}", x, y, selectPaint)
             } else
                 canvas.drawText("${listStore[index].amount}", x, y, redPaint)
@@ -119,7 +121,26 @@ class StockChartView @JvmOverloads constructor(
 
     fun setIndex(index: Int) {
         listStore[index].isSelect = true
-        lastIndex = index
+        lastSelect = index
         invalidate()
+    }
+
+    override fun onSaveInstanceState(): Parcelable {
+        Log.i("Normal", "onSaveInstanceState")
+        return CustomViewSavedState(super.onSaveInstanceState()).apply {
+            lastIndex = lastSelect
+        }
+
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        Log.i("Normal", "onRestoreInstanceState")
+        if (state is CustomViewSavedState) {
+            super.onRestoreInstanceState(state.superState)
+            lastSelect = state.lastIndex
+            listStore[lastSelect].isSelect = true
+        } else {
+            super.onRestoreInstanceState(state)
+        }
     }
 }

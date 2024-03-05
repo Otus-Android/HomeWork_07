@@ -8,23 +8,23 @@
 
     <otus.homework.customview.view.ChartCircleView
         android:id="@+id/chart"
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_width="400dp"
+        android:layout_height="match_parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/chartRect"
         app:layout_constraintDimensionRatio="@string/square"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/chartRect"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:strokeWidth="10dp"
-        app:viewType="true" />
+        app:viewType="false" />
 
     <otus.homework.customview.view.StockChartView
         android:id="@+id/chartRect"
-        android:layout_width="wrap_content"
-        android:layout_height="300dp"
-        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_width="400dp"
+        android:layout_height="match_parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/chart"
         app:layout_constraintDimensionRatio="@string/square"
-        app:layout_constraintTop_toBottomOf="@id/chart" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

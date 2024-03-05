@@ -10,6 +10,7 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.util.SparseArray
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import otus.homework.customview.R
@@ -30,6 +31,12 @@ class ChartCircleView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
 ) : View(context, attrs) {
 
+    /*
+    TODO
+    1. добавить выбор вида. viewType
+    2. выбор радиуса круга. radiusCircle
+
+     */
     private val list = ArrayList<Int>()
     private val listStore = ArrayList<Store>()
     private var maxValue = 0
@@ -56,6 +63,9 @@ class ChartCircleView @JvmOverloads constructor(
     private var widthHalf = 0f
     private var heightHalf = 0f
     private var title = ""
+    private var viewType = true
+    private var radiusCircle = 400f
+    private var radiusText = 450f
 
     init {
         if (isInEditMode) {
@@ -69,9 +79,15 @@ class ChartCircleView @JvmOverloads constructor(
         val typeArray = context.obtainStyledAttributes(attrs, R.styleable.ChartCircleView)
         strokeWidthNew =
             typeArray.getDimension(R.styleable.ChartCircleView_strokeWidth, 40.px.toFloat())
+        viewType = typeArray.getBoolean(R.styleable.ChartCircleView_viewType, true)
+        radiusCircle =
+            typeArray.getDimension(R.styleable.ChartCircleView_radiusCircle, 400f)
+        radiusText =
+            typeArray.getDimension(R.styleable.ChartCircleView_radiusText, 450f)
 
         typeArray.recycle()
 
+        Log.d("dimension", "${radiusCircle}  $radiusText")
         setup(strokeWidthNew)
     }
 
@@ -109,10 +125,10 @@ class ChartCircleView @JvmOverloads constructor(
         heightHalf = height / 2f
 
         //coordinate Rect
-        val left = widthHalf - 400f
-        val top = heightHalf - 400f
-        val right = widthHalf + 400f
-        val bottom = heightHalf + 400f
+        val left = widthHalf - radiusCircle
+        val top = heightHalf - radiusCircle
+        val right = widthHalf + radiusCircle
+        val bottom = heightHalf + radiusCircle
 
         //Coordinate top text
         var topText = top - 100f
@@ -143,14 +159,16 @@ class ChartCircleView @JvmOverloads constructor(
             paintSelect.color = colorNew[currentColor]
 
             //Задаём смещение . dx = 0f без смещения.
-            dx = store.amount * oneChunkRect
+            dx = if (viewType) store.amount * oneChunkRect
+            else 0f
+
             dy = dx
             rect.set(left - dx, top - dy, right + dx, bottom + dy)
 
             //Draw Metka . 35f and 10f выравнивание текста.
             val angleForText = (currentStartAngle + (currentSweepAngle / 2f)) * ONE_RADIAN
-            val x = widthHalf - 35f + cos(angleForText) * 450f
-            val y = heightHalf + 10f + sin(angleForText) * 450f
+            val x = widthHalf - 35f + cos(angleForText) * radiusText
+            val y = heightHalf + 10f + sin(angleForText) * radiusText
 
             //Draw Arc
             if (store.isSelect) {
