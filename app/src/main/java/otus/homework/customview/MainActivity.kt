@@ -7,50 +7,53 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import otus.homework.customview.chart.LineChartView
 import otus.homework.customview.chart.PieChartView
-import java.util.Date
 
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
+
+    private lateinit var titleView: TextView
+    private lateinit var sumView: TextView
+    private lateinit var pieChart: PieChartView
+    private lateinit var lineChart: LineChartView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
 
-        val pieChart = findViewById<PieChartView>(R.id.pieChart)
-        val titleView = findViewById<TextView>(R.id.dataTitle)
-        val descriptionView = findViewById<TextView>(R.id.dataDescription)
-        val sumView = findViewById<TextView>(R.id.dataSum)
-        val dateView = findViewById<TextView>(R.id.dataDate)
+        titleView = findViewById(R.id.dataTitle)
+        sumView = findViewById(R.id.dataSum)
+        pieChart = findViewById(R.id.pieChart)
+        lineChart = findViewById(R.id.lineChart)
 
         pieChart.setOnSelect { id, color ->
-            if (id == null) {
-                // ничего не выбрано
-                titleView.text = "Tap"
-                descriptionView.text = "on pie"
-                sumView.text = "and see"
-                dateView.text = "N/A"
-                // TODO: очистить второй чарт
-            } else {
-                // есть id
-                viewModel.chartData.value.find {
-                    it.id == id
-                }?.also {
-                    // текст в UI
-                    titleView.text = it.name
-                    descriptionView.text = it.category
-                    sumView.text = it.amount.toString()
-                    dateView.text = Date(it.time).toString()
-                    // TODO: заполнить второй чарт
-                }
-            }
+            viewModel.changeSelected(id, color)
         }
 
         lifecycleScope.launch {
-            viewModel.chartData.collectLatest { list ->
-                pieChart.populate(list)
+            launch {
+                viewModel.labelsData.collectLatest { data ->
+                    titleView.text = data.title
+                    sumView.text = data.sum
+                }
+            }
+            launch {
+                viewModel.pieData.collectLatest {
+                    pieChart.populate(it)
+                }
+            }
+            launch {
+                viewModel.lineData.collectLatest {
+                    lineChart.populate(it, viewModel.currentColor.value)
+                }
+            }
+            launch {
+                viewModel.currentColor.collectLatest {
+                    lineChart.populate(viewModel.lineData.value, it)
+                }
             }
         }
     }

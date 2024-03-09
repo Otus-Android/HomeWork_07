@@ -30,7 +30,7 @@ class PieChartView @JvmOverloads constructor(
     }
 
     // желаемый размер диаграммы
-    private val defaultSize = 240.dp
+    private val defaultSize = 240.dp.toInt()
 
     // фактор уменьшения невыбранных секторов диаграммы
     private val zoomFactor = 0.05f
@@ -138,24 +138,24 @@ class PieChartView @JvmOverloads constructor(
 
         // для UNSPECIFIED - минимальный размер
         val w = when (wMode) {
-            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> wSize.toFloat()
+            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> wSize
             else -> defaultSize
         }
 
         // для UNSPECIFIED - минимальный размер
         val h = when (hMode) {
-            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> hSize.toFloat()
+            MeasureSpec.EXACTLY, MeasureSpec.AT_MOST -> hSize
             else -> defaultSize
         }
 
         // всегда квадрат для зоны чарта
-        val size = min(w, h)
+        val size = min(w, h).toFloat()
         // rect для выбранного сектора
         pieSelectedRect.set(0f, 0f, size, size)
         // остальные уменьшены на 5%
         pieRect.set(pieSelectedRect.times(1f - zoomFactor))
 
-        setMeasuredDimension(wSize, hSize)
+        setMeasuredDimension(w, h)
     }
 
     override fun layout(l: Int, t: Int, r: Int, b: Int) {
