@@ -1,11 +1,19 @@
 package otus.homework.customview.view
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ArgbEvaluator
+import android.animation.PropertyValuesHolder
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.RadialGradient
 import android.graphics.RectF
+import android.graphics.Shader
+import android.graphics.text.MeasuredText
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
@@ -13,10 +21,13 @@ import android.util.SparseArray
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.BounceInterpolator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import otus.homework.customview.R
 import otus.homework.customview.model.Store
-import otus.homework.customview.utils.dp
-import otus.homework.customview.utils.px
+import otus.homework.customview.utils.GradientConstant
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -46,6 +57,7 @@ class ChartCircleView @JvmOverloads constructor(
     private lateinit var paintSelect: Paint
     private lateinit var paintDangerFill: Paint
     private lateinit var paintStroke: Paint
+    private lateinit var paintPath: Paint
     private lateinit var paintTitle: Paint
     private lateinit var paintWhite: Paint
     private var strokeWidthNew: Float
@@ -59,16 +71,23 @@ class ChartCircleView @JvmOverloads constructor(
         Color.parseColor("#d8bfd8"),
     )
 
-    private val path = Path()
+    private val animator: ValueAnimator
+    private val path: Path
     private var lastSelect = 0
     private var widthHalf = 0f
     private var heightHalf = 0f
     private var title = ""
     private var viewType = true
     private var radiusCircle = 400f
+    private var radiusTitle = 150f
     private var radiusText = 450f
 
+    private val platinumBackground = GradientConstant.platinumGradient(context)
+    private val goldBackground = GradientConstant.goldGradient(context)
+
     init {
+
+        background = platinumBackground
         if (isInEditMode) {
             setValues(
                 listOf(1500, 499, 129, 4541, 1600, 1841, 369, 100, 8000, 809, 1000, 389)
@@ -77,9 +96,15 @@ class ChartCircleView @JvmOverloads constructor(
             //setValues(listOf(1500, 499, 129, 4541, 1600, 1841, 369, 100, 8000))
         }
 
+        val oneDp = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, 1f,
+            context.resources.displayMetrics
+        )
+
         val typeArray = context.obtainStyledAttributes(attrs, R.styleable.ChartCircleView)
+
         strokeWidthNew =
-            typeArray.getDimension(R.styleable.ChartCircleView_strokeWidth, 40f)
+            typeArray.getDimension(R.styleable.ChartCircleView_strokeWidth, 82.5f) / oneDp
         viewType = typeArray.getBoolean(R.styleable.ChartCircleView_viewType, true)
         radiusCircle =
             typeArray.getFloat(R.styleable.ChartCircleView_radiusCircle, 400f)
@@ -88,9 +113,39 @@ class ChartCircleView @JvmOverloads constructor(
 
         typeArray.recycle()
 
-        Log.d("dimension", "$strokeWidthNew ${radiusCircle}  $radiusText")
+
+        val newRadius = dipToPixels(context, strokeWidthNew)
+
+        Log.d(
+            "dimension",
+            "$strokeWidthNew = $newRadius  ${radiusCircle / oneDp}  $radiusText 1dp = $oneDp"
+        )
         setup(strokeWidthNew)
+
+
+        val dm = context.resources.displayMetrics
+
+        val width = dm.widthPixels
+        val height = dm.heightPixels
+
+        // context.resources.getDimension(R.dimen.strokeWidth)
+
+        // Initialize path object
+        path = Path()
+
+        // Initialize animator object
+        animator = ValueAnimator()
+        animator.interpolator = AccelerateDecelerateInterpolator()
+        animator.addUpdateListener {
+            update(it)
+        }
+
+        // Initialize click listener
+        /*setOnClickListener {
+         //   setChecked(!checked, !ignoreAnimation)
+        }*/
     }
+
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val wMode = MeasureSpec.getMode(widthMeasureSpec)
@@ -151,6 +206,7 @@ class ChartCircleView @JvmOverloads constructor(
 
         rect.set(left, top, right, bottom)
 
+        var selectColor = Color.RED
 
         // Cycle Draw
         for (store in listStore) {
@@ -173,6 +229,7 @@ class ChartCircleView @JvmOverloads constructor(
 
             //Draw Arc
             if (store.isSelect) {
+                selectColor = colorNew[currentColor]
                 canvas.drawArc(
                     rect,
                     currentStartAngle,
@@ -206,15 +263,70 @@ class ChartCircleView @JvmOverloads constructor(
 
         }
         //Draw White Circle
-        canvas.drawCircle(widthHalf, heightHalf, radiusCircle - strokeWidthNew, paintWhite)
+        // And Change Gradient in center
 
-        canvas.drawText(
+        val gradient = RadialGradient(
+            widthHalf,
+            heightHalf,
+            radiusCircle - strokeWidthNew * 2,
+            intArrayOf(Color.WHITE, selectColor),
+            null,
+            Shader.TileMode.CLAMP
+        )
+
+        paintWhite.shader = gradient
+        canvas.drawCircle(widthHalf, heightHalf, radiusCircle - strokeWidthNew * 2, paintWhite)
+
+
+        //Draw animated Text
+
+        path.reset()
+        // Draw borders
+        path.arcTo(
+            left + radiusTitle ,
+            top + radiusTitle,
+            right - radiusTitle,
+            bottom - radiusTitle,
+            180f ,
+            180f ,
+            false
+        )
+
+        val halfText = 180f
+        val countChar = title.count()
+        val sweepText = halfText - countChar * 10
+
+        canvas.drawTextOnPath(
             title,
-            widthHalf - 300f,
-            heightHalf + 30f,
+            path,
+            sweepText,
+            0f,
             paintTitle
         )
+
+        canvas.drawPath(path, paintPath)
+
     }
+
+    private fun startAnimation() {
+        animator.setFloatValues(300f, 150f)
+        animator.duration = 1000L
+        animator.addListener(object : AnimatorListenerAdapter() {
+
+            override fun onAnimationCancel(animation: Animator) {
+                animation.removeAllListeners()
+            }
+
+            override fun onAnimationEnd(animation: Animator) {
+            }
+        })
+        animator.start()
+    }
+    private fun update(animation: ValueAnimator) {
+        radiusTitle = animation.animatedValue as Float
+        invalidate()
+    }
+
 
     private var lastTouchX = 0f
     private var lastTouchY = 0f
@@ -223,6 +335,7 @@ class ChartCircleView @JvmOverloads constructor(
             lastTouchX = event.x
             lastTouchY = event.y
             searchSelect()
+            startAnimation()
             invalidate()
         }
         return true
@@ -290,6 +403,14 @@ class ChartCircleView @JvmOverloads constructor(
             style = Paint.Style.FILL
             strokeWidth = 2.0f
         }
+
+        paintPath = Paint().apply {
+            color = Color.TRANSPARENT
+            textSize = 40f
+            style = Paint.Style.STROKE
+            strokeWidth = 2.0f
+        }
+
         paintTitle = Paint().apply {
             color = Color.BLUE
             style = Paint.Style.FILL_AND_STROKE
@@ -334,5 +455,18 @@ class ChartCircleView @JvmOverloads constructor(
     fun setOnItemClickListener(listener: (Int) -> Unit) {
         onItemClickListener = listener
     }
+
+    private fun dipToPixels(context: Context, dipValue: Float): Float {
+        val metrics = context.resources.displayMetrics
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, metrics)
+    }
+
+    private fun width() = width
+    private fun height() = height
+    private fun centerX() = width / 2f
+    private fun centerY() = height / 2f
+    private fun radius() = (if (width() > height()) height() else width()) / 2f
+    private fun radiusBorderChecked() = (if (width() > height()) height() else width()) / 2f
+
 }
 

@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.jsonObject
 import otus.homework.customview.databinding.ActivityMainBinding
 import otus.homework.customview.model.Store
+import otus.homework.customview.utils.GradientConstant
 
 class MainActivity : AppCompatActivity() {
 

@@ -7,4 +7,17 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="platinum_gradient1">#DBDBDB</color>
+    <color name="platinum_gradient2">#FFFFFF</color>
+    <color name="platinum_gradient3">#BFBEBE</color>
+    <color name="platinum_gradient4">#F1F1F1</color>
+    <color name="platinum_gradient5">#FAFAFA</color>
+
+    <color name="gold_card_gradient_1">#A0884D</color>
+    <color name="gold_card_gradient_2">#CCB06C</color>
+    <color name="gold_card_gradient_3">#A0884D</color>
+    <color name="gold_card_gradient_4">#705820</color>
+    <color name="gold_card_gradient_5">#A0884D</color>
+
 </resources>

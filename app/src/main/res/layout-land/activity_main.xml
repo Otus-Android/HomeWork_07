@@ -17,8 +17,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:strokeWidth="10dp"
         app:viewType="false"
-        app:radiusCircle="300"
-        app:radiusText="350"/>
+        app:radiusCircle="350"
+        app:radiusText="400"/>
 
 
     <otus.homework.customview.view.StockChartView

@@ -6,13 +6,21 @@ import android.graphics.Color
 import android.graphics.CornerPathEffect
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.TransitionDrawable
+import android.os.Build
+import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
+import android.util.SparseArray
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
+import android.view.accessibility.AccessibilityNodeInfo
 import otus.homework.customview.model.Store
+import otus.homework.customview.utils.GradientConstant
+import otus.homework.customview.utils.TAG
 import kotlin.math.max
 import kotlin.math.min
 
@@ -55,6 +63,16 @@ class StockChartView @JvmOverloads constructor(
 
     private var scale = 1f
 
+    private val goldBackground = GradientConstant.goldGradient(context)
+    private val platinumBackground = GradientConstant.platinumGradient(context)
+
+    private var isChangeBackground = false
+
+    init {
+        background = goldBackground
+    }
+
+
     private val scaleGestureDetector =
         ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
@@ -64,6 +82,9 @@ class StockChartView @JvmOverloads constructor(
                 return true
             }
         })
+
+    private val transitionDrawableGold : TransitionDrawable = TransitionDrawable(arrayOf(platinumBackground, goldBackground))
+    private val transitionDrawablePlatinum : TransitionDrawable = TransitionDrawable(arrayOf(goldBackground, platinumBackground))
 
     override fun onDraw(canvas: Canvas) {
         val wStep = width.toFloat() / listAmount.size.toFloat()
@@ -122,6 +143,7 @@ class StockChartView @JvmOverloads constructor(
     fun setIndex(index: Int) {
         listStore[index].isSelect = true
         lastSelect = index
+        setPageBackground()
         invalidate()
     }
 
@@ -143,4 +165,49 @@ class StockChartView @JvmOverloads constructor(
             super.onRestoreInstanceState(state)
         }
     }
+
+    /* override fun addChildrenForAccessibility(outChildren: java.util.ArrayList<View>?) {
+        super.addChildrenForAccessibility(outChildren)
+    }
+
+    override fun dispatchSaveInstanceState(container: SparseArray<Parcelable>?) {
+        super.dispatchSaveInstanceState(container)
+    }
+
+    override fun hashCode(): Int {
+        return super.hashCode()
+    }
+
+    override fun addExtraDataToAccessibilityNodeInfo(
+        info: AccessibilityNodeInfo,
+        extraDataKey: String,
+        arguments: Bundle?
+    ) {
+        super.addExtraDataToAccessibilityNodeInfo(info, extraDataKey, arguments)
+    }
+
+    override fun addOnAttachStateChangeListener(listener: OnAttachStateChangeListener?) {
+        super.addOnAttachStateChangeListener(listener)
+    }
+
+    override fun setOnFocusChangeListener(l: OnFocusChangeListener?) {
+        Log.d("focus", "tag ${l?.TAG} hashCode ${l.hashCode()}   ")
+        super.setOnFocusChangeListener(l)
+    }*/
+
+    private fun setPageBackground() {
+
+        if (isChangeBackground) {
+            transitionDrawableGold.isCrossFadeEnabled = true
+            background = transitionDrawableGold
+            transitionDrawableGold.startTransition(400)
+            isChangeBackground = false
+        } else {
+            transitionDrawablePlatinum.isCrossFadeEnabled = true
+            background = transitionDrawablePlatinum
+            transitionDrawablePlatinum.startTransition(400)
+            isChangeBackground = true
+        }
+    }
+
 }

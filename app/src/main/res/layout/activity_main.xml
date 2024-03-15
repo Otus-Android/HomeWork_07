@@ -15,10 +15,10 @@
         app:layout_constraintDimensionRatio="@string/square"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/chartRect"
-        app:strokeWidth="10dp"
+        app:strokeWidth="@dimen/strokeWidth"
         app:viewType="true"
-        app:radiusCircle="300"
-        app:radiusText="350"/>
+        app:radiusCircle="350"
+        app:radiusText="400"/>
 
     <otus.homework.customview.view.StockChartView
         android:id="@+id/chartRect"
