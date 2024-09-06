@@ -22,3 +22,7 @@
 
 Примеры дизайна которыми можно вдохновляться:
 ![Pie Chart](art/second.png)
+
+### Результат
+
+![RESULT_SCREENSHOT.png](RESULT_SCREENSHOT.png)
