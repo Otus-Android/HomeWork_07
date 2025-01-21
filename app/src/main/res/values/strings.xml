@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Custom View</string>
+    <string name="text_description">%1$d руб. (%2$d%%) - %3$s</string>
+    <string name="category_expenses_text">Траты в категории %1$s:</string>
+    <string name="currency">руб.</string>
 </resources>
