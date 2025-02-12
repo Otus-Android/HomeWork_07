@@ -18,15 +18,20 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initPieChartView()
-    }
-
-    private fun initPieChartView() {
         val inputStream = resources.openRawResource(R.raw.payload)
         val payload = InputStreamReader(inputStream)
         val values = readCosts(payload)
 
-        binding.pieChart.setData(values, getColorsForGradient())
+        initPieChartView(values)
+        initLineChartView(values)
+    }
+
+    private fun initLineChartView(data: List<CostDto>) {
+        binding.lineChart.setData(data, getColorsForGradient())
+    }
+
+    private fun initPieChartView(data: List<CostDto>) {
+        binding.pieChart.setData(data, getColorsForGradient())
         binding.pieChart.applyCallback(object : PieChartView.Callback {
             override fun onSectorClick(costDto: CostDto) {
                 Toast.makeText(
