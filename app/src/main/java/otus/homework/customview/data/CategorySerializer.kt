@@ -16,6 +16,6 @@ class CategorySerializer: KSerializer<Category> {
     }
 
     override fun serialize(encoder: Encoder, value: Category) {
-        encoder.encodeString(value.name)
+        encoder.encodeString(value.title)
     }
 }

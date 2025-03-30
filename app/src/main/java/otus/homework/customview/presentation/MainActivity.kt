@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import otus.homework.customview.presentation.firstPieChart.PieChartView
 
 class MainActivity : AppCompatActivity() {
-    private val viewModel: ViewModel by viewModels { ViewModel.Factory }
+    private val pieChartViewModel: PieChartViewModel by viewModels { PieChartViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.spends.collect {
+                pieChartViewModel.spends.collect {
                     customDiagram.setData(it)
                 }
             }
