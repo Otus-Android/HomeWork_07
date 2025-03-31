@@ -11,7 +11,6 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import otus.homework.customview.domain.Category
 import otus.homework.customview.presentation.firstPieChart.model.PieData
 import otus.homework.customview.utils.mockData
 import otus.homework.customview.utils.px
