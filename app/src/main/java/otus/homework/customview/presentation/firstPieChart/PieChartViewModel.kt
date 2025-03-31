@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation
+package otus.homework.customview.presentation.firstPieChart
 
 import android.graphics.Color
 import android.graphics.Paint

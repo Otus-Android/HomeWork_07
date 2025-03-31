@@ -1,30 +1,36 @@
 package otus.homework.customview.presentation
 
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.fragment.app.FragmentContainerView
 import com.otus.homework.R
-import kotlinx.coroutines.launch
-import otus.homework.customview.presentation.firstPieChart.PieChartView
+import otus.homework.customview.presentation.firstPieChart.PieChartFragment
+import otus.homework.customview.presentation.secondView.SecondFragment
 
 class MainActivity : AppCompatActivity() {
-    private val pieChartViewModel: PieChartViewModel by viewModels { PieChartViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val fragmentContainer = findViewById<FragmentContainerView>(R.id.fragment_container_view_tag)
 
-        val customDiagram = findViewById<PieChartView>(R.id.pi_chart)
-
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                pieChartViewModel.spends.collect {
-                    customDiagram.setData(it)
-                }
-            }
+        val callback1 = {
+            supportFragmentManager.beginTransaction()
+                .replace(fragmentContainer.id, PieChartFragment())
+                .commit()
+            Unit
         }
+
+        val callback2 = {
+            supportFragmentManager.beginTransaction()
+                .replace(fragmentContainer.id, SecondFragment())
+                .commit()
+            Unit
+        }
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(fragmentContainer.id, MainFragment.create(callback1, callback2))
+            .commit()
     }
 }
