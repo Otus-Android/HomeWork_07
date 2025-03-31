@@ -24,11 +24,7 @@ class PieChartView @JvmOverloads constructor(
     private var pieData: PieData? = null
     private val desiredSize = 400.px
     private var center = PointF(0f, 0f)
-    private var outerRectangle = RectF(100f, 100f, 600f, 600f)
-    private val outerDiameter
-        get() =  outerRectangle.width()
-    private val outerRadius
-        get() = outerDiameter / 2
+    private var sectors: List<DrawingSector>? = null
 
     private val boarderPaint = Paint().apply {
         color = Color.WHITE
@@ -36,16 +32,10 @@ class PieChartView @JvmOverloads constructor(
         isAntiAlias = true
     }
 
-    private val innerCirclePaint = Paint().apply {
-        color = Color.WHITE
-        style = Paint.Style.FILL
-        isAntiAlias = true
-    }
-
     private val mainTextPaint = TextPaint().apply {
         color = Color.BLACK
         isAntiAlias = true
-        typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        typeface = Typeface.SANS_SERIF
     }
 
     private val secondTextPaint = TextPaint().apply {
@@ -97,9 +87,8 @@ class PieChartView @JvmOverloads constructor(
         super.onDraw(canvas)
 
         pieData?.let { pieData ->
-            canvas.drawSectors(pieData)
-
-            canvas.drawInnerCycleWithTotal(title = pieData.title, totalValue = pieData.totalValue)
+            canvas.drawSectors()
+            canvas.drawTextTotal(title = pieData.title, totalValue = pieData.totalValue)
         }
     }
 
@@ -108,8 +97,7 @@ class PieChartView @JvmOverloads constructor(
         center = PointF(width / 2f, height / 2f)
 
         setElementsSize()
-        setCircleBounds()
-
+        setSectors()
     }
 
     private fun setElementsSize() {
@@ -118,31 +106,45 @@ class PieChartView @JvmOverloads constructor(
         boarderPaint.strokeWidth = height / 80f
     }
 
-    private fun setCircleBounds() {
-        outerRectangle.apply {
-            top = paddingTop.toFloat()
-            bottom = height.toFloat() - paddingBottom
-            left = paddingLeft.toFloat()
-            right = width.toFloat() - paddingRight
+    private fun setSectors() {
+        pieData?.let { pieData ->
+            val baseRadius = width / 3f
+            sectors = pieData.pieSlices.map { pieSlice ->
+                val strokeW = 0.3f * baseRadius + (width / 10 * pieSlice.value.thickness)
+                val inset = strokeW / 2
+                DrawingSector(
+                    startAngle = pieSlice.value.startAngle,
+                    sweepAngle = pieSlice.value.sweepAngle,
+                    paint = pieSlice.value.paint.apply {
+                        strokeWidth = strokeW
+                        style = Paint.Style.STROKE
+                        strokeCap = Paint.Cap.BUTT
+                    },
+                    rectF = RectF(
+                        /* left = */ center.x - baseRadius + paddingLeft.toFloat() - inset,
+                        /* top = */ center.y - baseRadius + paddingTop.toFloat() - inset,
+                        /* right = */ center.x + baseRadius - paddingRight.toFloat() + inset,
+                        /* bottom = */ center.y + baseRadius - paddingBottom.toFloat() + inset
+                    )
+                )
+            }
         }
     }
 
-    private fun Canvas.drawSectors(
-        pieData: PieData
-    ) {
-        pieData.pieSlices.forEach {
+    private fun Canvas.drawSectors() {
+        sectors?.forEach {
             drawArc(
-                /* oval = */ outerRectangle,
-                /* startAngle = */ it.value.startAngle,
-                /* sweepAngle = */ it.value.sweepAngle,
-                /* useCenter = */ true,
-                /* paint = */ it.value.paint
+                /* oval = */ it.rectF,
+                /* startAngle = */ it.startAngle,
+                /* sweepAngle = */ it.sweepAngle,
+                /* useCenter = */ false,
+                /* paint = */ it.paint
             )
             drawDivider(
                 centerX = center.x,
                 centerY = center.y,
-                radius = outerRadius,
-                angle = it.value.startAngle + it.value.sweepAngle,
+                radius = width / 2f,
+                angle = it.startAngle + it.sweepAngle,
             )
         }
     }
@@ -154,17 +156,10 @@ class PieChartView @JvmOverloads constructor(
         drawLine(centerX, centerY, endX, endY, boarderPaint)
     }
 
-    private fun Canvas.drawInnerCycleWithTotal(
+    private fun Canvas.drawTextTotal(
         title: String,
         totalValue: Int,
     ) {
-        drawCircle(
-            /* cx = */ center.x,
-            /* cy = */ center.y,
-            /* radius = */ outerRadius / 2,
-            /* paint = */ innerCirclePaint
-        )
-
         val formattedString = buildString {
             append(NumberFormat.getInstance().format(totalValue))
             append(" $")
@@ -196,4 +191,11 @@ class PieChartView @JvmOverloads constructor(
             /* paint = */ secondTextPaint
         )
     }
+
+    private data class DrawingSector(
+        val startAngle: Float,
+        val sweepAngle: Float,
+        val paint: Paint,
+        val rectF: RectF,
+    )
 }

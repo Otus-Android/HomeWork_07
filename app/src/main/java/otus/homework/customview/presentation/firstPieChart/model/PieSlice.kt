@@ -8,6 +8,7 @@ data class PieSlice(
     val amount: Int,
     var startAngle: Float,
     var sweepAngle: Float,
+    var thickness: Float,
     val indicatorCircleLocation: PointF,
     val paint: Paint,
 )

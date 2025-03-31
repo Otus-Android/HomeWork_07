@@ -12,18 +12,20 @@ val mockData = PieData(
     pieSlices = mapOf(
         Category.SPORTS.title to PieSlice(
             categoryTitle = Category.SPORTS.title,
-            amount = 25,
+            amount = 30,
             startAngle = 0f,
-            sweepAngle = 90f,
+            sweepAngle = 100f,
             indicatorCircleLocation = PointF(),
+            thickness = 0.4f,
             paint = Paint().apply { color = Color.RED }
         ),
         Category.ALCOHOL.title to PieSlice(
             categoryTitle = Category.ALCOHOL.title,
             amount = 25,
-            startAngle = 90f,
-            sweepAngle = 90f,
+            startAngle = 100f,
+            sweepAngle = 80f,
             indicatorCircleLocation = PointF(),
+            thickness = 0.15f,
             paint = Paint().apply { color = Color.GRAY }
         ),
         Category.TRANSPORT.title to PieSlice(
@@ -32,6 +34,7 @@ val mockData = PieData(
             startAngle = 180f,
             sweepAngle = 90f,
             indicatorCircleLocation = PointF(),
+            thickness = 0.25f,
             paint = Paint().apply { color = Color.BLUE }
         ),
         Category.GROCERIES.title to PieSlice(
@@ -40,6 +43,7 @@ val mockData = PieData(
             startAngle = 270f,
             sweepAngle = 90f,
             indicatorCircleLocation = PointF(),
+            thickness = 0.25f,
             paint = Paint().apply { color = Color.GREEN }
         ),
     )

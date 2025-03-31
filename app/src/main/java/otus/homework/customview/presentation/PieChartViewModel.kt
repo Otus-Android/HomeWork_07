@@ -56,6 +56,7 @@ class PieChartViewModel(
                     amount = spend.amount,
                     startAngle = 0f,
                     sweepAngle = 0f,
+                    thickness = 0f,
                     indicatorCircleLocation = PointF(),
                     paint = generatePaint()
                 )
@@ -87,8 +88,9 @@ class PieChartViewModel(
         pieSlices.map { pieSliceEntry ->
             with(pieSliceEntry.value) {
                 startAngle = lastAngle
-                sweepAngle = ((amount / totalValue.toFloat()) * 360f)
-
+                val part = amount / totalValue.toFloat()
+                sweepAngle = (part * 360f)
+                thickness = part
                 lastAngle += sweepAngle
             }
         }
