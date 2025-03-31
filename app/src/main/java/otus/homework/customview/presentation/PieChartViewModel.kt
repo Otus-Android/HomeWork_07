@@ -69,7 +69,7 @@ class PieChartViewModel(
 
     private fun generatePaint(): Paint = Paint().apply {
         color = Color.argb(
-            /* alpha = */ 1,
+            /* alpha = */ 255,
             /* red = */ Random.nextInt(255),
             /* green = */ Random.nextInt(255),
             /* blue = */ Random.nextInt(255)

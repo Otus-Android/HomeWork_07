@@ -9,11 +9,13 @@
 
     <otus.homework.customview.presentation.firstPieChart.PieChartView
         android:id="@+id/pi_chart"
-        android:layout_width="215dp"
-        android:layout_height="214dp"
-        android:paddingVertical="2.dp"
-        android:paddingHorizontal="2.dp"
-        tools:layout_editor_absoluteX="104dp"
-        tools:layout_editor_absoluteY="138dp" />
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:paddingVertical="10dp"
+        android:paddingHorizontal="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

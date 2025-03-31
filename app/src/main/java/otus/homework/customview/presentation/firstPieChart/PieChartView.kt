@@ -10,9 +10,8 @@ import android.graphics.Typeface
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.View
-import otus.homework.customview.domain.Category
 import otus.homework.customview.presentation.firstPieChart.model.PieData
-import otus.homework.customview.presentation.firstPieChart.model.PieSlice
+import otus.homework.customview.utils.mockData
 import otus.homework.customview.utils.px
 import java.text.NumberFormat
 import kotlin.math.cos
@@ -23,43 +22,6 @@ class PieChartView @JvmOverloads constructor(
     attributeSet: AttributeSet? = null,
 ) : View(context, attributeSet) {
     private var pieData: PieData? = null
-    private val mockData = PieData(
-        totalValue = 100,
-        pieSlices = mapOf(
-            Category.SPORTS.title to PieSlice(
-                categoryTitle = Category.SPORTS.title,
-                amount = 25,
-                startAngle = 0f,
-                sweepAngle = 90f,
-                indicatorCircleLocation = PointF(),
-                paint = Paint().apply { color = Color.RED }
-            ),
-            Category.ALCOHOL.title to PieSlice(
-                categoryTitle = Category.ALCOHOL.title,
-                amount = 25,
-                startAngle = 90f,
-                sweepAngle = 90f,
-                indicatorCircleLocation = PointF(),
-                paint = Paint().apply { color = Color.GRAY }
-            ),
-            Category.TRANSPORT.title to PieSlice(
-                categoryTitle = Category.TRANSPORT.title,
-                amount = 25,
-                startAngle = 180f,
-                sweepAngle = 90f,
-                indicatorCircleLocation = PointF(),
-                paint = Paint().apply { color = Color.BLUE }
-            ),
-            Category.GROCERIES.title to PieSlice(
-                categoryTitle = Category.GROCERIES.title,
-                amount = 25,
-                startAngle = 270f,
-                sweepAngle = 90f,
-                indicatorCircleLocation = PointF(),
-                paint = Paint().apply { color = Color.GREEN }
-            ),
-        )
-    )
     private val desiredSize = 400.px
     private var center = PointF(0f, 0f)
     private var outerRectangle = RectF(100f, 100f, 600f, 600f)
@@ -112,18 +74,21 @@ class PieChartView @JvmOverloads constructor(
         val hMode = MeasureSpec.getMode(heightMeasureSpec)
         val hSize = MeasureSpec.getSize(heightMeasureSpec)
 
+        val desiredWidthWithPadding = desiredSize + paddingLeft + paddingRight
+        val desiredHeightWithPadding = desiredSize + paddingTop + paddingBottom
+
         val viewWidth: Int = when (wMode) {
-            MeasureSpec.AT_MOST -> desiredSize.coerceAtMost(wSize)
+            MeasureSpec.AT_MOST -> desiredWidthWithPadding.coerceAtMost(wSize)
             MeasureSpec.EXACTLY -> wSize
-            MeasureSpec.UNSPECIFIED -> desiredSize
-            else -> desiredSize
+            MeasureSpec.UNSPECIFIED -> desiredWidthWithPadding
+            else -> desiredWidthWithPadding
         }
 
         val viewHeight: Int = when (hMode) {
-            MeasureSpec.AT_MOST -> desiredSize.coerceAtMost(hSize)
+            MeasureSpec.AT_MOST -> desiredHeightWithPadding.coerceAtMost(hSize)
             MeasureSpec.EXACTLY -> hSize
-            MeasureSpec.UNSPECIFIED -> desiredSize
-            else -> desiredSize
+            MeasureSpec.UNSPECIFIED -> desiredHeightWithPadding
+            else -> desiredHeightWithPadding
         }
         setMeasuredDimension(viewWidth, viewHeight)
     }
@@ -150,15 +115,15 @@ class PieChartView @JvmOverloads constructor(
     private fun setElementsSize() {
         mainTextPaint.textSize = height / 20f
         secondTextPaint.textSize = height / 25f
-        boarderPaint.strokeWidth = height / 90f
+        boarderPaint.strokeWidth = height / 80f
     }
 
     private fun setCircleBounds() {
         outerRectangle.apply {
-            top = 0f
-            bottom = height.toFloat()
-            left = 0f
-            right = width.toFloat()
+            top = paddingTop.toFloat()
+            bottom = height.toFloat() - paddingBottom
+            left = paddingLeft.toFloat()
+            right = width.toFloat() - paddingRight
         }
     }
 
@@ -183,10 +148,8 @@ class PieChartView @JvmOverloads constructor(
     }
 
     private fun Canvas.drawDivider(centerX: Float, centerY: Float, radius: Float, angle: Float) {
-        val endX = centerX + radius * cos(Math.toRadians(angle.toDouble())).toFloat()
-        println(endX)
-        val endY = centerY + radius * sin(Math.toRadians(angle.toDouble())).toFloat()
-        println(endX)
+        val endX = (centerX + 1.1 * radius * cos(Math.toRadians(angle.toDouble()))).toFloat()
+        val endY = (centerY + 1.1 * radius * sin(Math.toRadians(angle.toDouble()))).toFloat()
 
         drawLine(centerX, centerY, endX, endY, boarderPaint)
     }
