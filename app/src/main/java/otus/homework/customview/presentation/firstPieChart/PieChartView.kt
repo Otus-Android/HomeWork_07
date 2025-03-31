@@ -9,13 +9,17 @@ import android.graphics.RectF
 import android.graphics.Typeface
 import android.text.TextPaint
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
+import otus.homework.customview.domain.Category
 import otus.homework.customview.presentation.firstPieChart.model.PieData
 import otus.homework.customview.utils.mockData
 import otus.homework.customview.utils.px
 import java.text.NumberFormat
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 class PieChartView @JvmOverloads constructor(
     context: Context,
@@ -25,6 +29,7 @@ class PieChartView @JvmOverloads constructor(
     private val desiredSize = 400.px
     private var center = PointF(0f, 0f)
     private var sectors: List<DrawingSector>? = null
+    private var onSectorClickListener: ((String) -> Unit)? = null
 
     private val boarderPaint = Paint().apply {
         color = Color.WHITE
@@ -55,6 +60,10 @@ class PieChartView @JvmOverloads constructor(
 
         requestLayout()
         invalidate()
+    }
+
+    fun setOnSectorClickListener(callback: (String) -> Unit) {
+        onSectorClickListener = callback
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -100,6 +109,48 @@ class PieChartView @JvmOverloads constructor(
         setSectors()
     }
 
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        when (event?.action) {
+            MotionEvent.ACTION_DOWN -> {
+                val touchX = event.x
+                val touchY = event.y
+
+                val touchedSector = sectors?.firstOrNull {
+                    isPointInSector(touchX, touchY, it)
+                }
+                touchedSector?.let { sector ->
+                    onSectorClickListener?.invoke(sector.category)
+                    performClick()
+                }
+                return true
+            }
+        }
+        return super.onTouchEvent(event)
+    }
+
+    private fun isPointInSector(touchX: Float, touchY: Float, sector: DrawingSector): Boolean {
+        val dx = touchX - center.x
+        val dy = touchY - center.y
+        val distance = sqrt(dx * dx + dy * dy)
+
+        val outerRadius = sector.baseRadius + sector.paint.strokeWidth / 2 + sector.inset
+        val innerRadius = sector.baseRadius - sector.paint.strokeWidth / 2 + sector.inset
+
+        if (distance < innerRadius || distance > outerRadius) {
+            return false
+        }
+
+        var angle = Math.toDegrees(atan2(dy.toDouble(), dx.toDouble())).toFloat()
+        if (angle < 0) angle += 360
+
+        return angle in sector.startAngle..(sector.startAngle + sector.sweepAngle)
+    }
+
+    override fun performClick(): Boolean {
+        super.performClick()
+        return true
+    }
+
     private fun setElementsSize() {
         mainTextPaint.textSize = height / 20f
         secondTextPaint.textSize = height / 25f
@@ -113,6 +164,9 @@ class PieChartView @JvmOverloads constructor(
                 val strokeW = 0.3f * baseRadius + (width / 10 * pieSlice.value.thickness)
                 val inset = strokeW / 2
                 DrawingSector(
+                    category = pieSlice.key,
+                    baseRadius = baseRadius,
+                    inset = inset,
                     startAngle = pieSlice.value.startAngle,
                     sweepAngle = pieSlice.value.sweepAngle,
                     paint = pieSlice.value.paint.apply {
@@ -193,6 +247,9 @@ class PieChartView @JvmOverloads constructor(
     }
 
     private data class DrawingSector(
+        val category: String,
+        val baseRadius: Float,
+        val inset: Float,
         val startAngle: Float,
         val sweepAngle: Float,
         val paint: Paint,
