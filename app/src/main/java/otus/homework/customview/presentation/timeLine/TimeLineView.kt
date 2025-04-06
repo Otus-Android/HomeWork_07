@@ -113,17 +113,41 @@ class TimeLineView @JvmOverloads constructor(
 
     private fun Canvas.drawChart() {
         timeLineData?.let {
-            val sectorWidth = width / it.spends.size
-            var startX = 0f
-            val startY = 0f
-            var stopX = 0f
-            val stopY = height.toFloat()
-            repeat(it.spends.size) {
-                drawLine(startX, startY, stopX, stopY, chartPaint)
-                startX += sectorWidth
-                stopX += sectorWidth
-            }
+            val sectorWidth = width / it.totalDays
+            val verticalLinesCount = 5
+            val sectorHeight = height / verticalLinesCount
+            drawVerticalLines(it.spends.size, sectorWidth)
+            drawHorizontalLines(verticalLinesCount, sectorHeight)
+        }
+    }
 
+    private fun Canvas.drawVerticalLines(
+        count: Int,
+        sectorWidth: Int
+    ) {
+        var startX = 0f
+        val startY = 0f
+        var stopX = 0f
+        val stopY = height.toFloat()
+        repeat(count) {
+            drawLine(startX, startY, stopX, stopY, chartPaint)
+            startX += sectorWidth
+            stopX += sectorWidth
+        }
+    }
+
+    private fun Canvas.drawHorizontalLines(
+        count: Int,
+        sectorHeight: Int
+    ) {
+        val startX = 0f
+        var startY = 0f
+        val stopX = width.toFloat()
+        var stopY = 0f
+        repeat(count) {
+            drawLine(startX, startY, stopX, stopY, chartPaint)
+            startY += sectorHeight
+            stopY += sectorHeight
         }
     }
 }

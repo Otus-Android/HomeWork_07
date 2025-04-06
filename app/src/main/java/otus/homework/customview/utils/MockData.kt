@@ -7,6 +7,7 @@ import otus.homework.customview.domain.Category
 import otus.homework.customview.domain.Spend
 import otus.homework.customview.presentation.pieChart.model.PieData
 import otus.homework.customview.presentation.pieChart.model.PieSlice
+import otus.homework.customview.presentation.timeLine.model.SpendModel
 import otus.homework.customview.presentation.timeLine.model.TimeLineData
 import java.util.Calendar
 
@@ -54,12 +55,13 @@ val mockPieData = PieData(
 
 val mockTimeLineData = TimeLineData(
     selected = Category.SPORTS, available = Category.entries.toSet(), spends = List(10) {
-        Spend(
-            id = it,
+        SpendModel(
             name = "Sport $it",
             amount = 100 * it,
             category = Category.SPORTS,
-            time = Calendar.getInstance().timeInMillis + it * 3_600 * 24
+            date = (Calendar.getInstance().timeInMillis + it * 3_600 * 24).toString()
         )
-    }
+    },
+    totalDays = 10,
+    maxAmount = 100 * 10
 )
