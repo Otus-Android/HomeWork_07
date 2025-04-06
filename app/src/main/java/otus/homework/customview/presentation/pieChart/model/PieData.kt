@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation.firstPieChart.model
+package otus.homework.customview.presentation.pieChart.model
 
 data class PieData(
     val totalValue: Int = 0,

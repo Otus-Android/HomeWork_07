@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation.firstPieChart
+package otus.homework.customview.presentation.pieChart
 
 import android.content.Context
 import android.graphics.Canvas
@@ -11,8 +11,9 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import otus.homework.customview.presentation.firstPieChart.model.PieData
-import otus.homework.customview.utils.mockData
+import otus.homework.customview.presentation.pieChart.model.PieData
+import otus.homework.customview.utils.dp
+import otus.homework.customview.utils.mockPieData
 import otus.homework.customview.utils.px
 import java.text.NumberFormat
 import kotlin.math.atan2
@@ -20,12 +21,15 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+/**
+ * PieChart diagram for spends
+ */
 class PieChartView @JvmOverloads constructor(
     context: Context,
     attributeSet: AttributeSet? = null,
 ) : View(context, attributeSet) {
     private var pieData: PieData? = null
-    private val desiredSize = 400.px
+    private val desiredSize = 400.dp
     private var center = PointF(0f, 0f)
     private var sectors: List<DrawingSector>? = null
     private var onSectorClickListener: ((String) -> Unit)? = null
@@ -50,7 +54,7 @@ class PieChartView @JvmOverloads constructor(
 
     init {
         if (isInEditMode) {
-            pieData = mockData
+            pieData = mockPieData
         }
     }
 
@@ -158,7 +162,7 @@ class PieChartView @JvmOverloads constructor(
 
     private fun setSectors() {
         pieData?.let { pieData ->
-            val baseRadius = width / 3f
+            val baseRadius = height.coerceAtMost(width) / 3f
             sectors = pieData.pieSlices.map { pieSlice ->
                 val strokeW = 0.3f * baseRadius + (width / 10 * pieSlice.value.thickness)
                 val inset = strokeW / 2

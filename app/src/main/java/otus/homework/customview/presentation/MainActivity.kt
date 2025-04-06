@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentContainerView
 import com.otus.homework.R
-import otus.homework.customview.presentation.firstPieChart.PieChartFragment
-import otus.homework.customview.presentation.secondView.SecondFragment
+import otus.homework.customview.presentation.pieChart.PieChartFragment
+import otus.homework.customview.presentation.timeLine.TimeLineFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 
         val callback2 = {
             supportFragmentManager.beginTransaction()
-                .replace(fragmentContainer.id, SecondFragment())
+                .replace(fragmentContainer.id, TimeLineFragment())
                 .commit()
             Unit
         }

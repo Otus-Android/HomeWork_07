@@ -17,9 +17,6 @@ class Repository(
     private val json = context.resources.openRawResource(R.raw.payload).bufferedReader().use { it.readText() }
     private val spends = MutableStateFlow(Json.decodeFromString<List<Spend>>(json))
 
-    init {
-    }
-
     override fun getSpendsUseCase(): StateFlow<List<Spend>> {
         return spends.asStateFlow()
     }

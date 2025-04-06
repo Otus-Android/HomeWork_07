@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation.firstPieChart.model
+package otus.homework.customview.presentation.pieChart.model
 
 import android.graphics.Paint
 import android.graphics.PointF

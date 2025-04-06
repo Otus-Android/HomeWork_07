@@ -4,10 +4,13 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
 import otus.homework.customview.domain.Category
-import otus.homework.customview.presentation.firstPieChart.model.PieData
-import otus.homework.customview.presentation.firstPieChart.model.PieSlice
+import otus.homework.customview.domain.Spend
+import otus.homework.customview.presentation.pieChart.model.PieData
+import otus.homework.customview.presentation.pieChart.model.PieSlice
+import otus.homework.customview.presentation.timeLine.model.TimeLineData
+import java.util.Calendar
 
-val mockData = PieData(
+val mockPieData = PieData(
     totalValue = 100,
     pieSlices = mapOf(
         Category.SPORTS.title to PieSlice(
@@ -47,4 +50,16 @@ val mockData = PieData(
             paint = Paint().apply { color = Color.GREEN }
         ),
     )
+)
+
+val mockTimeLineData = TimeLineData(
+    selected = Category.SPORTS, available = Category.entries.toSet(), spends = List(10) {
+        Spend(
+            id = it,
+            name = "Sport $it",
+            amount = 100 * it,
+            category = Category.SPORTS,
+            time = Calendar.getInstance().timeInMillis + it * 3_600 * 24
+        )
+    }
 )

@@ -1,6 +1,5 @@
-package otus.homework.customview.presentation.firstPieChart
+package otus.homework.customview.presentation.pieChart
 
-import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -9,13 +8,13 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.DynamicDrawableSpan
 import android.text.style.ImageSpan
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -41,13 +40,13 @@ class PieChartFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val customDiagram = view.findViewById<PieChartView>(R.id.pi_chart)
-        customDiagram.setOnSectorClickListener { Toast.makeText(context, it, Toast.LENGTH_LONG).show() }
+        val pieChartView = view.findViewById<PieChartView>(R.id.pi_chart)
+        pieChartView.setOnSectorClickListener { Toast.makeText(context, it, Toast.LENGTH_LONG).show() }
         val linearLayout = view.findViewById<LinearLayout>(R.id.history)
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 pieChartViewModel.spends.collect { pieData ->
-                    customDiagram.setData(pieData)
+                    pieChartView.setData(pieData)
                     pieData.pieSlices.forEach {
                         val categoryAndTotal = "${it.key}: ${it.value.amount}"
                         linearLayout.addView(

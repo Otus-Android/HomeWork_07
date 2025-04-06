@@ -1,4 +1,4 @@
-package otus.homework.customview.presentation.firstPieChart
+package otus.homework.customview.presentation.pieChart
 
 import android.graphics.Color
 import android.graphics.Paint
@@ -16,8 +16,8 @@ import otus.homework.customview.CustomViewApp
 import otus.homework.customview.domain.GenerateNewSpendsUseCase
 import otus.homework.customview.domain.GetSpendsUseCase
 import otus.homework.customview.domain.Spend
-import otus.homework.customview.presentation.firstPieChart.model.PieData
-import otus.homework.customview.presentation.firstPieChart.model.PieSlice
+import otus.homework.customview.presentation.pieChart.model.PieData
+import otus.homework.customview.presentation.pieChart.model.PieSlice
 import kotlin.random.Random
 
 class PieChartViewModel(
