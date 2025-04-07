@@ -24,21 +24,24 @@ class TimeLineViewModel(
     getSpendsUseCase: GetSpendsUseCase,
 ): ViewModel() {
 
-    private val selectedCategoryFlow = MutableStateFlow(Category.SPORTS)
+    private val selectedCategoryFlow = MutableStateFlow(Category.HEALTH)
     private val _spendsInTimeLine = MutableStateFlow(emptyList<Spend>())
 
     val spendsInTimeLine: Flow<TimeLineData> = combine(selectedCategoryFlow, _spendsInTimeLine) { selectedCategory, spends ->
         val availableCategory = spends.map { it.category }.toSet()
-        val spendModels = spends.map { it.toSpendModel() }
-        val days = spendModels.map { it.date }.toSet()
+        val maxAmount = spends.maxOf { it.amount }
+        val times = spends.map { it.time }.sorted()
+        val spendModels = spends.map { it.toSpendModel(times.indexOf(it.time), maxAmount) }.also { println("XXX $it") }
+        val days = spendModels.map { it.date }.sorted().toSet()
         TimeLineData(
             selected = selectedCategory,
-            available = availableCategory,
-            spends = spendModels,
-            totalDays = days.size,
-            maxAmount = spends.maxOf { it.amount }
+            availableCategories = availableCategory,
+            spends = spendModels.groupBy { it.category },
+            totalDays = days,
+            maxAmount = maxAmount
         )
     }
+
 
     init {
         getSpendsUseCase.getSpends()
@@ -63,17 +66,18 @@ class TimeLineViewModel(
     }
 }
 
-private fun Spend.toSpendModel(): SpendModel {
+private fun Spend.toSpendModel(index: Int, maxAmount: Int): SpendModel {
     return SpendModel(
         name = name,
         amount = amount,
         category = category,
-        date = localDateTime(time)
+        date = localDateTime(time),
+        part = Pair(index.toFloat(), amount.toFloat() / maxAmount)
     )
 }
 
 private fun localDateTime(seconds: Long): String {
     val calendar = Calendar.getInstance()
     calendar.timeInMillis = seconds * 1000
-    return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(calendar.time)
+    return SimpleDateFormat("dd MMM", Locale.getDefault()).format(calendar.time)
 }

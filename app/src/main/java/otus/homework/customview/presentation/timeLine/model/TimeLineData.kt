@@ -4,8 +4,8 @@ import otus.homework.customview.domain.Category
 
 data class TimeLineData(
     val selected: Category,
-    val available: Set<Category>,
-    val spends: List<SpendModel>,
-    val totalDays: Int,
+    val availableCategories: Set<Category>,
+    val spends: Map<Category, List<SpendModel>>,
+    val totalDays: Set<String>,
     val maxAmount: Int
 )

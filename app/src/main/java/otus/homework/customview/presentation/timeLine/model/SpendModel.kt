@@ -7,4 +7,5 @@ data class SpendModel(
     val amount: Int,
     val category: Category,
     val date: String,
+    val part: Pair<Float, Float>,
 )

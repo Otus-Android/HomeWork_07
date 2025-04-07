@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
 import otus.homework.customview.domain.Category
-import otus.homework.customview.domain.Spend
 import otus.homework.customview.presentation.pieChart.model.PieData
 import otus.homework.customview.presentation.pieChart.model.PieSlice
 import otus.homework.customview.presentation.timeLine.model.SpendModel
@@ -53,15 +52,17 @@ val mockPieData = PieData(
     )
 )
 
+private val spends = List(10) {
+    SpendModel(
+        name = "Sport $it",
+        amount = 100 * it,
+        category = Category.SPORTS,
+        date = (Calendar.getInstance().timeInMillis / 1_000 + it * 3_600 * 24).toString(),
+        part = Pair(it.toFloat(), 0.1f * it)
+    )
+}
 val mockTimeLineData = TimeLineData(
-    selected = Category.SPORTS, available = Category.entries.toSet(), spends = List(10) {
-        SpendModel(
-            name = "Sport $it",
-            amount = 100 * it,
-            category = Category.SPORTS,
-            date = (Calendar.getInstance().timeInMillis + it * 3_600 * 24).toString()
-        )
-    },
-    totalDays = 10,
+    selected = Category.SPORTS, availableCategories = Category.entries.toSet(), spends = spends.groupBy { it.category },
+    totalDays = spends.sortedBy { it.date }.map { it.date }.toSet(),
     maxAmount = 100 * 10
 )
