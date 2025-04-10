@@ -5,12 +5,16 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.otus.homework.R
 import kotlinx.coroutines.launch
+import otus.homework.customview.domain.Category
 
 
 /**
@@ -45,6 +49,27 @@ class TimeLineFragment : Fragment() {
                     timeLineView.setData(it)
                 }
             }
+        }
+
+        val spinner: Spinner = view.findViewById(R.id.spinner)
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mutableListOf<String>())
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.categories.collect {
+                    adapter.clear()
+                    adapter.addAll(it)
+                }
+            }
+        }
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = adapter
+
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                viewModel.changeSelected(position)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
 

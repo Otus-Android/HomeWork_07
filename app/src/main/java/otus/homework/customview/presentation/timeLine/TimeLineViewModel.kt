@@ -27,8 +27,11 @@ class TimeLineViewModel(
     private val selectedCategoryFlow = MutableStateFlow(Category.HEALTH)
     private val _spendsInTimeLine = MutableStateFlow(emptyList<Spend>())
 
+    val categories = MutableStateFlow(emptyList<String>())
+
     val spendsInTimeLine: Flow<TimeLineData> = combine(selectedCategoryFlow, _spendsInTimeLine) { selectedCategory, spends ->
         val availableCategory = spends.map { it.category }.toSet()
+        categories.value = availableCategory.map { it.title }
         val maxAmount = spends.maxOf { it.amount }
         val times = spends.map { it.time }.sorted()
         val spendModels = spends.map { it.toSpendModel(times.indexOf(it.time), maxAmount) }.also { println("XXX $it") }
@@ -51,8 +54,9 @@ class TimeLineViewModel(
             .launchIn(viewModelScope)
     }
 
-    fun changeSelected(category: Category) {
-        selectedCategoryFlow.value = category
+    fun changeSelected(index: Int) {
+        val category = categories.value.getOrNull(index) ?: return
+        selectedCategoryFlow.value = Category.fromString(category)
     }
 
     companion object {
