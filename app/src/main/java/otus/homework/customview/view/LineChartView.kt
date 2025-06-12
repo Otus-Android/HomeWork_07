@@ -19,10 +19,21 @@ class LineChartView @JvmOverloads constructor(
 
     private var data: List<PriceData> = listOf()
     private var colors: List<Pair<Int, Int>> = listOf()
+    private var localDates: Map<PriceData, LocalDateTime> = emptyMap()
+    private var groupedByCategories: Map<String, List<PriceData>> = emptyMap()
 
     fun setData(values: List<PriceData>, colors: List<Pair<Int, Int>>) {
         this.data = values
         this.colors = colors
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            localDates = data.associate {
+                it to LocalDateTime.ofInstant(
+                    Instant.ofEpochSecond(it.time),
+                    ZoneId.systemDefault()
+                )
+            }
+        }
+        groupedByCategories = data.groupBy { it.category }
         invalidate()
     }
 
@@ -64,15 +75,6 @@ class LineChartView @JvmOverloads constructor(
             val y = height - padding - (i * (height - 2 * padding) / numGridLines)
             canvas.drawLine(padding, y, width - padding, y, gridPaint)
         }
-
-        val localDates = data.associate {
-            it to LocalDateTime.ofInstant(
-                Instant.ofEpochSecond(it.time),
-                ZoneId.systemDefault()
-            )
-        }
-
-        val groupedByCategories = data.groupBy { it.category }
 
         for ((_, categoryData) in groupedByCategories) {
             val categoryColor = colors.random().first

@@ -40,7 +40,8 @@ class PieChartView @JvmOverloads constructor(
     private val holePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
 
     private val rectF = RectF()
-    private val textBounds = Rect()
+    private val sumBounds = Rect()
+    private val labelBounds = Rect()
     private var data: List<PriceData> = listOf()
     private var colors: List<Pair<Int, Int>> = listOf()
     private var gradientColors: List<SweepGradient> = listOf()
@@ -50,8 +51,14 @@ class PieChartView @JvmOverloads constructor(
     fun setData(values: List<PriceData>, colors: List<Pair<Int, Int>>) {
         this.data = values
         this.colors = colors
-        gradientColors = listOf()
+        gradientColors = buildGradients()
         invalidate()
+    }
+
+    private fun buildGradients(): List<SweepGradient> {
+        val width = if (measuredWidth > 0) measuredWidth.toFloat() else 1f
+        val height = if (measuredHeight > 0) measuredHeight.toFloat() else 1f
+        return colors.map { SweepGradient(width, height, it.first, it.second) }
     }
 
     @SuppressLint("DrawAllocation")
@@ -60,12 +67,6 @@ class PieChartView @JvmOverloads constructor(
 
         val width = width.toFloat()
         val height = height.toFloat()
-
-        if (gradientColors.isEmpty() && colors.isNotEmpty()) {
-            colors.forEach {
-                gradientColors += SweepGradient(width, height, it.first, it.second)
-            }
-        }
 
         val radius = min(width, height) / 2 - 20f
         val holeRadius = radius * 0.77f
@@ -98,13 +99,11 @@ class PieChartView @JvmOverloads constructor(
         textPaint.textSize = 60f
         textPaint.typeface = Typeface.DEFAULT_BOLD
         val sumText = "$dataSum ₽"
-        val sumBounds = Rect()
         textPaint.getTextBounds(sumText, 0, sumText.length, sumBounds)
 
         textPaint.textSize = 40f
         textPaint.typeface = Typeface.DEFAULT
         val labelText = "Потрачено в Июне"
-        val labelBounds = Rect()
         textPaint.getTextBounds(labelText, 0, labelText.length, labelBounds)
 
         val totalTextHeight = sumBounds.height() + labelBounds.height() + 16f

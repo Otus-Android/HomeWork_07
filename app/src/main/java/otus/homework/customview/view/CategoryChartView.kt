@@ -48,27 +48,59 @@ class CategoryChartView @JvmOverloads constructor(
     private var category: String = ""
     private var maxAmount = 0.0
     private var dateFormat = SimpleDateFormat("dd.MM", Locale.getDefault())
-    private var chartPath = Path()
-    private var fillPath = Path()
+    private val chartPath = Path()
+    private val fillPath = Path()
 
     private var paddingHorizontal = 100f
     private var paddingVertical = 100f
     private var chartWidth = 0f
     private var chartHeight = 0f
+    private var dailyExpenses: Map<Long, Double> = emptyMap()
+    private var sortedKeys: List<Long> = emptyList()
 
     fun setData(newData: List<PriceData>, category: String) {
         this.data = newData.filter { it.category == category }
         this.category = category
         calculateChartDimensions()
+        recalculatePaths()
         invalidate()
     }
 
     private fun calculateChartDimensions() {
         if (data.isEmpty()) return
 
-        maxAmount = data.groupBy { it.time * 1000L }
-            .mapValues { it.value.sumOf { expense -> expense.amount } }
-            .maxOf { it.value }.toDouble()
+        dailyExpenses = data.groupBy { it.time * 1000L }
+            .mapValues { it.value.sumOf { expense -> expense.amount }.toDouble() }
+        sortedKeys = dailyExpenses.keys.sorted()
+        maxAmount = dailyExpenses.values.maxOrNull() ?: 0.0
+    }
+
+    private fun recalculatePaths() {
+        chartPath.reset()
+        fillPath.reset()
+        if (dailyExpenses.isEmpty()) return
+        if (sortedKeys.isEmpty()) return
+        val timeRange = sortedKeys.last() - sortedKeys.first()
+        if (timeRange == 0L) return
+        val xScale = chartWidth / timeRange
+        val yScale = if (maxAmount == 0.0) 0f else (chartHeight / maxAmount).toFloat()
+        var isFirst = true
+        for (time in sortedKeys) {
+            val amount = dailyExpenses[time] ?: 0.0
+            val x = paddingHorizontal + (time - sortedKeys.first()) * xScale
+            val y = height - paddingVertical - (amount * yScale).toFloat()
+            if (isFirst) {
+                chartPath.moveTo(x, y)
+                fillPath.moveTo(x, height - paddingVertical)
+                fillPath.lineTo(x, y)
+                isFirst = false
+            } else {
+                chartPath.lineTo(x, y)
+                fillPath.lineTo(x, y)
+            }
+        }
+        fillPath.lineTo(paddingHorizontal + chartWidth, height - paddingVertical)
+        fillPath.close()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -85,12 +117,12 @@ class CategoryChartView @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldw, oldh)
         chartWidth = w - 2 * paddingHorizontal
         chartHeight = h - 2 * paddingVertical
+        recalculatePaths()
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        
-        if (data.isEmpty()) return
+        if (data.isEmpty() || dailyExpenses.isEmpty() || sortedKeys.isEmpty()) return
 
         canvas.drawLine(
             paddingHorizontal,
@@ -99,7 +131,6 @@ class CategoryChartView @JvmOverloads constructor(
             height - paddingVertical,
             axisLinePaint
         )
-        
         canvas.drawLine(
             paddingHorizontal,
             paddingVertical,
@@ -108,48 +139,17 @@ class CategoryChartView @JvmOverloads constructor(
             axisLinePaint
         )
 
-        val dailyExpenses = data.groupBy { it.time * 1000L }
-            .mapValues { it.value.sumOf { expense -> expense.amount } }
-            .toSortedMap()
-
-        if (dailyExpenses.isEmpty()) return
-
-        val timeRange = dailyExpenses.lastKey() - dailyExpenses.firstKey()
-        val xScale = chartWidth / timeRange
-        val yScale = chartHeight / maxAmount
-
-        chartPath.reset()
-        fillPath.reset()
-        
-        var isFirst = true
-        dailyExpenses.forEach { (time, amount) ->
-            val x = paddingHorizontal + (time - dailyExpenses.firstKey()) * xScale
-            val y = height - paddingVertical - (amount * yScale).toFloat()
-
-            if (isFirst) {
-                chartPath.moveTo(x, y)
-                fillPath.moveTo(x, height - paddingVertical)
-                fillPath.lineTo(x, y)
-                isFirst = false
-            } else {
-                chartPath.lineTo(x, y)
-                fillPath.lineTo(x, y)
-            }
-        }
-
-        fillPath.lineTo(
-            paddingHorizontal + chartWidth,
-            height - paddingVertical
-        )
-        fillPath.close()
-
         canvas.drawPath(fillPath, fillPaint)
         canvas.drawPath(chartPath, paint)
 
+        val timeRange = sortedKeys.last() - sortedKeys.first()
+        val xScale = chartWidth / timeRange
+        val yScale = if (maxAmount == 0.0) 0f else (chartHeight / maxAmount).toFloat()
+
         val dateStep = timeRange / 5
         for (i in 0..5) {
-            val time = dailyExpenses.firstKey() + dateStep * i
-            val x = paddingHorizontal + (time - dailyExpenses.firstKey()) * xScale
+            val time = sortedKeys.first() + dateStep * i
+            val x = paddingHorizontal + (time - sortedKeys.first()) * xScale
             val date = Date(time)
             canvas.drawText(
                 dateFormat.format(date),
@@ -162,11 +162,11 @@ class CategoryChartView @JvmOverloads constructor(
         val amountStep = maxAmount / 5
         for (i in 0..5) {
             val amount = amountStep * i
-            val y = height - paddingVertical - (amount * yScale).toFloat()
+            val y = height - paddingVertical - (amount * yScale)
             canvas.drawText(
                 String.format("%.0f", amount),
                 paddingHorizontal - 40,
-                y + textPaint.textSize/2,
+                (y + textPaint.textSize/2).toFloat(),
                 textPaint
             )
         }
