@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PieChartBogdan">
+        <attr name="healthCategoryColor" format="color"/>
+        <attr name="transportCategoryColor" format="color"/>
+        <attr name="productsCategoryColor" format="color"/>
+        <attr name="alcoholCategoryColor" format="color"/>
+        <attr name="deliveryCategoryColor" format="color"/>
+        <attr name="sportCategoryColor" format="color"/>
+        <attr name="hotelsCategoryColor" format="color"/>
+        <attr name="cinemaCategoryColor" format="color"/>
+        <attr name="clothesCategoryColor" format="color"/>
+        <attr name="cafesAndRestaurantsCategoryColor" format="color"/>
+    </declare-styleable>
+</resources>
