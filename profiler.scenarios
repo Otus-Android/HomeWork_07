@@ -1,0 +1,8 @@
+clean-build {
+    tasks = ["assembleDebug"]
+    cleanup-tasks = ["clean"]
+}
+
+incremental-build-no-changes {
+    tasks = ["assembleDebug"]
+} 
