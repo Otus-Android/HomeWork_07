@@ -6,6 +6,11 @@ import org.junit.Test
 import otus.homework.customview.task_1.model.Category
 import otus.homework.customview.task_1.model.Data
 import otus.homework.customview.util.CategoryDeserializer
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -13,6 +18,93 @@ import otus.homework.customview.util.CategoryDeserializer
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 class ExampleUnitTest {
+    val jsonString = """[
+  {
+    "id": 1,
+    "name": "Азбука Вкуса",
+    "amount": 1580,
+    "category": "Продукты",
+    "time": 753318531
+  },
+  {
+    "id": 2,
+    "name": "Ригла",
+    "amount": 499,
+    "category": "Здоровье",
+    "time": 853322251
+  },
+  {
+    "id": 3,
+    "name": "Пятерочка",
+    "amount": 129,
+    "category": "Продукты",
+    "time": 953322371
+  },
+  {
+    "id": 4,
+    "name": "Truffo",
+    "amount": 4541,
+    "category": "Кафе и рестораны",
+    "time": 1053326031
+  },
+  {
+    "id": 5,
+    "name": "Simple Wine",
+    "amount": 1600,
+    "category": "Алкоголь",
+    "time": 1153329631
+  },
+  {
+    "id": 6,
+    "name": "Азбука Вкуса Экспресс",
+    "amount": 1841,
+    "category": "Доставка еды",
+    "time": 1253322371
+  },
+  {
+    "id": 7,
+    "name": "Uber",
+    "amount": 369,
+    "category": "Транспорт",
+    "time": 1353416031
+  },
+  {
+    "id": 8,
+    "name": "Метро",
+    "amount": 100,
+    "category": "Транспорт",
+    "time": 1453416211
+  },
+  {
+    "id": 9,
+    "name": "Стоматология",
+    "amount": 8000,
+    "category": "Здоровье",
+    "time": 1543419811
+  },
+  {
+    "id": 10,
+    "name": "Пятерочка",
+    "amount": 809,
+    "category": "Продукты",
+    "time": 1623419934
+  },
+  {
+    "id": 11,
+    "name": "Бассейн",
+    "amount": 1000,
+    "category": "Спорт",
+    "time": 1683419934
+  },
+  {
+    "id": 12,
+    "name": "Uber",
+    "amount": 389,
+    "category": "Транспорт",
+    "time": 1723419934
+  }
+]"""
+
     @Test
     fun addition_isCorrect() {
         assertEquals(4, 2 + 2)
@@ -38,92 +130,6 @@ class ExampleUnitTest {
 
     @Test
     fun dataDeserializationTest() {
-        val jsonString = """[
-  {
-    "id": 1,
-    "name": "Азбука Вкуса",
-    "amount": 1580,
-    "category": "Продукты",
-    "time": 1623318531
-  },
-  {
-    "id": 2,
-    "name": "Ригла",
-    "amount": 499,
-    "category": "Здоровье",
-    "time": 1623322251
-  },
-  {
-    "id": 3,
-    "name": "Пятерочка",
-    "amount": 129,
-    "category": "Продукты",
-    "time": 1623322371
-  },
-  {
-    "id": 4,
-    "name": "Truffo",
-    "amount": 4541,
-    "category": "Кафе и рестораны",
-    "time": 1623326031
-  },
-  {
-    "id": 5,
-    "name": "Simple Wine",
-    "amount": 1600,
-    "category": "Алкоголь",
-    "time": 1623329631
-  },
-  {
-    "id": 6,
-    "name": "Азбука Вкуса Экспресс",
-    "amount": 1841,
-    "category": "Доставка еды",
-    "time": 1623322371
-  },
-  {
-    "id": 7,
-    "name": "Uber",
-    "amount": 369,
-    "category": "Транспорт",
-    "time": 1623416031
-  },
-  {
-    "id": 8,
-    "name": "Метро",
-    "amount": 100,
-    "category": "Транспорт",
-    "time": 1623416211
-  },
-  {
-    "id": 9,
-    "name": "Стоматология",
-    "amount": 8000,
-    "category": "Здоровье",
-    "time": 1623419811
-  },
-  {
-    "id": 10,
-    "name": "Пятерочка",
-    "amount": 809,
-    "category": "Продукты",
-    "time": 1623419934
-  },
-  {
-    "id": 11,
-    "name": "Бассейн",
-    "amount": 1000,
-    "category": "Спорт",
-    "time": 1623419934
-  },
-  {
-    "id": 12,
-    "name": "Uber",
-    "amount": 389,
-    "category": "Транспорт",
-    "time": 1623419934
-  }
-]"""
         val gson = GsonBuilder()
             .registerTypeAdapter(Category::class.java, CategoryDeserializer())
             .create()
@@ -137,92 +143,6 @@ class ExampleUnitTest {
 
     @Test
     fun preparedDataForCanvasTest() {
-        val jsonString = """[
-  {
-    "id": 1,
-    "name": "Азбука Вкуса",
-    "amount": 1580,
-    "category": "Продукты",
-    "time": 1623318531
-  },
-  {
-    "id": 2,
-    "name": "Ригла",
-    "amount": 499,
-    "category": "Здоровье",
-    "time": 1623322251
-  },
-  {
-    "id": 3,
-    "name": "Пятерочка",
-    "amount": 129,
-    "category": "Продукты",
-    "time": 1623322371
-  },
-  {
-    "id": 4,
-    "name": "Truffo",
-    "amount": 4541,
-    "category": "Кафе и рестораны",
-    "time": 1623326031
-  },
-  {
-    "id": 5,
-    "name": "Simple Wine",
-    "amount": 1600,
-    "category": "Алкоголь",
-    "time": 1623329631
-  },
-  {
-    "id": 6,
-    "name": "Азбука Вкуса Экспресс",
-    "amount": 1841,
-    "category": "Доставка еды",
-    "time": 1623322371
-  },
-  {
-    "id": 7,
-    "name": "Uber",
-    "amount": 369,
-    "category": "Транспорт",
-    "time": 1623416031
-  },
-  {
-    "id": 8,
-    "name": "Метро",
-    "amount": 100,
-    "category": "Транспорт",
-    "time": 1623416211
-  },
-  {
-    "id": 9,
-    "name": "Стоматология",
-    "amount": 8000,
-    "category": "Здоровье",
-    "time": 1623419811
-  },
-  {
-    "id": 10,
-    "name": "Пятерочка",
-    "amount": 809,
-    "category": "Продукты",
-    "time": 1623419934
-  },
-  {
-    "id": 11,
-    "name": "Бассейн",
-    "amount": 1000,
-    "category": "Спорт",
-    "time": 1623419934
-  },
-  {
-    "id": 12,
-    "name": "Uber",
-    "amount": 389,
-    "category": "Транспорт",
-    "time": 1623419934
-  }
-]"""
         val preparedDataForCanvas: MutableMap<Category, Float> = mutableMapOf()
         val gson = GsonBuilder()
             .registerTypeAdapter(Category::class.java, CategoryDeserializer())

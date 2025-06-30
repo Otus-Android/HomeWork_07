@@ -98,17 +98,14 @@ class PieChartBogdan @JvmOverloads constructor(
 
         when (wMode) {
             MeasureSpec.EXACTLY -> {
-                Log.i("MEASURE", "EXACTLY $wSize $hSize")
                 setMeasuredDimension(wSize, hSize)
             }
 
             MeasureSpec.AT_MOST -> {
-                Log.i("MEASURE", "AT_MOST $wSize $hSize")
                 setMeasuredDimension(wSize, min(wSize, hSize))
             }
 
             MeasureSpec.UNSPECIFIED -> {
-                Log.i("MEASURE", "UNSPECIFIED ")
                 setMeasuredDimension(UNSPECIFIED_SIZE, UNSPECIFIED_SIZE)
             }
         }

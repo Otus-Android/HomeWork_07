@@ -1,14 +1,16 @@
 package otus.homework.customview.task_1.model
 
+import java.util.*
+
 data class Data(
     val id: Int,
     val name: String,
     val amount: Int,
     val category: Category,
-    val time: Long,
+    val time: Date,
 )
 
-enum class Category (val categoryName: String) {
+enum class Category(val categoryName: String) {
     HEALTH("Здоровье"),
     TRANSPORT("Транспорт"),
     PRODUCTS("Продукты"),

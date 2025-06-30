@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.gson.GsonBuilder
 import otus.homework.customview.task_1.model.Category
 import otus.homework.customview.task_1.model.Data
+import java.util.Date
 
 fun getData(context: Context, resourceId: Int): List<Data> {
     val list = mutableListOf<Data>()
@@ -13,6 +14,7 @@ fun getData(context: Context, resourceId: Int): List<Data> {
         val jsonString = inputStream.bufferedReader().use { it.readText() }
         val gson = GsonBuilder()
             .registerTypeAdapter(Category::class.java, CategoryDeserializer())
+            .registerTypeAdapter(Date::class.java, TimeToLocalDateTimeDeserializer())
             .create()
         val temp = gson.fromJson(jsonString, Array<Data>::class.java)
         list.addAll(temp)
