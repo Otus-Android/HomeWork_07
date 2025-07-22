@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomPieChart">
+        <attr name="pie_label" format="string" />
+        <attr name="pie_description" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="CategoryView">
+        <attr name="chart_label" format="string" />
+        <attr name="chart_sum_overhead" format="integer"/>
+    </declare-styleable>
+</resources>

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Custom View</string>
+    <string name="pie_title">Диаграма расходов</string>
+    <string name="pie_description">Визуализирует распределение расходов по различным категориям.\nПомогает понять, какая доля каждого типа расходов занимает в общем бюджете</string>
 </resources>
