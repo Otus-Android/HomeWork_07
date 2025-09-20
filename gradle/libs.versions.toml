@@ -1,6 +1,6 @@
 [versions]
-agp = "8.11.1"
-kotlin = "2.2.10"
+agp = "8.9.1"
+kotlin = "2.0.0"
 core-ktx = "1.17.0"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.2.1"
@@ -20,6 +20,7 @@ swiperefreshlayout = "1.1.0"
 datastore-core = "1.0.0"
 androidXDatastore = "1.1.7"
 kotlinx-coroutines-rx2 = "1.7.3"
+serialization = "1.5.1"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -42,6 +43,7 @@ retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-
 swipetorefresh = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidXDatastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidXDatastore" }
+kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
 kotlinx-coroutines-rx2 = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-rx2",  version.ref = "kotlinx-coroutines-rx2" }
 
 [bundles]
@@ -51,4 +53,5 @@ network = ["okhttp", "okhttp-logging-interceptor", "retrofit", "retrofit-convert
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
