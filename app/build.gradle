@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kotlin.serialization)
+    id 'kotlin-parcelize'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -29,6 +32,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = '17'
+        freeCompilerArgs = ['-XXLanguage:+PropertyParamAnnotationDefaultTargetMode']
     }
     buildFeatures {
         viewBinding true
@@ -50,6 +54,14 @@ dependencies {
     implementation libs.bundles.network
     implementation libs.androidx.datastore
     implementation libs.androidx.datastore.preferences
+    implementation libs.kotlin.serialization.json
+
+    implementation "com.google.dagger:dagger-android:2.50"
+    implementation "com.google.dagger:dagger-android-support:2.50"
+    kapt "com.google.dagger:dagger-android-processor:2.50"
+
+    implementation 'com.google.dagger:dagger:2.50'
+    kapt 'com.google.dagger:dagger-compiler:2.50'
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit
