@@ -17,9 +17,7 @@ navigation-ui-ktx = "2.9.3"
 okhttp = "4.12.0"
 retrofit = "2.11.0"
 swiperefreshlayout = "1.1.0"
-datastore-core = "1.0.0"
 androidXDatastore = "1.1.7"
-kotlinx-coroutines-rx2 = "1.7.3"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -42,7 +40,6 @@ retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-
 swipetorefresh = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidXDatastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidXDatastore" }
-kotlinx-coroutines-rx2 = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-rx2",  version.ref = "kotlinx-coroutines-rx2" }
 
 [bundles]
 network = ["okhttp", "okhttp-logging-interceptor", "retrofit", "retrofit-converter-gson"]
@@ -50,5 +47,6 @@ network = ["okhttp", "okhttp-logging-interceptor", "retrofit", "retrofit-convert
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinParcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 
