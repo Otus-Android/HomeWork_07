@@ -18,18 +18,27 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-class PieChartView @JvmOverloads constructor(
+class ViraPieChartView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
 ) : View(context, attrs, defStyleAttr) {
+
+    private companion object {
+        private const val ERROR_DATA_SOURCE_NOT_SET =
+            "ViraPieChartView: dataSource is not set. " +
+                "Provide app:dataSource=\"@raw/...\" in XML or call setDataSource(@RawRes) from Activity/Fragment."
+    }
 
     enum class ColorMode { MONO, COLOR }
     enum class TextMode { NONE, INNER, OUTER }
     enum class WidthMode { CONST, VAR }
 
     private data class Slice(
-        val value: Float,
+        val name: String,
+        val category: String,
+        val time: Long,
+        val amount: Long,
         val percent: Float,
     )
 
@@ -60,6 +69,9 @@ class PieChartView @JvmOverloads constructor(
     private var textMode: TextMode = TextMode.OUTER
     private var widthMode: WidthMode = WidthMode.CONST
 
+    private var titleText: String = "Title"
+    private var dataSourceResId: Int = 0
+
     private var slices: List<Slice> = emptyList()
     private var totalAmount: Long = 0L
 
@@ -71,43 +83,57 @@ class PieChartView @JvmOverloads constructor(
 
     init {
         if (attrs != null) {
-            val a = context.obtainStyledAttributes(attrs, R.styleable.PieChartView, defStyleAttr, 0)
+            val a = context.obtainStyledAttributes(attrs, R.styleable.ViraPieChartView, defStyleAttr, 0)
             try {
-                colorMode = when (a.getInt(R.styleable.PieChartView_colorMode, 1)) {
+                colorMode = when (a.getInt(R.styleable.ViraPieChartView_colorMode, 1)) {
                     0 -> ColorMode.MONO
                     else -> ColorMode.COLOR
                 }
-                textMode = when (a.getInt(R.styleable.PieChartView_textMode, 2)) {
+                textMode = when (a.getInt(R.styleable.ViraPieChartView_textMode, 2)) {
                     0 -> TextMode.NONE
                     1 -> TextMode.INNER
                     else -> TextMode.OUTER
                 }
-                widthMode = when (a.getInt(R.styleable.PieChartView_widthMode, 0)) {
+                widthMode = when (a.getInt(R.styleable.ViraPieChartView_widthMode, 0)) {
                     1 -> WidthMode.VAR
                     else -> WidthMode.CONST
                 }
+
+                titleText = a.getString(R.styleable.ViraPieChartView_titleText) ?: titleText
+
+                dataSourceResId = a.getResourceId(R.styleable.ViraPieChartView_dataSource, 0)
+                    .takeIf { it != 0 }
+                    ?: resolveRawResId(a.getString(R.styleable.ViraPieChartView_dataSource))
+                    ?: 0
             } finally {
                 a.recycle()
             }
         }
 
         if (isInEditMode) {
-            setSlices(
-                listOf(
-                    Slice(27.4f, 27.4f),
-                    Slice(18.9f, 18.9f),
-                    Slice(35.6f, 35.6f),
-                    Slice(18.1f, 18.1f),
-                ),
-                total = 100,
-            )
+            val (previewSlices, previewTotal) = buildPreviewData()
+            setSlices(previewSlices, previewTotal)
         } else {
-            loadFromRaw(R.raw.payload)
+            if (dataSourceResId != 0) {
+                loadFromRaw(dataSourceResId)
+            } else {
+                post {
+                    requireDataSourceResId()
+                }
+            }
         }
     }
 
     fun reload() {
-        loadFromRaw(R.raw.payload)
+        loadFromRaw(requireDataSourceResId())
+    }
+
+    fun setDataSource(@RawRes rawResId: Int) {
+        require(rawResId != 0) { "ViraPieChartView: rawResId must be non-zero" }
+        dataSourceResId = rawResId
+        if (!isInEditMode) {
+            loadFromRaw(dataSourceResId)
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -127,6 +153,7 @@ class PieChartView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        requireDataSourceResId()
 
         if (slices.isEmpty() || totalAmount <= 0) {
             return
@@ -164,7 +191,7 @@ class PieChartView @JvmOverloads constructor(
 
             arcPaint.strokeWidth = thickness
             arcPaint.color = sliceColor(index, slices.size)
-            val sweep = 360f * (slice.value / totalAmount.toFloat())
+            val sweep = 360f * (slice.amount.toFloat() / totalAmount.toFloat())
             canvas.drawArc(arcBounds, startAngle, sweep, false, arcPaint)
 
             if (textMode != TextMode.NONE) {
@@ -179,7 +206,7 @@ class PieChartView @JvmOverloads constructor(
     }
 
     private fun drawCenterTotal(canvas: Canvas, cx: Float, cy: Float) {
-        val title = "Всего"
+        val title = titleText
         val totalText = NumberFormat.getIntegerInstance().format(totalAmount)
 
         val titleFm = centerTitlePaint.fontMetrics
@@ -253,27 +280,73 @@ class PieChartView @JvmOverloads constructor(
     private fun loadFromRaw(@RawRes rawRes: Int) {
         val json = resources.openRawResource(rawRes).bufferedReader().use { it.readText() }
         val array = JSONArray(json)
-        val byCategory = linkedMapOf<String, Long>()
         var total = 0L
+
+        val items = ArrayList<Slice>(array.length())
 
         for (i in 0 until array.length()) {
             val obj = array.getJSONObject(i)
+            val name = obj.optString("name", "")
             val category = obj.optString("category", "")
+            val time = obj.optLong("time", 0L)
             val amount = obj.optLong("amount", 0L)
-            if (category.isBlank() || amount <= 0L) continue
-            byCategory[category] = (byCategory[category] ?: 0L) + amount
+            if (amount <= 0L) continue
+
+            items.add(
+                Slice(
+                    name = name,
+                    category = category,
+                    time = time,
+                    amount = amount,
+                    percent = 0f,
+                )
+            )
             total += amount
         }
 
-        val sliceList = byCategory
-            .entries
-            .sortedByDescending { it.value }
-            .map { (_, amount) ->
-                val percent = if (total > 0L) amount.toDouble() * 100.0 / total.toDouble() else 0.0
-                Slice(amount.toFloat(), percent.toFloat())
-            }
+        val sliceList = items
+            .sortedByDescending { it.amount }
+            .withPercent(total)
 
         setSlices(sliceList, total)
+    }
+
+    private fun buildPreviewData(): Pair<List<Slice>, Long> {
+        val items = listOf(
+            Slice(name = "A", category = "C1", time = 0L, amount = 274, percent = 0f),
+            Slice(name = "B", category = "C2", time = 0L, amount = 189, percent = 0f),
+            Slice(name = "C", category = "C3", time = 0L, amount = 356, percent = 0f),
+            Slice(name = "D", category = "C4", time = 0L, amount = 181, percent = 0f),
+        )
+        val total = items.sumOf { it.amount }
+        return items.withPercent(total) to total
+    }
+
+    private fun resolveRawResId(rawName: String?): Int? {
+        val cleaned = rawName
+            ?.trim()
+            ?.removePrefix("@raw/")
+            ?.removeSuffix(".json")
+            ?.takeIf { it.isNotBlank() }
+            ?: return null
+
+        val id = resources.getIdentifier(cleaned, "raw", context.packageName)
+        return id.takeIf { it != 0 }
+    }
+
+    private fun requireDataSourceResId(): Int {
+        if (!isInEditMode && dataSourceResId == 0) {
+            throw IllegalStateException(ERROR_DATA_SOURCE_NOT_SET)
+        }
+        return dataSourceResId
+    }
+
+    private fun List<Slice>.withPercent(total: Long): List<Slice> {
+        if (total <= 0L) return this
+        return map { slice ->
+            val percent = slice.amount.toDouble() * 100.0 / total.toDouble()
+            slice.copy(percent = percent.toFloat())
+        }
     }
 
     private fun setSlices(slices: List<Slice>, total: Long) {

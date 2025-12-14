@@ -6,17 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <otus.homework.customview.PieChartView
+    <otus.homework.customview.ViraPieChartView
         android:id="@+id/pieChart"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="16dp"
         app:colorMode="mono"
+        app:titleText="@string/view_title"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:textMode="inner"
+        app:textMode="outer"
         app:widthMode="var_mode" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
