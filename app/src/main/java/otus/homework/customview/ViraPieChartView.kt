@@ -5,12 +5,12 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
 import androidx.annotation.RawRes
-import androidx.core.content.ContextCompat
+import kotlinx.parcelize.Parcelize
 import java.text.NumberFormat
 import kotlin.math.*
 import org.json.JSONArray
@@ -33,6 +33,17 @@ class ViraPieChartView @JvmOverloads constructor(
     enum class ColorMode { MONO, COLOR }
     enum class TextMode { NONE, INNER, OUTER }
     enum class WidthMode { CONST, VAR }
+
+    data class Entry(
+        val name: String,
+        val category: String,
+        val time: Long,
+        val amount: Long,
+    )
+
+    fun interface OnSectorClickListener {
+        fun onSectorClick(category: String)
+    }
 
     private data class Slice(
         val name: String,
@@ -82,6 +93,9 @@ class ViraPieChartView @JvmOverloads constructor(
     private var slices: List<Slice> = emptyList()
     private var totalAmount: Long = 0L
 
+    private var onSectorClickListener: OnSectorClickListener? = null
+    private var pressedSlice: Slice? = null
+
     // Кешируемые измерения для производительности
     private var cachedOuterLabelReserve: Float = 0f
 
@@ -95,11 +109,6 @@ class ViraPieChartView @JvmOverloads constructor(
         0xFF80B1D3.toInt(), 0xFFFDB462.toInt(), 0xFFB3DE69.toInt(), 0xFFFCCDE5.toInt(),
         0xFFD9D9D9.toInt(), 0xFFBC80BD.toInt(), 0xFFCCEBC5.toInt(), 0xFFFFED6F.toInt()
     )
-
-    private fun initCacheValues() {
-        // Кешируем частые измерения (будет вызываться при изменении textMode)
-        updateCacheValues()
-    }
 
     private fun updateCacheValues() {
         cachedOuterLabelReserve = if (textMode == TextMode.OUTER) {
@@ -148,16 +157,11 @@ class ViraPieChartView @JvmOverloads constructor(
             setSlices(previewSlices, previewTotal)
         } else {
             if (dataSourceResId != 0) {
-                loadFromRaw(dataSourceResId)
-            } else {
-                post {
-                    requireDataSourceResId()
-                }
+                setDataSource(dataSourceResId)
             }
         }
 
-        // Инициализируем кешируемые значения
-        initCacheValues()
+        updateCacheValues()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -187,8 +191,6 @@ class ViraPieChartView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        requireDataSourceResId()
-
         if (slices.isEmpty() || totalAmount <= 0) {
             return
         }
@@ -323,38 +325,24 @@ class ViraPieChartView @JvmOverloads constructor(
         return Color.rgb(gray, gray, gray)
     }
 
-    private fun loadFromRaw(@RawRes rawRes: Int) {
+    private fun loadEntriesFromRaw(@RawRes rawRes: Int): List<Entry> {
         val json = resources.openRawResource(rawRes).bufferedReader().use { it.readText() }
         val array = JSONArray(json)
-        var total = 0L
-
-        val items = ArrayList<Slice>(array.length())
-
+        val parsed = ArrayList<Entry>(array.length())
         for (i in 0 until array.length()) {
             val obj = array.getJSONObject(i)
-            val name = obj.optString("name", "")
-            val category = obj.optString("category", "")
-            val time = obj.optLong("time", 0L)
             val amount = obj.optLong("amount", 0L)
             if (amount <= 0L) continue
-
-            items.add(
-                Slice(
-                    name = name,
-                    category = category,
-                    time = time,
+            parsed.add(
+                Entry(
+                    name = obj.optString("name", ""),
+                    category = obj.optString("category", ""),
+                    time = obj.optLong("time", 0L),
                     amount = amount,
-                    percent = 0f,
                 )
             )
-            total += amount
         }
-
-        val sliceList = items
-            .sortedByDescending { it.amount }
-            .withPercent(total)
-
-        setSlices(sliceList, total)
+        return parsed
     }
 
     private fun buildPreviewData(): Pair<List<Slice>, Long> {
@@ -397,13 +385,6 @@ class ViraPieChartView @JvmOverloads constructor(
         }
     }
 
-    private fun requireDataSourceResId(): Int {
-        if (!isInEditMode && dataSourceResId == 0) {
-            throw IllegalStateException(ERROR_DATA_SOURCE_NOT_SET)
-        }
-        return dataSourceResId
-    }
-
     private fun List<Slice>.withPercent(total: Long): List<Slice> {
         if (total <= 0L) return this
         return map { slice ->
@@ -418,6 +399,49 @@ class ViraPieChartView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun setDataSource(@RawRes rawRes: Int) {
+        if (rawRes == 0) {
+            throw IllegalArgumentException(ERROR_DATA_SOURCE_NOT_SET)
+        }
+        dataSourceResId = rawRes
+        setDataInternal(loadEntriesFromRaw(rawRes), keepDataSourceResId = rawRes)
+    }
+
+    fun setData(entries: List<Entry>) {
+        dataSourceResId = 0
+        setDataInternal(entries, keepDataSourceResId = 0)
+    }
+
+    private fun setDataInternal(entries: List<Entry>, keepDataSourceResId: Int) {
+        dataSourceResId = keepDataSourceResId
+
+        val filtered = entries.filter { it.amount > 0L }
+        val total = filtered.sumOf { it.amount }
+        if (total <= 0L) {
+            setSlices(emptyList(), 0L)
+            return
+        }
+
+        val sliceList = filtered
+            .sortedByDescending { it.amount }
+            .map {
+                Slice(
+                    name = it.name,
+                    category = it.category,
+                    time = it.time,
+                    amount = it.amount,
+                    percent = 0f,
+                )
+            }
+            .withPercent(total)
+
+        setSlices(sliceList, total)
+    }
+
+    fun setOnSectorClickListener(listener: OnSectorClickListener?) {
+        onSectorClickListener = listener
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
@@ -426,18 +450,37 @@ class ViraPieChartView @JvmOverloads constructor(
 
                 for (slice in slices) {
                     if (isPointInSector(x, y, slice)) {
-                        performClick()
-                        Toast.makeText(context, slice.category, Toast.LENGTH_SHORT).show()
+                        pressedSlice = slice
                         return true
                     }
                 }
+                pressedSlice = null
+                return false
             }
 
             MotionEvent.ACTION_UP -> {
-                return true
+                val slice = pressedSlice
+                pressedSlice = null
+
+                if (slice != null && isPointInSector(event.x, event.y, slice)) {
+                    performClick()
+                    onSectorClickListener?.onSectorClick(slice.category)
+                    return true
+                }
+                return false
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                pressedSlice = null
+                return false
             }
         }
         return super.onTouchEvent(event)
+    }
+
+    override fun performClick(): Boolean {
+        super.performClick()
+        return true
     }
 
     private fun isPointInSector(x: Float, y: Float, slice: Slice): Boolean {
@@ -465,5 +508,43 @@ class ViraPieChartView @JvmOverloads constructor(
             adjustedAngle >= startAngle || adjustedAngle <= endAngle
         }
     }
+
+    override fun onSaveInstanceState(): Parcelable {
+        return PieSavedState(
+            superState = super.onSaveInstanceState(),
+            colorModeName = colorMode.name,
+            textModeName = textMode.name,
+            widthModeName = widthMode.name,
+            titleText = titleText,
+        )
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state !is PieSavedState) {
+            super.onRestoreInstanceState(state)
+            return
+        }
+
+        super.onRestoreInstanceState(state.superState)
+
+        colorMode = state.colorModeName?.let { runCatching { ColorMode.valueOf(it) }.getOrNull() } ?: colorMode
+        textMode = state.textModeName?.let { runCatching { TextMode.valueOf(it) }.getOrNull() } ?: textMode
+        widthMode = state.widthModeName?.let { runCatching { WidthMode.valueOf(it) }.getOrNull() } ?: widthMode
+        titleText = state.titleText ?: titleText
+
+        updateCacheValues()
+
+        // Данные восстанавливаются снаружи (Activity/VM) через setData(...)
+        invalidate()
+    }
+
+    @Parcelize
+    internal data class PieSavedState(
+        val superState: Parcelable?,
+        val colorModeName: String?,
+        val textModeName: String?,
+        val widthModeName: String?,
+        val titleText: String?,
+    ) : Parcelable
 
 }
