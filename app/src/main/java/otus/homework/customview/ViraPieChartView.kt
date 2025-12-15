@@ -9,11 +9,9 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import androidx.annotation.RawRes
 import kotlinx.parcelize.Parcelize
 import java.text.NumberFormat
 import kotlin.math.*
-import org.json.JSONArray
 
 class ViraPieChartView @JvmOverloads constructor(
     context: Context,
@@ -22,12 +20,8 @@ class ViraPieChartView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     private companion object {
-        private const val ERROR_DATA_SOURCE_NOT_SET =
-            "ViraPieChartView: dataSource is not set. " +
-                    "Provide app:dataSource=\"@raw/...\" in XML or call setDataSource(@RawRes) from Activity/Fragment."
-        
-        // Кешируемые raw ресурсы для ускорения
-        private val rawResourceCache = mutableMapOf<String, Int>()
+        private const val ERROR_DATA_NOT_SET =
+            "ViraPieChartView: data is not set. Provide data via setData(entries)."
     }
 
     enum class ColorMode { MONO, COLOR }
@@ -88,7 +82,6 @@ class ViraPieChartView @JvmOverloads constructor(
     private var widthMode: WidthMode = WidthMode.CONST
 
     private var titleText: String = "Title"
-    private var dataSourceResId: Int = 0
 
     private var slices: List<Slice> = emptyList()
     private var totalAmount: Long = 0L
@@ -142,11 +135,6 @@ class ViraPieChartView @JvmOverloads constructor(
                 }
 
                 titleText = a.getString(R.styleable.ViraPieChartView_titleText) ?: titleText
-
-                dataSourceResId = a.getResourceId(R.styleable.ViraPieChartView_dataSource, 0)
-                    .takeIf { it != 0 }
-                    ?: resolveRawResId(a.getString(R.styleable.ViraPieChartView_dataSource))
-                            ?: 0
             } finally {
                 a.recycle()
             }
@@ -155,10 +143,6 @@ class ViraPieChartView @JvmOverloads constructor(
         if (isInEditMode) {
             val (previewSlices, previewTotal) = buildPreviewData()
             setSlices(previewSlices, previewTotal)
-        } else {
-            if (dataSourceResId != 0) {
-                setDataSource(dataSourceResId)
-            }
         }
 
         updateCacheValues()
@@ -191,6 +175,10 @@ class ViraPieChartView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        if (!isInEditMode && slices.isEmpty()) {
+            // Данные должны прийти извне через setData(...)
+            throw IllegalStateException(ERROR_DATA_NOT_SET)
+        }
         if (slices.isEmpty() || totalAmount <= 0) {
             return
         }
@@ -325,26 +313,6 @@ class ViraPieChartView @JvmOverloads constructor(
         return Color.rgb(gray, gray, gray)
     }
 
-    private fun loadEntriesFromRaw(@RawRes rawRes: Int): List<Entry> {
-        val json = resources.openRawResource(rawRes).bufferedReader().use { it.readText() }
-        val array = JSONArray(json)
-        val parsed = ArrayList<Entry>(array.length())
-        for (i in 0 until array.length()) {
-            val obj = array.getJSONObject(i)
-            val amount = obj.optLong("amount", 0L)
-            if (amount <= 0L) continue
-            parsed.add(
-                Entry(
-                    name = obj.optString("name", ""),
-                    category = obj.optString("category", ""),
-                    time = obj.optLong("time", 0L),
-                    amount = amount,
-                )
-            )
-        }
-        return parsed
-    }
-
     private fun buildPreviewData(): Pair<List<Slice>, Long> {
         val items = listOf(
             Slice(name = "A", category = "C1", time = 0L, amount = 274, percent = 0f),
@@ -356,34 +324,6 @@ class ViraPieChartView @JvmOverloads constructor(
         return items.withPercent(total) to total
     }
 
-    private fun resolveRawResId(rawName: String?): Int? {
-        val cleaned = rawName
-            ?.trim()
-            ?.removePrefix("@raw/")
-            ?.removeSuffix(".json")
-            ?.takeIf { it.isNotBlank() }
-            ?: return null
-
-        // Проверяем кеш сначала
-        rawResourceCache[cleaned]?.let { return it }
-
-        // Вычисляем и кешируем результат
-        return try {
-            // Быстрая компиляция-time проверка через рефлексию
-            val clazz = R.raw::class.java
-            val field = clazz.getDeclaredField(cleaned)
-            val resId = field.getInt(null)
-            rawResourceCache[cleaned] = resId
-            resId
-        } catch (ex: Exception) {
-            // Fallback на стандартный метод (только если ресурс не найден)
-            val resId = context.resources.getIdentifier(cleaned, "raw", context.packageName)
-            if (resId != 0) {
-                rawResourceCache[cleaned] = resId
-                resId
-            } else null
-        }
-    }
 
     private fun List<Slice>.withPercent(total: Long): List<Slice> {
         if (total <= 0L) return this
@@ -399,22 +339,11 @@ class ViraPieChartView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun setDataSource(@RawRes rawRes: Int) {
-        if (rawRes == 0) {
-            throw IllegalArgumentException(ERROR_DATA_SOURCE_NOT_SET)
-        }
-        dataSourceResId = rawRes
-        setDataInternal(loadEntriesFromRaw(rawRes), keepDataSourceResId = rawRes)
-    }
-
     fun setData(entries: List<Entry>) {
-        dataSourceResId = 0
-        setDataInternal(entries, keepDataSourceResId = 0)
+        setDataInternal(entries)
     }
 
-    private fun setDataInternal(entries: List<Entry>, keepDataSourceResId: Int) {
-        dataSourceResId = keepDataSourceResId
-
+    private fun setDataInternal(entries: List<Entry>) {
         val filtered = entries.filter { it.amount > 0L }
         val total = filtered.sumOf { it.amount }
         if (total <= 0L) {

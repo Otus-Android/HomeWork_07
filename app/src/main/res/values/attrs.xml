@@ -19,8 +19,6 @@
         </attr>
 
         <attr name="titleText" format="string" />
-
-        <attr name="dataSource" format="reference|string" />
     </declare-styleable>
 
 </resources>
