@@ -11,13 +11,14 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        app:colorMode="mono"
+        app:colorMode="color"
+        app:dataSource="@raw/payload_7"
         app:titleText="@string/view_title"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:textMode="outer"
+        app:textMode="inner"
         app:widthMode="var_mode" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,17 +6,14 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.util.TypedValue
+import android.view.MotionEvent
 import android.view.View
+import android.widget.Toast
 import androidx.annotation.RawRes
-import org.json.JSONArray
+import androidx.core.content.ContextCompat
 import java.text.NumberFormat
-import java.util.Locale
-import kotlin.math.cos
-import kotlin.math.floor
-import kotlin.math.min
-import kotlin.math.roundToInt
-import kotlin.math.sin
+import kotlin.math.*
+import org.json.JSONArray
 
 class ViraPieChartView @JvmOverloads constructor(
     context: Context,
@@ -27,7 +24,10 @@ class ViraPieChartView @JvmOverloads constructor(
     private companion object {
         private const val ERROR_DATA_SOURCE_NOT_SET =
             "ViraPieChartView: dataSource is not set. " +
-                "Provide app:dataSource=\"@raw/...\" in XML or call setDataSource(@RawRes) from Activity/Fragment."
+                    "Provide app:dataSource=\"@raw/...\" in XML or call setDataSource(@RawRes) from Activity/Fragment."
+        
+        // Кешируемые raw ресурсы для ускорения
+        private val rawResourceCache = mutableMapOf<String, Int>()
     }
 
     enum class ColorMode { MONO, COLOR }
@@ -40,6 +40,13 @@ class ViraPieChartView @JvmOverloads constructor(
         val time: Long,
         val amount: Long,
         val percent: Float,
+        // Геометрическая информация для кликов (заполняется в onDraw)
+        var startAngle: Float = 0f,
+        var sweepAngle: Float = 0f,
+        var innerRadius: Float = 0f,
+        var outerRadius: Float = 0f,
+        var centerX: Float = 0f,
+        var centerY: Float = 0f,
     )
 
     private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -49,18 +56,18 @@ class ViraPieChartView @JvmOverloads constructor(
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.BLACK
         textAlign = Paint.Align.CENTER
-        textSize = sp(12f)
+        textSize = ViewUtils.sp(context, 12f)
     }
     private val centerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.BLACK
         textAlign = Paint.Align.CENTER
-        textSize = sp(18f)
+        textSize = ViewUtils.sp(context, 18f)
         isFakeBoldText = true
     }
     private val centerTitlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.BLACK
         textAlign = Paint.Align.CENTER
-        textSize = sp(14f)
+        textSize = ViewUtils.sp(context, 14f)
     }
 
     private val arcBounds = RectF()
@@ -75,13 +82,39 @@ class ViraPieChartView @JvmOverloads constructor(
     private var slices: List<Slice> = emptyList()
     private var totalAmount: Long = 0L
 
+    // Кешируемые измерения для производительности
+    private var cachedOuterLabelReserve: Float = 0f
+
+    // Кешируемые font metrics для отрисовки текста
+    private var labelFontHeight: Float = 0f
+    private var centerTitleFontHeight: Float = 0f
+    private var centerFontHeight: Float = 0f
+    
     private val palette = intArrayOf(
         0xFF8DD3C7.toInt(), 0xFFFFFFB3.toInt(), 0xFFBEBADA.toInt(), 0xFFFB8072.toInt(),
         0xFF80B1D3.toInt(), 0xFFFDB462.toInt(), 0xFFB3DE69.toInt(), 0xFFFCCDE5.toInt(),
         0xFFD9D9D9.toInt(), 0xFFBC80BD.toInt(), 0xFFCCEBC5.toInt(), 0xFFFFED6F.toInt()
     )
 
+    private fun initCacheValues() {
+        // Кешируем частые измерения (будет вызываться при изменении textMode)
+        updateCacheValues()
+    }
+
+    private fun updateCacheValues() {
+        cachedOuterLabelReserve = if (textMode == TextMode.OUTER) {
+            ViewUtils.dp(context, 16f).toFloat() + labelPaint.textSize
+        } else {
+            0f
+        }
+
+        labelFontHeight = labelPaint.fontMetrics.run { descent - ascent }
+        centerTitleFontHeight = centerTitlePaint.fontMetrics.run { descent - ascent }
+        centerFontHeight = centerPaint.fontMetrics.run { descent - ascent }
+    }
+
     init {
+        isSaveEnabled = true
         if (attrs != null) {
             val a = context.obtainStyledAttributes(attrs, R.styleable.ViraPieChartView, defStyleAttr, 0)
             try {
@@ -104,7 +137,7 @@ class ViraPieChartView @JvmOverloads constructor(
                 dataSourceResId = a.getResourceId(R.styleable.ViraPieChartView_dataSource, 0)
                     .takeIf { it != 0 }
                     ?: resolveRawResId(a.getString(R.styleable.ViraPieChartView_dataSource))
-                    ?: 0
+                            ?: 0
             } finally {
                 a.recycle()
             }
@@ -122,33 +155,34 @@ class ViraPieChartView @JvmOverloads constructor(
                 }
             }
         }
-    }
 
-    fun reload() {
-        loadFromRaw(requireDataSourceResId())
-    }
-
-    fun setDataSource(@RawRes rawResId: Int) {
-        require(rawResId != 0) { "ViraPieChartView: rawResId must be non-zero" }
-        dataSourceResId = rawResId
-        if (!isInEditMode) {
-            loadFromRaw(dataSourceResId)
-        }
+        // Инициализируем кешируемые значения
+        initCacheValues()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val desired = dp(240f)
-
         val wMode = MeasureSpec.getMode(widthMeasureSpec)
         val wSize = MeasureSpec.getSize(widthMeasureSpec)
         val hMode = MeasureSpec.getMode(heightMeasureSpec)
         val hSize = MeasureSpec.getSize(heightMeasureSpec)
 
-        val maxW = if (wMode == MeasureSpec.UNSPECIFIED) desired else wSize
-        val maxH = if (hMode == MeasureSpec.UNSPECIFIED) desired else hSize
+        val width = when (wMode) {
+            MeasureSpec.EXACTLY -> wSize
+            MeasureSpec.AT_MOST -> wSize
+            else -> wSize  // UNSPECIFIED - используем размер окна
+        }
 
-        val size = min(maxW, maxH)
-        setMeasuredDimension(size, size)
+        val height = when (hMode) {
+            MeasureSpec.EXACTLY -> hSize
+            MeasureSpec.AT_MOST -> {
+                val squareHeight = width - paddingLeft - paddingRight
+                min(squareHeight.coerceAtLeast(0), hSize)
+            }
+
+            else -> width - paddingLeft - paddingRight
+        }
+
+        setMeasuredDimension(width, height)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -169,7 +203,7 @@ class ViraPieChartView @JvmOverloads constructor(
 
         val cx = contentLeft + contentW / 2f
         val cy = contentTop + contentH / 2f
-        val outerLabelReserve = if (textMode == TextMode.OUTER) dp(16f).toFloat() + labelPaint.textSize else 0f
+        val outerLabelReserve = cachedOuterLabelReserve
 
         val availableOuterEdgeRadius = (diameter / 2f - outerLabelReserve).coerceAtLeast(0f)
         val baseThickness = availableOuterEdgeRadius / 3f
@@ -183,8 +217,19 @@ class ViraPieChartView @JvmOverloads constructor(
             cy + ringCenterRadius,
         )
 
+        slices.forEach {
+            it.apply {
+                startAngle = 0f
+                sweepAngle = 0f
+                innerRadius = 0f
+                outerRadius = 0f
+                centerX = 0f
+                centerY = 0f
+            }
+        }
+
         var startAngle = -90f
-        slices.forEachIndexed { index, slice ->
+        slices = slices.mapIndexed { index, slice ->
             val thicknessMultiplier = if (widthMode == WidthMode.VAR && index % 2 == 1) 0.75f else 1f
             val thickness = baseThickness * thicknessMultiplier
             val halfStroke = thickness / 2f
@@ -194,12 +239,20 @@ class ViraPieChartView @JvmOverloads constructor(
             val sweep = 360f * (slice.amount.toFloat() / totalAmount.toFloat())
             canvas.drawArc(arcBounds, startAngle, sweep, false, arcPaint)
 
-            if (textMode != TextMode.NONE) {
-                val outerEdgeRadius = ringCenterRadius + halfStroke
-                drawLabel(canvas, cx, cy, ringCenterRadius, outerEdgeRadius, startAngle, sweep, slice)
+            slice.copy(
+                startAngle = startAngle,
+                sweepAngle = sweep,
+                innerRadius = ringCenterRadius - halfStroke,
+                outerRadius = ringCenterRadius + halfStroke,
+                centerX = cx,
+                centerY = cy
+            ).also { updatedSlice ->
+                if (textMode != TextMode.NONE) {
+                    val outerEdgeRadius = ringCenterRadius + halfStroke
+                    drawLabel(canvas, cx, cy, ringCenterRadius, outerEdgeRadius, startAngle, sweep, updatedSlice)
+                }
+                startAngle += sweep
             }
-
-            startAngle += sweep
         }
 
         drawCenterTotal(canvas, cx, cy)
@@ -209,16 +262,12 @@ class ViraPieChartView @JvmOverloads constructor(
         val title = titleText
         val totalText = NumberFormat.getIntegerInstance().format(totalAmount)
 
-        val titleFm = centerTitlePaint.fontMetrics
-        val totalFm = centerPaint.fontMetrics
-        val titleHeight = titleFm.descent - titleFm.ascent
-        val totalHeight = totalFm.descent - totalFm.ascent
-        val spacing = dp(4f).toFloat()
-        val blockHeight = titleHeight + spacing + totalHeight
+        val spacing = ViewUtils.dp(context, 4f)
+        val blockHeight = centerTitleFontHeight + spacing + centerFontHeight
         val blockTop = cy - blockHeight / 2f
 
-        val titleBaseline = blockTop - titleFm.ascent
-        val totalBaseline = titleBaseline + titleHeight + spacing - totalFm.ascent
+        val titleBaseline = blockTop - centerTitlePaint.fontMetrics.ascent
+        val totalBaseline = titleBaseline + centerTitleFontHeight + spacing - centerPaint.fontMetrics.ascent
 
         canvas.drawText(title, cx, titleBaseline, centerTitlePaint)
         canvas.drawText(totalText, cx, totalBaseline, centerPaint)
@@ -234,23 +283,20 @@ class ViraPieChartView @JvmOverloads constructor(
         sweepAngle: Float,
         slice: Slice,
     ) {
-        val locale = Locale.getDefault()
-        val percentText = String.format(locale, "%.1f", slice.percent)
-        val text = "$percentText%"
+        val percentText = "%.1f%%".format(slice.percent)
 
         val midAngleRad = Math.toRadians((startAngle + sweepAngle / 2f).toDouble())
 
         val labelRadius = when (textMode) {
             TextMode.INNER -> ringCenterRadius
-            TextMode.OUTER -> outerEdgeRadius + dp(16f).toFloat()
+            TextMode.OUTER -> outerEdgeRadius + ViewUtils.dp(context, 16f).toFloat()
             TextMode.NONE -> return
         }
 
         val x = (cx + cos(midAngleRad) * labelRadius).toFloat()
         val y = (cy + sin(midAngleRad) * labelRadius).toFloat()
 
-        val fm = labelPaint.fontMetrics
-        canvas.drawText(text, x, y - (fm.ascent + fm.descent) / 2f, labelPaint)
+        canvas.drawText(percentText, x, y - (labelPaint.fontMetrics.ascent + labelPaint.fontMetrics.descent) / 2f, labelPaint)
     }
 
     private fun sliceColor(index: Int, sliceCount: Int): Int {
@@ -330,8 +376,25 @@ class ViraPieChartView @JvmOverloads constructor(
             ?.takeIf { it.isNotBlank() }
             ?: return null
 
-        val id = resources.getIdentifier(cleaned, "raw", context.packageName)
-        return id.takeIf { it != 0 }
+        // Проверяем кеш сначала
+        rawResourceCache[cleaned]?.let { return it }
+
+        // Вычисляем и кешируем результат
+        return try {
+            // Быстрая компиляция-time проверка через рефлексию
+            val clazz = R.raw::class.java
+            val field = clazz.getDeclaredField(cleaned)
+            val resId = field.getInt(null)
+            rawResourceCache[cleaned] = resId
+            resId
+        } catch (ex: Exception) {
+            // Fallback на стандартный метод (только если ресурс не найден)
+            val resId = context.resources.getIdentifier(cleaned, "raw", context.packageName)
+            if (resId != 0) {
+                rawResourceCache[cleaned] = resId
+                resId
+            } else null
+        }
     }
 
     private fun requireDataSourceResId(): Int {
@@ -355,19 +418,52 @@ class ViraPieChartView @JvmOverloads constructor(
         invalidate()
     }
 
-    private fun dp(value: Float): Int {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            value,
-            resources.displayMetrics,
-        ).toInt()
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                val x = event.x
+                val y = event.y
+
+                for (slice in slices) {
+                    if (isPointInSector(x, y, slice)) {
+                        performClick()
+                        Toast.makeText(context, slice.category, Toast.LENGTH_SHORT).show()
+                        return true
+                    }
+                }
+            }
+
+            MotionEvent.ACTION_UP -> {
+                return true
+            }
+        }
+        return super.onTouchEvent(event)
     }
 
-    private fun sp(value: Float): Float {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_SP,
-            value,
-            resources.displayMetrics,
-        )
+    private fun isPointInSector(x: Float, y: Float, slice: Slice): Boolean {
+        val dx = x - slice.centerX
+        val dy = y - slice.centerY
+        val distance = sqrt(dx.pow(2) + dy.pow(2))
+
+        if (distance < slice.innerRadius || distance > slice.outerRadius) {
+            return false
+        }
+
+        val angleRad = atan2(dy, dx)
+        var angleDeg = Math.toDegrees(angleRad.toDouble()).toFloat()
+        if (angleDeg < 0) angleDeg += 360f
+
+        var adjustedAngle = angleDeg + 90f
+        if (adjustedAngle >= 360f) adjustedAngle -= 360f
+
+        val startAngle = slice.startAngle + 90f
+        val endAngle = startAngle + slice.sweepAngle
+
+        return if (startAngle <= endAngle) {
+            adjustedAngle in startAngle..endAngle
+        } else {
+            adjustedAngle >= startAngle || adjustedAngle <= endAngle
+        }
     }
+
 }
