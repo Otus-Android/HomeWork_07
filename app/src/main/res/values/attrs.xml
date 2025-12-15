@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="ViraPieChartView">
+        <attr name="colorMode" format="enum">
+            <enum name="mono" value="0" />
+            <enum name="color" value="1" />
+        </attr>
+
+        <attr name="textMode" format="enum">
+            <enum name="none" value="0" />
+            <enum name="inner" value="1" />
+            <enum name="outer" value="2" />
+        </attr>
+
+        <attr name="widthMode" format="enum">
+            <enum name="const_mode" value="0" />
+            <enum name="var_mode" value="1" />
+        </attr>
+
+        <attr name="titleText" format="string" />
+    </declare-styleable>
+
+</resources>
