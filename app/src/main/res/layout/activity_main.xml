@@ -7,13 +7,19 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <otus.homework.customview.PieChartView
+        android:id="@+id/pie_chart_view"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <otus.homework.customview.LineChartView
+        android:id="@+id/lineChartView"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
