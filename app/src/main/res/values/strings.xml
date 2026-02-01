@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Custom View</string>
+    <string name="diag_name">Диаграмма трат по категориям</string>
+    <string name="category_select_text">Выберите категорию на графике</string>
+    <string name="category_template">Категория: %1$s</string>
+    <string name="amount_template">Сумма: %1$.2f ₽</string>
+    <string name="percentage_template">Доля: %d%%</string>
 </resources>
