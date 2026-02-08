@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Custom View</string>
+    <string name="spending_chart_by_category">Диаграмма расходов по категориям</string>
+    <string name="click_to_sector_to_get_info">Нажмите на сектор диаграммы для просмотра деталей…</string>
 </resources>
