@@ -1,5 +1,14 @@
 # Custom View
 
+### Реализация
+
+#### Сектор не выбран
+![Nothing Selected](art/nothing_select.png)
+#### Сектор выбран
+![Sector Selected](art/select_sector.png)
+#### Повторот экрана с сохранением состояния
+![Screen Rotate](art/screen_rotate.png)
+
 ### Задание. Реализовать кастом View - график Pie Chart, на котором будем визуализировать траты по категориям:
 
 1. Обязательно реализуйте метод onMeasure и учтите все возможные MeasureSpecs
