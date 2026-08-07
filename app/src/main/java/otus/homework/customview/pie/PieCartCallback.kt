@@ -207,6 +207,7 @@ class PieChart @JvmOverloads constructor(
         if (sectorItems.isEmpty()) {
             sectorItems.addAll(state.sectorList)
         }
+        totalAmount = sectorItems.sumOf { it.amount }
 
         selectedSector?.let {
             callback?.sectorClick(it.name)
@@ -307,9 +308,15 @@ class PieChart @JvmOverloads constructor(
     }
 
     fun setItems(items: List<SpendItem>) {
-        totalAmount = items.fold(0) { acc, spendItem -> acc.plus(spendItem.amount) }
+        sectorItems.clear()
+        selectedSector = null
+        totalAmount = items.sumOf { it.amount }
 
         val spendGroups = items.groupBy { it.category }
+        if (spendGroups.isEmpty() || totalAmount <= 0) {
+            invalidate()
+            return
+        }
 
         var sectorAngle = 0f
 
@@ -390,7 +397,7 @@ class PieChart @JvmOverloads constructor(
             selectedSector = parcel.readParcelable(SectorEntity::class.java.classLoader)
 
             sectorList = arrayListOf()
-            parcel.readList(sectorList, List::class.java.classLoader)
+            parcel.readTypedList(sectorList, SectorEntity.CREATOR)
         }
 
         override fun writeToParcel(out: Parcel, flags: Int) {
@@ -398,7 +405,7 @@ class PieChart @JvmOverloads constructor(
 
             out.writeFloat(rotatingAngle)
             out.writeParcelable(selectedSector, PARCELABLE_WRITE_RETURN_VALUE)
-            out.writeArray(arrayOf(sectorList))
+            out.writeTypedList(sectorList)
         }
 
 
