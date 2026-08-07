@@ -11,7 +11,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import otus.homework.customview.R
 import otus.homework.customview.models.DailySpendItem
-import java.lang.Integer.max
 import kotlin.math.ceil
 
 class LinearChart @JvmOverloads constructor(
@@ -75,7 +74,7 @@ class LinearChart @JvmOverloads constructor(
     private val viewRect = Rect()
 
     private val chartPath = Path()
-    private var xGridSize: Int = 0
+    private var xGridSize: Float = 0f
     private var yGridSize: Int = 0
 
     private var items = listOf<DailySpendItem>()
@@ -84,31 +83,10 @@ class LinearChart @JvmOverloads constructor(
         get() = items.maxBy { it.amount }.amount
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val viewWidthMode = MeasureSpec.getMode(widthMeasureSpec)
-        val viewWidthSize = MeasureSpec.getSize(widthMeasureSpec)
-        val viewWidth = when (viewWidthMode) {
-            MeasureSpec.UNSPECIFIED -> minLinearChartWidth
-
-            MeasureSpec.AT_MOST -> max(minLinearChartWidth, viewWidthSize)
-
-            MeasureSpec.EXACTLY -> max(minLinearChartWidth, viewWidthSize)
-
-            else -> throw IllegalStateException("Unknown spec mode")
-        }
-
-        val viewHeightMode = MeasureSpec.getMode(heightMeasureSpec)
-        val viewHeightSize = MeasureSpec.getSize(heightMeasureSpec)
-        val viewHeight = when (viewHeightMode) {
-            MeasureSpec.UNSPECIFIED -> minLinearChartHeight
-
-            MeasureSpec.AT_MOST -> max(minLinearChartHeight, viewHeightSize)
-
-            MeasureSpec.EXACTLY -> max(minLinearChartHeight, viewHeightSize)
-
-            else -> throw IllegalStateException("Unknown spec mode")
-        }
-
-        setMeasuredDimension(viewWidth, viewHeight)
+        setMeasuredDimension(
+            resolveSize(minLinearChartWidth, widthMeasureSpec),
+            resolveSize(minLinearChartHeight, heightMeasureSpec)
+        )
     }
 
     fun setData(items: List<DailySpendItem>) {
@@ -132,7 +110,7 @@ class LinearChart @JvmOverloads constructor(
 
         val savedState = SavedState(superState)
 
-        savedState.items = items
+        savedState.items = ArrayList(items)
 
         return savedState
     }
@@ -166,9 +144,8 @@ class LinearChart @JvmOverloads constructor(
         items.forEachIndexed { index, item ->
             chartPath.apply {
 
-                val yGridValue = item.amount.evaluateOrZero {
-                    it / maxAmount.toFloat() * chartRect.height()
-                }
+                val yGridValue =
+                    item.amount / maxAmount.coerceAtLeast(1).toFloat() * chartRect.height()
 
                 if (index == 0) {
                     moveTo(chartRect.left.toFloat(), chartRect.bottom - yGridValue)
@@ -204,9 +181,9 @@ class LinearChart @JvmOverloads constructor(
         if (items.isEmpty()) return
 
         columnCount = items.size
-        rowCount = ceil(measuredHeight.toDouble() / rowSize).toInt()
+        rowCount = ceil(measuredHeight.toDouble() / rowSize).toInt().coerceAtLeast(1)
 
-        xGridSize = chartRect.width() / columnCount
+        xGridSize = chartRect.width() / items.lastIndex.coerceAtLeast(1).toFloat()
         yGridSize = chartRect.height() / rowCount
 
         var x = 0f
@@ -215,13 +192,11 @@ class LinearChart @JvmOverloads constructor(
         //draw X-Axis
         val dyTextXAxis = yAxisTextRect.centerY() - ((axisPaint.descent() + axisPaint.ascent()) / 2)
 
-        val daysDelta = ceil(items.size / columnCount.toFloat()).toInt()
-
         repeat(columnCount) { index ->
             val dxGrid = chartRect.left.toFloat() + index * xGridSize
             canvas.drawLine(dxGrid, 0f, dxGrid, y, gridPaint)
 
-            val textToDraw = (index * daysDelta + 1).toString()
+            val textToDraw = items[index].dayNum.toString()
             val textToDrawWidth = axisPaint.measureText(textToDraw)
 
             val dxTextXAxis = if (index == 0) {
@@ -258,28 +233,18 @@ class LinearChart @JvmOverloads constructor(
         }
     }
 
-    private fun Int.evaluateOrZero(block: (value: Int) -> Float): Float = try {
-        block(this)
-    } catch (t: Throwable) {
-        if (t is ArithmeticException) {
-            0f
-        } else {
-            throw t
-        }
-    }
-
     internal class SavedState : BaseSavedState {
-        var items = listOf<DailySpendItem>()
+        var items = arrayListOf<DailySpendItem>()
 
         constructor(superState: Parcelable?) : super(superState)
         private constructor(parcel: Parcel) : super(parcel) {
-            parcel.readList(items, List::class.java.classLoader)
+            parcel.readTypedList(items, DailySpendItem.CREATOR)
         }
 
         override fun writeToParcel(out: Parcel, flags: Int) {
             super.writeToParcel(out, flags)
 
-            out.writeList(items)
+            out.writeTypedList(items)
         }
 
         companion object {
